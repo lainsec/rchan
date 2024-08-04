@@ -1,0 +1,67 @@
+<<<<<<< HEAD
+<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">NOVO FIO</a></div>
+=======
+<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}NOVA REPLY{% else %}NOVO FIO{% endif %}</a></div>
+>>>>>>> 147da1f (Atualizações significantes)
+<div class="newboard-form">
+    <form id="postform" action="/new_post" enctype="multipart/form-data" method="POST">
+        <input type="hidden" name="board_id" value="{{ board_id }}">
+        <input type="hidden" name="thread_id" value="{{ thread_id }}">
+<<<<<<< HEAD
+=======
+        <input type="hidden" name="post_mode" value="{{ post_mode }}">
+>>>>>>> 147da1f (Atualizações significantes)
+        <table class="make-postForm">
+            <tbody>
+                <tr>
+                    <td>Subject:</td>
+                    <td class="subjectInputTd"><input class="subjectInput" tabindex="3" maxlength="100" name="subject" id="subjectInputId">
+                        <input type="submit" class="button" name="submit" value="Post" id="postButton">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Comment:</td>
+                    <td style="position: relative"><textarea name="text" form="postform" id="text" rows="8" wrap="soft"></textarea><span style="position: absolute; bottom: 3px; right: 16px; opacity: 0.6;">15000</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Embed:</td>
+                    <td class="embedInputTd"><input class="embedInput" tabindex="3" maxlength="127" name="embed" id="embedInputId">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Files:</td>
+                    <td>
+                        <input type="file" id="fileInputId" accept=".mov, .jpeg, .jpg, .gif, .png, .webp, .webm, .mp4" name="fileInput">
+                            <div id="selectedDiv"></div>
+                            <div id="tpl" style="display: none">
+                                <div class="dz-preview dz-file-preview">
+                                    <div class="dz-details">
+                                        <div class="dz-filename"><span data-dz-name=""></span></div>
+                                        <img data-dz-thumbnail="">
+                                    </div>
+                                    <div class="tooltip" style="display: none">
+                                        <input type="checkbox" class="spoilerFile" checked="" style="vertical-align: text-top">
+                                        <span class="tooltiptext">Spoiler?</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="rulesRow">
+                    <td colspan="2">
+                        <ul>
+                            <li>Allowed files: jpeg, jpg, gif, png, webp, webm, mp4</li>
+                            <li>Maximum files per post: <span id="labelMaxFiles">1</span></li>
+                            <li>Maximum file size per post: <span id="labelMaxFileSize">100.00 MB</span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+            
+        </table>
+    </form>
+</div>

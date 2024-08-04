@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="/home/">
+    <meta property="og:image" content="https://rchan.top/favicon.ico">
+    <meta property="og:description" content="rchan.top, seu imageboard favorito.">
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>ｒｃｈａｎ</title>
+</head>
+<body>
+    {% include 'utils/navbar.html' %}
+    <div class="page-content">
+        <div class="chan-banner">
+            <img class="banner" draggable="false" src="../static/imgs/banners/index_banner/chanbanner.gif">
+        </div>
+        <div class="chan_title_header">
+            <h1 class="board-title">ｒｃｈａｎ</h1>
+        </div>
+        <div class="sobre-container">
+            <div class="sobre">
+                <div class="sobre-header">
+                    <h1>sobre</h1>
+                </div>
+                <div class="sobre-content">
+                    <p>O fórum mais distópico da internet lusófona!</p>
+                    <a class="hidden_service" href="5jltizhrec4rd2bzwjaihiyo5d62xgnwwkgu7pwqghxcryssrt6c5mid.onion">🧅 Hidden Service</a>
+                </div>
+            </div>
+        </div>
+        {% include 'utils/last_posts.html' %}
+        {% include 'utils/boards_list.html' %}
+        {% include 'utils/footer.html' %}
+    </div>
+    <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
+</html>

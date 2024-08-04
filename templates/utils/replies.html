@@ -1,0 +1,43 @@
+<div class="posts">
+    {% for post in posts %}
+    <div class="divisoria"></div>
+    <div class="post">
+        <div class="post_image">
+            {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image  %}
+            <video controls draggable="false" class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+            {% endif %}
+            <img class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+        </div>
+        <div class="post_content">
+            <pre>{{ post.post_content }}</pre>
+        </div>
+        <div class="reply-postInfo">
+            <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
+            <span class="nameBlock"><span class="name">ドワーフ</span> </span>
+            <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:16] }}</a><a href="#" onclick="scrollParaObjeto();predefinirTexto()" class="postLink">No. </a> <a class="postLink" href="#" onclick="scrollParaObjeto();predefinirTexto()" class="postNumber">{{ post.post_id }}</a>
+        </div>
+    </div>
+    <div class="replies">
+        {% for reply in replies %}
+        <div class="reply">
+            <div class="reply-postInfo">
+                <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
+                <span class="nameBlock"><span class="name">ドワーフ</span> </span>
+                <span class="postDate">{{ reply.post_date }}</span><a href="#" onclick="scrollParaObjeto();predefinirReply{{ reply.reply_id }}()" class="postLink">No. </a> <a class="postLink" href="#" onclick="scrollParaObjeto();predefinirReply{{ reply.reply_id }}()" class="postNumber">{{ reply.reply_id }}</a>
+            </div>
+            {% if reply.image != '' %}
+            <div class="reply_image">
+                {% if '.mp4' in reply.image %}
+                 <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/post_images/' + reply.image) }}" alt="">
+                {% endif %}  
+                <img draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
+            </div>
+            {% endif %}
+            <div class="reply_content">
+                <pre>{{ reply.content }}</pre>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>

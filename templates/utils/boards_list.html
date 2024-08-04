@@ -1,0 +1,30 @@
+<div class="boards-container">
+    <div class="tabuas">
+        <table class="boards-table">
+            <thead>
+                <tr>
+                    <th>Board</th>
+                    <th>Description</th>
+                    <th>Posts</th>
+                </tr>
+            </thead>
+            {% for board in boards %}
+            <tbody>
+                <tr>
+                    <td><a class="board_link" href="/{{ board.get('board_name') }}">/{{ board.get('board_name') }}/</a></td>
+                    <td>{{ board.get('board_desc') }}</td>
+                    <td>
+                        {% set post_count = namespace(value=0) %}
+                        {% for post in all_posts %}
+                        {% if post.get('board') == board.get('board_name') %}
+                        {% set post_count.value = post_count.value + 1 %}
+                        {% endif %}
+                        {% endfor %}
+                        {{ post_count.value }}
+                    </td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+    </div>
+</div>

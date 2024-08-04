@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% for post in posts %}
+    <meta property="og:title" content="/{{post.board}}/{{post.post_id}}">
+    <meta property="og:image" content="{{ url_for('static', filename='/post_images/' + post.post_image) }}">
+    <meta property="og:description" content="{{ post.post_content[:33] }}...">
+    <title>ｒｃｈａｎ - /{{post.board}}/</title>
+    {% endfor %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body onload="exibirMensagemFlash()">
+    {% include 'utils/navbar.html' %}
+    <div class="page-content">
+        {% include 'utils/threadform.html' %}
+        {% include 'utils/replies.html' %}
+        {% include 'utils/footer.html' %}
+    </div>
+    <div class="mini-osaka">
+        <img src="{{ url_for('static', filename='/imgs/decoration/footerimage.gif') }}" alt="mini-osaka" draggable="false">
+    </div>
+    <script>
+        {% include 'utils/imagescript.html'  %}
+        {% include 'utils/flashscript.html'  %}
+    </script>
+    <script src="{{ url_for('static', filename='js/postform.js') }}"></script>
+</body>
+</html>
