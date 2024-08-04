@@ -412,10 +412,6 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 
 .post_content pre{
     font-family: inherit;
-<<<<<<< HEAD
-    margin: 1em 2em;
-=======
->>>>>>> 147da1f (Atualizações significantes)
     overflow-wrap: anywhere;
     white-space: pre-wrap;
 }
@@ -433,10 +429,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 .post_image img{
     max-width: 300px;
     max-height: 400px;
-<<<<<<< HEAD
-=======
     border-radius: 5px;
->>>>>>> 147da1f (Atualizações significantes)
 }
 
 .postInfo{
@@ -535,10 +528,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 
 .reply_img img{
     max-width: 400px;
-<<<<<<< HEAD
-=======
     border-radius: 5px;
->>>>>>> 147da1f (Atualizações significantes)
     max-height: 700px;
 }
 

@@ -20,23 +20,15 @@ def board_b(board_name):
     if not database_module.check_board(board_name):
         return redirect(request.referrer)
     posts = database_module.load_db()
-<<<<<<< HEAD
-    replies = database_module.load_replies()
-    return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_name)
-=======
     post_mode = "normal_thread"
     replies = database_module.load_replies()
     return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_name, post_mode=post_mode)
->>>>>>> 147da1f (Atualizações significantes)
 
 @boards_bp.route('/<board_name>/thread/<thread_id>')
 def replies(board_name, thread_id):
     board_id = board_name
     posts = database_module.load_db()
-<<<<<<< HEAD
-=======
     post_mode = "reply"
->>>>>>> 147da1f (Atualizações significantes)
     replies = database_module.load_replies()
     thread_found = False
     board_posts = []
@@ -52,8 +44,4 @@ def replies(board_name, thread_id):
     for reply in replies:
         if reply.get('post_id') == int(thread_id):
             post_replies.append(reply)
-<<<<<<< HEAD
-    return render_template('thread_reply.html', posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id))
-=======
     return render_template('thread_reply.html', posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id), post_mode=post_mode)
->>>>>>> 147da1f (Atualizações significantes)

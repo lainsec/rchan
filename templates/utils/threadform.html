@@ -1,16 +1,9 @@
-<<<<<<< HEAD
-<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">NOVO FIO</a></div>
-=======
 <div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}NOVA REPLY{% else %}NOVO FIO{% endif %}</a></div>
->>>>>>> 147da1f (Atualizações significantes)
 <div class="newboard-form">
     <form id="postform" action="/new_post" enctype="multipart/form-data" method="POST">
         <input type="hidden" name="board_id" value="{{ board_id }}">
         <input type="hidden" name="thread_id" value="{{ thread_id }}">
-<<<<<<< HEAD
-=======
         <input type="hidden" name="post_mode" value="{{ post_mode }}">
->>>>>>> 147da1f (Atualizações significantes)
         <table class="make-postForm">
             <tbody>
                 <tr>
