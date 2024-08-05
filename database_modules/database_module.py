@@ -97,6 +97,7 @@ def add_new_post(user_ip,board_id, comment, embed, file):
     save_new_post(posts)
 
 def add_new_reply(user_ip,reply_to,comment, embed, file):
+    posts = load_db()
     replies = load_replies()
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     agora = datetime.datetime.now(fuso_horario_brasilia)
@@ -111,6 +112,11 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
     }
     replies.append(new_reply)
     save_new_reply(replies)
+    post_to_move = next((p for p in posts if p['post_id'] == int(reply_to)), None)
+    if post_to_move:
+        posts.remove(post_to_move)
+        posts.append(post_to_move)  # Adicionar ao final da lista
+        save_new_post(posts)
     
 
 if __name__ == '__main__':
