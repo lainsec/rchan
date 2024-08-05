@@ -115,7 +115,7 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
     post_to_move = next((p for p in posts if p['post_id'] == int(reply_to)), None)
     if post_to_move:
         posts.remove(post_to_move)
-        posts.append(post_to_move)  # Adicionar ao final da lista
+        posts.append(post_to_move)
         save_new_post(posts)
     
 
