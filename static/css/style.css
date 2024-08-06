@@ -514,6 +514,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 .reply_content pre{
     white-space: pre-wrap;
     word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .reply_img{
@@ -709,6 +710,9 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     }
     .reply{
         width: 100%;
+    }
+    .reply_content{
+        flex: none;
     }
     .sobre-container{
         max-width: 100%;
