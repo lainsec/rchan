@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="/{{ board_id }}/">
     <meta property="og:image" content="https://81chan.fun/favicon.ico">
-    <meta property="og:description" content="81chan, seu imageboard favorito.">
+    <meta property="og:description" content="rchan, seu imageboard favorito.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -21,17 +21,13 @@
         </div>
         {% include 'utils/threadform.html' %}
         {% include 'utils/board_posts.html' %}
-        {% include 'utils/footer.html' %}
     </div>
-    <div class="mini-osaka">
-        <img src="{{ url_for('static', filename='/imgs/decoration/footerimage.gif') }}" alt="mini-osaka" draggable="false">
-    </div>
-    <script>
-        {% include 'utils/imagescript.html'  %}
-        {% include 'utils/flashscript.html'  %}
-    </script>
-    <script src="{{ url_for('static', filename='js/postform.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
+    <div id="reinrun"></div>
+    {% include 'utils/footer.html' %}
+    <script src="/static/js/postform.js"></script>
+    <script src="/static/js/mediascript.js"></script>
+    <script src="/static/js/thread.js"></script>
+    <script src="/static/js/socket.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 </html>

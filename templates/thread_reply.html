@@ -17,15 +17,11 @@
     <div class="page-content">
         {% include 'utils/threadform.html' %}
         {% include 'utils/replies.html' %}
-        {% include 'utils/footer.html' %}
     </div>
-    <div class="mini-osaka">
-        <img src="{{ url_for('static', filename='/imgs/decoration/footerimage.gif') }}" alt="mini-osaka" draggable="false">
-    </div>
-    <script>
-        {% include 'utils/imagescript.html'  %}
-        {% include 'utils/flashscript.html'  %}
-    </script>
-    <script src="{{ url_for('static', filename='js/postform.js') }}"></script>
+    <div id="reinrun"></div>
+    {% include 'utils/footer.html' %}
+    <script src="/static/js/postform.js"></script>
+    <script src="/static/js/mediascript.js"></script>
+    <script src="/static/js/thread.js"></script>
 </body>
 </html>

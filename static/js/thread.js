@@ -1,24 +1,3 @@
-var postImgs = document.querySelectorAll('.post_img');
-
-postImgs.forEach(function(img) {
-    img.addEventListener('click', function() {
-        var isExpanded = img.dataset.expanded === 'true';
-
-        if (isExpanded) {
-            img.style.width = '';
-            img.style.height = '';
-            img.dataset.expanded = 'false';
-        } else {
-            img.style.width = 'fit-content';
-            img.style.height = 'fit-content';
-            img.dataset.expanded = 'true';
-        }
-    });
-});
-function scrollParaObjeto() {
-    var objeto = document.getElementById("text");
-    objeto.scrollIntoView({ behavior: "smooth" });
-}
 document.addEventListener("DOMContentLoaded", function() {
     var postContents = document.querySelectorAll('.post_content pre');
     postContents.forEach(function(postContent) {
@@ -43,22 +22,3 @@ function substituirSpoilers() {
 window.onload = function() {
     substituirSpoilers();
 };
-{% for post in posts %}
-function predefinirTexto() {
-    var textoPredefinido = "#{{ post.post_id }} ";
-  
-    var campoTexto = document.getElementById("text");
-  
-    campoTexto.value = textoPredefinido;
-  }
-  {% endfor %}
-
-  {% for reply in replies %}
-  function predefinirReply{{ reply.reply_id }}() {
-      var textoPredefinido = "#{{ reply.reply_id }} ";
-    
-      var campoTexto = document.getElementById("text");
-    
-      campoTexto.value = textoPredefinido;
-    }
-    {% endfor %}

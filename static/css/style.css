@@ -100,12 +100,23 @@ body{
     user-select: none;
 }
 
-.mini-osaka img {
-    width: 60px;
+#reinrun {
+    top: 50%;
+    width: 100%;
+    height: 146px;
+    background: url(/static/imgs/decoration/reinrun.gif);
+    -webkit-animation: slide 1s linear infinite;
 }
+
 
 footer {
     font-size: 10px;
+    color: #fff;
+}
+
+footer a {
+    font-size: 10px;
+    color: #fff;
 }
 
 .navbar{
@@ -166,13 +177,13 @@ footer {
     position: relative;
 }
 
- .board-links a:hover{
+.board-links a:hover{
     color: rgb(105, 9, 9);
- }
+}
 
- .board-link{
+.board-link{
     list-style: none;
- }
+}
 
 .page-content{
     display: flex;
@@ -390,10 +401,12 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     flex-wrap: wrap;
     margin-bottom: 2em;
     max-width: 83%;
-    min-width: 35%;
+    min-width: 70%;
     margin-top: 1em;
     position: relative;
     flex: 0 0 auto;
+    border: 1px solid #d2738a;
+    background-color: #00000059;
 }
 
 .post_content{
@@ -429,7 +442,6 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 .post_image img{
     max-width: 300px;
     max-height: 400px;
-    border-radius: 5px;
 }
 
 .postInfo{
@@ -461,6 +473,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     font-size: 14px;
     margin-left: 4px;
     color: #6d98ba;
+    text-decoration: none;
 }
 
 .name{
@@ -641,8 +654,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     display: flex;
     align-items: center;
     justify-content: normal;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    padding: 1em 0em;
     transition: all 0.3s ease;
 }
 
@@ -705,6 +717,12 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
         max-width: 100%;
         width: 100%;
     }
+    .post_image{
+        margin-top: 4em;
+    }
+    .post_content{
+        margin-top: 4em;
+    }
     .replies{
         width: 100%;
     }
@@ -733,4 +751,11 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
         width: 100%;
     }
   }
-
+  @-webkit-keyframes slide {
+    from{
+        background-position:2560px;
+    }
+    to{
+        background-position:-2560px;
+    }
+}
