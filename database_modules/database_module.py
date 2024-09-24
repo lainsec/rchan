@@ -81,12 +81,13 @@ def check_banned_user(user_ip):
 
 def add_new_post(user_ip,board_id, comment, embed, file):
     posts = load_db()
+    replies = load_replies()
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     agora = datetime.datetime.now(fuso_horario_brasilia)
     formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
     new_post = {
         "user_ip": user_ip,
-        "post_id": len(posts) + 1,
+        "post_id": len(posts) + len(replies) + 1,
         "post_user": "Anonymous",
         "post_date": str(formatado),
         "board": board_id,
@@ -105,10 +106,14 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
     new_reply = {
         "user_ip": user_ip,
 <<<<<<< HEAD
+<<<<<<< HEAD
         "reply_id": len(replies) + 1,
 =======
         "reply_id": len(posts) + 1,
 >>>>>>> f2004cc (no fap september)
+=======
+        "reply_id": len(posts) + len(replies) + 1,
+>>>>>>> 81381c0 (Now fap september)
         "post_id": int(reply_to),
         "post_date": str(formatado),
         "content": comment,
