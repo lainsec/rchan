@@ -105,15 +105,7 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
     formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
     new_reply = {
         "user_ip": user_ip,
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "reply_id": len(replies) + 1,
-=======
-        "reply_id": len(posts) + 1,
->>>>>>> f2004cc (no fap september)
-=======
         "reply_id": len(posts) + len(replies) + 1,
->>>>>>> 81381c0 (Now fap september)
         "post_id": int(reply_to),
         "post_date": str(formatado),
         "content": comment,
