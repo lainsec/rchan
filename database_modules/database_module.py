@@ -118,7 +118,6 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
         posts.remove(post_to_move)
         posts.append(post_to_move)
         save_new_post(posts)
-    
 
 if __name__ == '__main__':
     print('dont open this file alone.')

@@ -50,10 +50,48 @@ body{
     max-height: 10em;
 }
 
-.captcha{
+.waring-container{
+    position: fixed;
+    top: 39%;
+    background-color: #222;
     border: 1px solid #d2738a;
-    width: 100%;
-    max-height: 4em;
+    width: 24em;
+    height: auto;
+}
+
+.waring-header{
+    border-bottom: 1px solid #d2738a;
+    max-height: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #282a2e;
+}
+
+.waring-header h1{
+    color: #f4c095;
+    font-size: 17px;
+}
+
+.waring-content{
+    padding: 0;
+    text-align: center;
+    font-size: 13px;
+    color: #f4c095;
+}
+
+.waring-button{
+    padding: 4px;
+    text-align: center;
+}
+
+.waring-button button{
+    width: 5em;
+    background-color: transparent;
+    border: 1px solid #d2738a;
+    outline: none;
+    color: #f4c095;
+    cursor: pointer;
 }
 
 .spoiler{
@@ -713,6 +751,15 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
 }
 
 @media (max-width: 600px) {
+    .waring-container{
+        width: 20em;
+    }
+    .waring-header h1{
+        font-size: 14px;
+    }
+    .waring-content{
+        font-size: 10px;
+    }
     .post{
         max-width: 100%;
         width: 100%;

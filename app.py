@@ -17,4 +17,4 @@ app.register_blueprint(boards_bp)
 app.register_blueprint(auth_bp)
 
 if __name__ == '__main__':
-    socketio.run(app, port=80, debug=True)
+    socketio.run(app, port=3000, debug=True)

@@ -1,0 +1,15 @@
+{% if get_flashed_messages() %}
+        <div class="waring-container" id="waring-container">
+            <div class="waring-header">
+                <h1>Aviso!</h1>
+            </div>
+            <div class="waring-content">
+                {% for message in get_flashed_messages() %}
+                <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            <div class="waring-button">
+                <button class="accept-flash" id="waring-button">ok</button>
+            </div>
+        </div>
+{% endif %}

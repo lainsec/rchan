@@ -31,11 +31,7 @@
             {% if reply.image != '' %}
             <div class="reply_image">
                 {% if '.mp4' in reply.image %}
-<<<<<<< HEAD
-                 <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/post_images/' + reply.image) }}" alt="">
-=======
                  <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
->>>>>>> f2004cc (no fap september)
                 {% endif %}  
                 <img draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
             </div>
