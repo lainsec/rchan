@@ -13,7 +13,7 @@ python3 app.py
 </pre>
 # Features
 - Realtime posts with websocket
-- Simple anti-raid system (cloudflare required or change the code.)
+- Simple anti-raid system based on user ip-addr
 
 <a>If you get any issue please comment</a>
 ###
