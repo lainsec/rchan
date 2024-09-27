@@ -86,6 +86,8 @@ def new_post():
 
     if post_mode == "reply":
         reply_to = request.form['thread_id']
+        if not handler.validate_comment():
+            return redirect(request.referrer)
         if not handler.handle_reply(reply_to):
             return redirect(request.referrer)
 
