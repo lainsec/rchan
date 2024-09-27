@@ -57,6 +57,7 @@ body{
     border: 1px solid #d2738a;
     width: 24em;
     height: auto;
+    z-index: 999;
 }
 
 .waring-header{
@@ -102,6 +103,18 @@ body{
 .spoiler:hover{
     background-color: transparent;
     color: #fff;
+}
+
+.quote-button {
+    display: none;
+    position: absolute;
+    background-color: #222;
+    color: #f4c095;
+    border: 1px solid #d2738a;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: -30px;
+    z-index: 1000;
 }
 
 .rainbowtext {
@@ -507,6 +520,16 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     font-size: 14px;
 }
 
+#delete-thread{
+    cursor: pointer;
+    color: #6d98ba;
+    transition: all 0.3s ease;
+}
+
+#delete-thread:hover{
+    color: #e90000;
+}
+
 .image_url{
     font-size: 14px;
     margin-left: 4px;
@@ -799,7 +822,8 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
         width: 100%;
     }
   }
-  @-webkit-keyframes slide {
+
+@-webkit-keyframes slide {
     from{
         background-position:2560px;
     }
