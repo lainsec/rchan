@@ -20,7 +20,10 @@ const postImages = document.querySelectorAll('img.post_img');
 const zoomedImage = document.createElement('img');
 zoomedImage.className = 'zoomed-image';
 zoomedImage.style.position = 'absolute';
-zoomedImage.style.display = 'none'; 
+zoomedImage.style.display = 'none';
+zoomedImage.style.maxWidth = '300px';
+zoomedImage.style.maxHeight = '300px';
+zoomedImage.style.zIndex = '990';
 
 document.body.appendChild(zoomedImage);
 
@@ -43,6 +46,20 @@ postImages.forEach(image => {
 function updateZoomedImagePosition(event) {
   const offsetX = 20; 
   const offsetY = 20; 
-  zoomedImage.style.top = (event.clientY + offsetY) + 'px';
-  zoomedImage.style.left = (event.clientX + offsetX) + 'px';
+
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+
+  let newX = event.pageX + offsetX;
+  let newY = event.pageY + offsetY;
+
+  if (newX + zoomedImage.clientWidth > windowWidth + window.scrollX) {
+    newX = windowWidth + window.scrollX - zoomedImage.clientWidth - offsetX;
+  }
+  if (newY + zoomedImage.clientHeight > windowHeight + window.scrollY) {
+    newY = windowHeight + window.scrollY - zoomedImage.clientHeight - offsetY;
+  }
+
+  zoomedImage.style.top = newY + 'px';
+  zoomedImage.style.left = newX + 'px';
 }
