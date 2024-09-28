@@ -705,11 +705,12 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     border: 1px solid #d2738a;
 }
 
-.last-post{
+.last-post {
     display: flex;
     align-items: center;
     justify-content: normal;
-    padding: 1em 0em;
+    padding: 0em 0.5em;
+    gap: 10px;
     transition: all 0.3s ease;
 }
 
