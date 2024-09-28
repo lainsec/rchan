@@ -315,6 +315,7 @@ footer a {
     position: absolute;
     cursor: move; 
     z-index: 990;
+    top: 0;
 }
 
 .new-thread-container{
