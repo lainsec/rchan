@@ -276,12 +276,6 @@ footer a {
     gap: 2px;
 }
 
-.newboard-form form input{
-    width: 13em;
-    border: none;
-    background-color: #444444;
-}
-
 .thread-content{
     height: 8em;
 }
@@ -291,7 +285,7 @@ footer a {
 }
 
 #togglePostFormLink {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     background-color: #222222;
     border-style: none none none solid;
@@ -309,6 +303,7 @@ footer a {
     align-items: center;
     justify-content: center;
     height: 100%;
+    text-decoration: none;
     color: #6d98ba;
 }
 
@@ -316,112 +311,110 @@ footer a {
     color: #e90000;
 }
 
-table.make-postForm {
-    display: inline-block;
+#draggableForm {
+    position: absolute;
+    cursor: move; 
+    z-index: 990;
 }
 
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
+.new-thread-container{
+    background-color: #1f1e1e;
+    padding: 5px;
 }
 
-tbody {
-    vertical-align: middle;
+.new-thread-header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff10;
+    max-height: 1.5em;
 }
 
-tr {
-    display: table-row;
-    vertical-align: inherit;
+.new-thread-header h1{
+    font-size: 16px;
+    color: #d3d3d3;
 }
 
-table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child {
-    background-color: #1a1919;
+.row {
+    display: flex;
+    flex-direction: row;
+    max-width: 100%;
+    margin-bottom: 1px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.postform-style {
+    display: flex;
     border: 1px solid #d2738a;
-}
-
-table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHead {
-    font-weight: 700;
-    border-radius: 5px;
-    padding: 0 5px;
-    font-size: 10pt;
-    vertical-align: middle;
-}
-
-#postform input, #text, .dropzone, #catalogSearchField, #quickReplyText, #quickReplySubject, #quickReplyEmbed {
-    background-color: #1e1415;
-    color: hsl(342.3, 29.7%, 71%);
-}
-
-.subjectInput, .embedInput {
-    border: 2px solid #140e10;
-    background-color: #242323;
-}
-
-#postform input, #text, .dropzone, #catalogSearchField, #quickReplyText, #quickReplySubject, #quickReplyEmbed {
-    background-color: #242323;
-    color: hsl(342.3, 29.7%, 71%);
-}
-
-#postform input[type="text"], #text, .dropzone, #catalogSearchField, .embedInputTd, #embedInputId {
-    border: none;
-    width: -moz-available;
-    width: -webkit-fill-available;
-    width: stretch;
-}
-
-#text, #embedInputId {
+    background: #222;
+    align-items: center;
     box-sizing: border-box;
 }
 
-.dropzone {
-    border: 2px dashed #000000;
+
+.close {
+    text-decoration: none;
+    justify-content: center;
+    font-weight: bolder;
+    margin-left: auto;
+    width: 25px;
+    cursor: pointer;
+    font-size: initial;
 }
 
-#postform input, #text, .dropzone, #catalogSearchField, #quickReplyText, #quickReplySubject, #quickReplyEmbed {
-    background-color: #242323;
-    border: none;
-    color: #f4c095;
+input, select, textarea {
+    accent-color: var(--accent-color);
+    border: 1px solid #d2738a;
+    border-radius: 0;
+    background: #222;
+    color: #fff;
+    font-family: arial, helvetica, sans-serif;
+    font-size: inherit;
+}
+
+.label, .rlabel {
+    padding: 3px;
+    border: 1px solid #d2738a;
+    min-width: 80px;
+    background: #222;
+    display: flex;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 1px;
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
+    color: #d3d3d3;
+}
+
+input[type=button], input[type=file], input[type=number], input[type=password], input[type=range], input[type=submit], input[type=text], select, textarea {
+    margin: 0;
+    flex-grow: 1;
+    font-size: 13px;
     outline: none;
 }
 
-#postform input[type="text"], #text, .dropzone, #catalogSearchField, .embedInputTd, #embedInputId {
-    width: -moz-available;
-    width: -webkit-fill-available;
-    width: stretch;
-}
-
-#postform input[type="file"]::-webkit-file-upload-button{
-    background-color: #1a1919;
-    width: 100%;
-    border: 1px dashed #d2738a;
+.filelabel {
+    position: relative;
+    z-index: 1;
     cursor: pointer;
-    color: #f4c095;
-    height: 2em;
+    border-style: dashed !important;
+    justify-content: center;
+    padding: 5px;
+    min-width: 220px;
+    flex-grow: 1;
+    flex-direction: column;
+    min-height: 38px;
+    height: 100%;
+    font-size: 13px;
+    color: #d3d3d3;
 }
 
-#postform input[type="file"]{
-    outline: 1px solid #000;
-    background-color: transparent;
-    width: 100%;
-}
-
-.dropzone {
+.postform-style.dummy-link, input[type=submit] {
+    min-height: 2.5em;
     cursor: pointer;
-    transition: 0.2s;
-    padding: 10px 0;
-    margin-bottom: 0.4em;
-    text-align: center;
-}
-
-.dropzone, .dz-preview {
-    padding: 3px;
-    overflow-x: hidden;
-    white-space: nowrap;
-}
-
-.rulesRow ul{
-    color: #f4c095;
-    font-size: 14px;
+    width: 100%;
 }
 
 .posts{
@@ -456,8 +449,6 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     margin-top: 1em;
     position: relative;
     flex: 0 0 auto;
-    border: 1px solid #d2738a;
-    background-color: #00000059;
 }
 
 .post_content{
@@ -503,6 +494,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     left: 0;
     width: 40em;
     height: 2px;
+    font-size: 14px;
 }
 
 .reply-postInfo{
@@ -512,6 +504,7 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     margin-left: 10px;
     width: 40em;
     height: 10px;
+    font-size: 14px;
 }
 
 .postLink{
@@ -820,6 +813,9 @@ table.make-postForm > tbody > tr:not(.rulesRow) > td:first-child, #quickReplyHea
     .boards-container{
         max-width: 100%;
         width: 100%;
+    }
+    #draggableForm {
+        position: relative;
     }
   }
 
