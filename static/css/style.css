@@ -552,6 +552,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     flex-wrap: wrap;
     max-width: 100%;
     min-width: 30em;
+    width: fit-content;
     flex: 0 0 auto;
     color: #fff;
     background-color: #222222;
