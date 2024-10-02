@@ -8,10 +8,11 @@ posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
 
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, board_id, comment, embed):
+    def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed):
         self.socketio = socketio
         self.user_ip = user_ip
         self.post_mode = post_mode
+        self.post_name = post_name
         self.board_id = board_id
         self.comment = comment
         self.embed = embed
@@ -45,11 +46,11 @@ class PostHandler:
                 upload_folder = './static/reply_images/'
                 os.makedirs(upload_folder, exist_ok=True)
                 file.save(os.path.join(upload_folder, file.filename))
-                database_module.add_new_reply(self.user_ip, reply_to, self.comment, self.embed, file.filename)
+                database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file.filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
                 return True
         file = ""
-        database_module.add_new_reply(self.user_ip, reply_to, self.comment, self.embed, file)
+        database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file)
         self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
         return True
 
@@ -60,7 +61,7 @@ class PostHandler:
                 upload_folder = './static/post_images/'
                 os.makedirs(upload_folder, exist_ok=True)
                 file.save(os.path.join(upload_folder, file.filename))
-                database_module.add_new_post(self.user_ip, self.board_id, self.comment, self.embed, file.filename)
+                database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, file.filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
                 return True
         
@@ -73,11 +74,12 @@ def new_post():
     socketio = current_app.extensions['socketio']
     user_ip = session["user_ip"]
     post_mode = request.form["post_mode"]
+    post_name = request.form["name"]
     board_id = request.form['board_id']
     comment = request.form['text']
     embed = request.form['embed']
 
-    handler = PostHandler(socketio, user_ip, post_mode, board_id, comment, embed)
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed)
 
     if not handler.check_timeout():
         return redirect(request.referrer)
