@@ -6,20 +6,27 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
 });
 
 const draggableForm = document.getElementById('draggableForm');
-
 draggableForm.style.position = 'absolute';
 
 draggableForm.addEventListener('mousedown', function(e) {
-    let shiftX = e.clientX - draggableForm.getBoundingClientRect().left;
-    let shiftY = e.clientY - draggableForm.getBoundingClientRect().top;
+    
+    let isDragging = false;
+    let rect = draggableForm.getBoundingClientRect();
+    let shiftX = e.clientX - rect.left;
+    let shiftY = e.clientY - rect.top + window.scrollY; // Adicione window.scrollY aqui
 
     function moveAt(pageX, pageY) {
         draggableForm.style.left = pageX - shiftX + 'px';
         draggableForm.style.top = pageY - shiftY + 'px';
     }
+
     function onMouseMove(e) {
+        if (!isDragging) {
+            isDragging = true; 
+        }
         moveAt(e.pageX, e.pageY);
     }
+
     document.addEventListener('mousemove', onMouseMove);
 
     function onMouseUp() {
@@ -30,10 +37,5 @@ draggableForm.addEventListener('mousedown', function(e) {
     document.addEventListener('mouseup', onMouseUp);
 
     draggableForm.ondragstart = function() {
-        return false;
     };
-
-    e.preventDefault();
-    
-    moveAt(e.pageX, e.pageY);
 });
