@@ -79,7 +79,7 @@ def check_banned_user(user_ip):
             return False
             break     
 
-def add_new_post(user_ip,board_id, comment, embed, file):
+def add_new_post(user_ip,board_id, post_name, comment, embed, file):
     posts = load_db()
     replies = load_replies()
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
@@ -88,7 +88,7 @@ def add_new_post(user_ip,board_id, comment, embed, file):
     new_post = {
         "user_ip": user_ip,
         "post_id": len(posts) + len(replies) + 1,
-        "post_user": "Anonymous",
+        "post_user": post_name,
         "post_date": str(formatado),
         "board": board_id,
         "post_content": comment,
@@ -97,7 +97,7 @@ def add_new_post(user_ip,board_id, comment, embed, file):
     posts.append(new_post)
     save_new_post(posts)
 
-def add_new_reply(user_ip,reply_to,comment, embed, file):
+def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
     posts = load_db()
     replies = load_replies()
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
@@ -107,6 +107,7 @@ def add_new_reply(user_ip,reply_to,comment, embed, file):
         "user_ip": user_ip,
         "reply_id": len(posts) + len(replies) + 1,
         "post_id": int(reply_to),
+        "post_user": post_name,
         "post_date": str(formatado),
         "content": comment,
         "image": file
