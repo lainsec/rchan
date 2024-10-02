@@ -7,6 +7,8 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
 
 const draggableForm = document.getElementById('draggableForm');
 
+draggableForm.style.position = 'absolute';
+
 draggableForm.addEventListener('mousedown', function(e) {
     let shiftX = e.clientX - draggableForm.getBoundingClientRect().left;
     let shiftY = e.clientY - draggableForm.getBoundingClientRect().top;
@@ -15,21 +17,23 @@ draggableForm.addEventListener('mousedown', function(e) {
         draggableForm.style.left = pageX - shiftX + 'px';
         draggableForm.style.top = pageY - shiftY + 'px';
     }
-
     function onMouseMove(e) {
         moveAt(e.pageX, e.pageY);
     }
-
     document.addEventListener('mousemove', onMouseMove);
 
     function onMouseUp() {
         document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp); 
+        document.removeEventListener('mouseup', onMouseUp);
     }
 
     document.addEventListener('mouseup', onMouseUp);
-});
 
-draggableForm.ondragstart = function() {
-    return false;
-};
+    draggableForm.ondragstart = function() {
+        return false;
+    };
+
+    e.preventDefault();
+    
+    moveAt(e.pageX, e.pageY);
+});
