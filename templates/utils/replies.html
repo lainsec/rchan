@@ -13,7 +13,7 @@
         </div>
         <div class="reply-postInfo">
             <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
-            <span class="nameBlock"><span class="name">ドワーフ</span> </span>
+            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user }}{% endif %}</span> </span>
             <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:16] }}</a><a href="#" onclick="scrollParaObjeto();predefinirTexto()" class="postLink">No. </a> <a class="postLink" href="#" onclick="scrollParaObjeto();predefinirTexto()" class="postNumber">{{ post.post_id }}</a>
         </div>
     </div>
@@ -22,7 +22,7 @@
         <div class="reply">
             <div class="reply-postInfo">
                 <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
-                <span class="nameBlock"><span class="name">ドワーフ</span> </span>
+                <span class="nameBlock"><span class="name">{% if not reply.post_user or rely.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span> </span>
                 <span class="postDate">{{ reply.post_date }}</span><a href="#" onclick="scrollParaObjeto(); predefinirReply{{ reply.reply_id }}()" class="postLink">No. </a> <a class="postLink" href="#" onclick="scrollParaObjeto();predefinirReply{{ reply.reply_id }}()" class="postNumber">{{ reply.reply_id }}</a>
             </div>
             {% if reply.image != '' %}
