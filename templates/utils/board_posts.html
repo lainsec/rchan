@@ -25,7 +25,7 @@
         <div class="reply">
             <div class="reply-postInfo">
                 <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
-                <span class="nameBlock"><span class="name">{% if not reply.post_user or rely.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span></span>
+                <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span></span>
                 <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" >{{ reply.reply_id }}</a>
             </div>
             {% if reply.image != '' %}
