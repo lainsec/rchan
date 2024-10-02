@@ -798,8 +798,8 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
         width: 100%;
         min-width: 100%;
     }
-    .reply_content{
-        flex: none;
+    .reply_img {
+        max-width: 100px;
     }
     .sobre-container{
         max-width: 100%;

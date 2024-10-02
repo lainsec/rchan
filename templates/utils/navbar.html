@@ -2,9 +2,15 @@
     <div class="nav-content">
         <div class="boards">
             <ul class="board-links">
-                <li class="board-link"><a href="/">Início</a></li>
-                <li class="board-link"><a href="/tabuas">Tábuas</a></li>
+                <!-- Asigna IDs a los enlaces que serán traducidos -->
+                <li class="board-link"><a id="home" href="/"></a></li>
+                <li class="board-link"><a id="boards" href="/tabuas"></a></li>
             </ul>
+            <select id="languageSelector">
+                <option value="pt">Portugués</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+            </select>
         </div>
     </div>
 </nav>

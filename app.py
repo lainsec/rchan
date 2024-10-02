@@ -8,9 +8,14 @@ from blueprints.auth_bp import auth_bp
 import os
 
 app = Flask(__name__)
+
+@app.route('/lang/<path:filename>')
+def serve_language_files(filename):
+    return send_from_directory('lang', filename)
+
 socketio = SocketIO(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
-app.secret_key = 'chavesuperultrasecreta'
+app.secret_key = 'ultrasecreta'
 
 app.register_blueprint(posts_bp,socketio=socketio)
 app.register_blueprint(boards_bp)
