@@ -526,7 +526,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .post_image img{
-    max-width: 300px;
+    max-width: 200px;
     max-height: 400px;
 }
 
