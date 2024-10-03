@@ -10,12 +10,12 @@
     <title>ｒｃｈａｎ - /{{post.board}}/</title>
     {% endfor %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
 </head>
-<body onload="exibirMensagemFlash()">
+<body>
     {% include 'utils/navbar.html' %}
     <div class="page-content">
         {% include 'utils/threadform.html' %}
+        {% include 'utils/thread-options-container.html' %}
         {% include 'utils/replies.html' %}
         {% include 'utils/waring-container.html' %}
     </div>
