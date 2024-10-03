@@ -1,0 +1,11 @@
+<div class="board-options-container">
+    <div class="board-options">
+        <ul>
+            {% for post in posts %}
+            <li class="board-option"><a href="/{{post.board}}/">[Index]</a></li>
+            {% endfor %}
+            <li class="board-option"><a href="/banners">[Banners]</a></li>
+            <li class="board-option"><a href="/">[Catálogo]</a></li>
+        </ul>
+    </div>
+</div>
