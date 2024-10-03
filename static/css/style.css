@@ -226,10 +226,11 @@ footer a {
     font-size: 11pt !important;
     color: #6d98ba;
     position: relative;
+    transition: all 0.3s ease;
 }
 
 .board-links a:hover{
-    color: rgb(105, 9, 9);
+    filter: drop-shadow(1px 1px 6px #fff);
 }
 
 .board-link{
@@ -286,12 +287,13 @@ footer a {
 
 #togglePostFormLink {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 400;
     background-color: #222222;
     border-style: none none none solid;
     border-color: #d2738a;
-    width: 8em;
-    height: 3em;
+    border-width: 1px;
+    width: 9em;
+    height: 3.3em;
     text-align: center;
     margin-top: 3em;
     color: #6d98ba;
@@ -418,11 +420,51 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     width: 100%;
 }
 
+.board-options-container{
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    margin-top: 2em;
+}
+
+.board-options{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #222;
+    padding: 0em 1em;
+    max-height: 2.3em;
+    border-style: none none none solid;
+    border-color: #d2738a;
+    border-width: 1px;
+}
+
+.board-options ul{
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4em;
+    padding: 0em;
+}
+
+.board-options ul li{
+    list-style: none;
+}
+
+.board-options ul li a{
+    text-decoration: none;
+    color: #6d98ba;
+    font-size: 10pt;
+    transition: all 0.3s ease;
+}
+
+.board-options ul li a:hover{
+    filter: drop-shadow(1px 1px 6px #fff);
+}
+
 .posts{
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    margin-top: 2em;
     flex-direction: column;
     align-items: flex-start; 
     width: 100%;
