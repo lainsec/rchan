@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
     replyContents.forEach(function(replyContent) {
         replyContent.innerHTML = replyContent.innerHTML.replace(/&gt;([^<&\n]+)/g, '<span class="verde">&gt;$1</span>');
         replyContent.innerHTML = replyContent.innerHTML.replace(/&lt;([^<&\n]+)/g, '<span class="vermelho">&lt;$1</span>');
-        replyContent.innerHTML = replyContent.innerHTML.replace(/(?:^|\s)(#[^\s<\n]+)/g, ' <a class="vermelho-reply" href="#" style="text-decoration: none;">$1</a>');
+        replyContent.innerHTML = replyContent.innerHTML.replace(/(?:^|\s)(#[^\s<\n]+)/g, '<a class="vermelho-reply" href="#" style="text-decoration: none;">$1</a>');
         });
 });
 function substituirSpoilers() {
