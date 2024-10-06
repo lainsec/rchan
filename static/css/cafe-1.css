@@ -62,3 +62,59 @@ body {
 .vermelho-reply {
     color: #121212;
 }
+
+@media (max-width: 600px) {
+    .waring-container {
+      width: 20em;
+    }
+    .waring-header h1 {
+      font-size: 14px;
+    }
+    .waring-content {
+      font-size: 10px;
+    }
+    .post {
+      max-width: 100%;
+      width: 100%;
+    }
+    .post_image {
+      margin-top: 4em;
+    }
+    .post_content {
+      margin-top: 4em;
+    }
+    .replies {
+      width: 100%;
+    }
+    .reply {
+      width: 100%;
+      min-width: 100%;
+    }
+    .reply_img {
+      max-width: 100px;
+    }
+    .sobre-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    .last-posts-container {
+      max-width: 100%;
+    }
+    .postInfo {
+      width: auto;
+      height: 2px;
+    }
+    .reply-postInfo {
+      width: auto;
+    }
+    .boards-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    #draggableForm {
+      position: relative;
+    }
+    .sobre-content p {
+      font-size: 14px;
+    }
+  }
