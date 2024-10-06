@@ -1,4 +1,4 @@
-from flask import current_app, Blueprint, render_template, redirect, request
+from flask import current_app, Blueprint, render_template, session, redirect, request
 from database_modules import database_module
 
 boards_bp = Blueprint('boards', __name__)
@@ -14,6 +14,26 @@ def tabuas():
     boards = database_module.load_boards()
     posts = database_module.load_db()
     return render_template('tabuas.html',all_posts=reversed(posts),boards=boards)
+
+@boards_bp.route('/conta')
+def login():
+    if 'username' in session:
+        user_boards = user_boards=database_module.get_user_boards(session["username"])
+        return render_template('dashboard.html', username=session["username"],user_boards=user_boards)
+    return render_template('login.html')
+
+@boards_bp.route('/registrar')
+def register():
+    if 'username' in session:
+        return redirect('/conta')
+    return render_template('register.html')
+
+@boards_bp.route('/create')
+def create():
+    if 'username' in session:
+        return render_template('board-create.html')
+    else:
+        return redirect('/conta')
 
 @boards_bp.route('/<board_name>/')
 def board_b(board_name):
