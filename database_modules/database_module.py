@@ -11,6 +11,14 @@ def load_boards():
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
 
+def load_accounts():
+    try:
+        with open('./database/accounts.json','r') as accs:
+            accounts = json.load(accs)
+            return accounts
+    except:
+        print('Ocorreu um erro ao carregar a base de dados.')
+
 def load_db():
     try:
         with open('./database/database.json','r') as db:
@@ -35,6 +43,10 @@ def load_users():
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
 
+def save_new_user(user):
+    with open('./database/accounts.json', 'w') as f:
+        json.dump(user, f, indent=4)
+
 def save_new_post(post):
     with open('./database/database.json', 'w') as f:
         json.dump(post, f, indent=4)
@@ -42,6 +54,54 @@ def save_new_post(post):
 def save_new_reply(reply):
     with open('./database/replys.json', 'w') as f:
         json.dump(reply, f, indent=4)
+
+def save_new_board(board):
+    with open('./database/boards.json', 'w') as f:
+        json.dump(board, f, indent=4)
+
+def login_user(username,password):
+    users = load_accounts()
+    try:
+        for user in users:
+            if user.get('username') == username:
+                if user.get('password') == password:
+                    return True
+                return False
+    except:
+        return False
+
+def register_user(username,password):
+    users = load_accounts()
+    for user in users:
+        if user.get('username') == username:
+            return False
+            break
+    new_user = {"username": username, "password": password, "role": ""}
+    users.append(new_user)
+    save_new_user(users)
+    return True
+
+def get_user_role(username):
+    users = load_accounts()
+    try:
+        for user in users:
+            if user.get('username') == username:
+                role = user.get('role')
+                return role
+    except:
+        return False
+
+def get_user_boards(username):
+    boards = load_boards()
+    user_boards = []
+    try:
+        for board in boards:
+            if 'board_owner' in board:
+                if board.get('board_owner') == username:
+                    user_boards.append(board.get('board_name'))
+        return user_boards
+    except:
+        return False
 
 def check_timeout_user(user_ip):
     users = load_users()
@@ -119,6 +179,18 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
         posts.remove(post_to_move)
         posts.append(post_to_move)
         save_new_post(posts)
+
+def add_new_board(board_uri, board_name, board_description, username):
+    boards = load_boards()
+    new_board = {
+        "board_owner": username,
+        "board_uri": board_uri,
+        "board_name": board_name,
+        "board_desc": board_description
+    }
+    boards.append(new_board)
+    save_new_board(boards)
+    return True
 
 if __name__ == '__main__':
     print('dont open this file alone.')
