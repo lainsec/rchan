@@ -72,6 +72,8 @@ def login_user(username,password):
 
 def register_user(username,password):
     users = load_accounts()
+    if len(username) <= 3:
+        return False
     for user in users:
         if user.get('username') == username:
             return False
@@ -182,6 +184,12 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
 
 def add_new_board(board_uri, board_name, board_description, username):
     boards = load_boards()
+    if len(board_uri) <= 3:
+        return False
+    if len(board_name) <= 3:
+        return False
+    if len(board_description) <= 3:
+        return False
     new_board = {
         "board_owner": username,
         "board_uri": board_uri,
