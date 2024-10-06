@@ -168,6 +168,10 @@
     font-size: 10px;
     color: var(--cor-texto);
   }
+
+  .container{
+    width: 100%;
+  }
   
   .navbar {
     display: flex;
@@ -188,7 +192,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 95%;
+    width: 100%;
   }
   
   .logo {
@@ -213,6 +217,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1.3em;
+    padding: 1em;
   }
   
   .board-links li {
@@ -234,6 +239,31 @@
   
   .board-link {
     list-style: none;
+  }
+
+  .nav-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.3em;
+    padding: 1em;
+  }
+  
+  .nav-options li {
+    list-style: none;
+  }
+  
+  .nav-options li a {
+    text-decoration: none;
+    font-family: "Spline Sans Mono", monospace !important;
+    font-size: 11pt !important;
+    color: var(--cor-secundaria);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .nav-options a:hover {
+    filter: drop-shadow(1px 1px 6px var(--cor-texto));
   }
   
   .page-content {
@@ -806,6 +836,20 @@
     color: var(--cor-secundaria);
   }
   
+  .text-center{
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  .text-center a{
+    color: var(--cor-secundaria);
+  }
+
+  .dashboard-section-header{
+    font-size: 17px;
+    color: var(--cor-terciaria);
+  }
+
   @media (max-width: 600px) {
     .waring-container {
       width: 20em;
@@ -856,6 +900,9 @@
     }
     #draggableForm {
       position: relative;
+    }
+    .sobre-content p {
+      font-size: 14px;
     }
   }
   
