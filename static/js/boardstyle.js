@@ -14,14 +14,15 @@ themeSelector.addEventListener('change', function() {
     if (selectedStyle) {
         sessionStorage.setItem('selectedTheme', selectedStyle);
 
-        const existingLink = document.querySelector('link[rel="stylesheet"]');
-        if (existingLink) {
-            document.head.removeChild(existingLink);
+        const existingThemeLink = document.querySelector('link.theme');
+        if (existingThemeLink) {
+            document.head.removeChild(existingThemeLink);
         }
 
         const newLink = document.createElement('link');
         newLink.rel = 'stylesheet';
         newLink.href = selectedStyle;
+        newLink.className = 'theme'; 
         document.head.appendChild(newLink);
     }
 });
