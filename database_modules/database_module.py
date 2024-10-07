@@ -188,14 +188,37 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
         posts.append(post_to_move)
         save_new_post(posts)
 
+def remove_post(post_id):
+    posts = load_db()
+    replies = load_replies()
+    for post in posts:
+        if post.get('post_id') == post_id:
+            posts.remove(post)
+            save_new_post(posts)
+            for reply in replies:
+                if reply.get('post_id') == post_id:
+                    replies.remove(reply)
+            save_new_reply(replies)
+            return True
+            break
+
+def remove_reply(reply_id):
+    replies = load_replies()
+    for reply in replies:
+        if reply.get('reply_id') == reply_id:
+            replies.remove(reply)
+            save_new_reply(replies)
+            return True
+            break
+
 def add_new_board(board_uri, board_name, board_description, username):
     boards = load_boards()
     for board in boards:
         if board.get('uri') == board_uri or board.get('board_name') == board_name:
             return False
-    if len(board_uri) <= 3:
+    if len(board_uri) < 1:
         return False
-    if len(board_name) <= 3:
+    if len(board_name) < 1:
         return False
     if len(board_description) <= 3:
         return False
