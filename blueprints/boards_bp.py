@@ -45,6 +45,21 @@ def board_b(board_uri):
     replies = database_module.load_replies()
     return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
 
+@boards_bp.route('/<board_uri>/manage')
+def board_mod(board_uri):
+    if 'username' in session:
+        board_info = database_module.get_board_info(board_uri)
+        if session["role"] == 'mod' or session["username"] == board_info.get('board_owner'):
+            if not database_module.check_board(board_uri):
+                return redirect(request.referrer)
+            posts = database_module.load_db()
+            post_mode = "normal_thread"
+            replies = database_module.load_replies()
+            return render_template('mod_board.html', posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
+        else:
+            return redirect(request.referrer)
+    return redirect(request.referrer)
+
 @boards_bp.route('/<board_name>/thread/<thread_id>')
 def replies(board_name, thread_id):
     board_id = board_name
