@@ -1,0 +1,48 @@
+<div class="posts" id="posts_board">
+    {% for post in posts %}
+    {% if post.board == board_id %}
+    <div class="divisoria"></div>
+    <div class="post">
+        <div class="post_image">
+            {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image  %}
+            <video controls draggable="false" class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+            {% endif %}
+            <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+        </div>
+        <div class="post_content">
+            <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] }}...<a style="color: #6d98ba;" href="/{{ board_id }}/thread/{{ post.post_id }}">Ver mais.</a>{% else %}{{ post.post_content }}{% endif %}</pre>
+        </div>
+        <div class="postInfo">
+            <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
+            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user }}{% endif %}</span></span>
+            <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
+                <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [Respostas]</a><form action="/delete_post/{{ post.post_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form>
+        </div>
+    </div>
+    <div class="replies">
+        {% for reply in replies %}
+        {% if reply.post_id == post.post_id %}
+        <div class="reply">
+            <div class="reply-postInfo">
+                <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
+                <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span></span>
+                <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" >{{ reply.reply_id }}</a><form action="/delete_reply/{{ reply.reply_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form>
+            </div>
+            {% if reply.image != '' %}
+            <div class="reply_image">
+                {% if '.mp4' in reply.image %}
+                 <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
+                {% endif %}  
+                <img draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
+            </div>
+            {% endif %}
+            <div class="reply_content">
+                <pre>{{ reply.content }}</pre>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
