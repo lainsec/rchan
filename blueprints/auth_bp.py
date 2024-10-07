@@ -55,6 +55,26 @@ def create_board():
 
     return redirect('/')
 
+@auth_bp.route('/delete_post/<post_id>', methods=['POST'])
+def delete_post(post_id):
+    board_owner = request.form['board_owner']
+    post_id = int(post_id)
+    if 'username' in session:
+        if session["role"] == 'mod' or session["username"] == board_owner:
+            if database_module.remove_post(post_id):
+                flash('postagem deletada!')
+                return redirect(request.referrer)
+
+@auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
+def delete_reply(reply_id):
+    board_owner = request.form['board_owner']
+    if 'username' in session:
+        if session["role"] == 'mod' or session["username"] == board_owner:
+            reply_id = int(reply_id)
+            if database_module.remove_reply(reply_id):
+                flash('resposta deletada!')
+                return redirect(request.referrer)
+
 @auth_bp.route('/logout')
 def logout():
     if 'username' in session:
