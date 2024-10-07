@@ -72,7 +72,7 @@ class PostHandler:
 @posts_bp.route('/new_post', methods=['POST'])
 def new_post():
     socketio = current_app.extensions['socketio']
-    user_ip = session["user_ip"]
+    user_ip = request.remote_addr
     post_mode = request.form["post_mode"]
     post_name = request.form["name"]
     board_id = request.form['board_id']
