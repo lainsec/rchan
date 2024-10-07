@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="/{{ board_id }}/">
-    <meta property="og:image" content="https://rchan.top/favicon.ico">
+    <meta property="og:image" content="https://81chan.fun/favicon.ico">
     <meta property="og:description" content="rchan, seu imageboard favorito.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -17,6 +17,7 @@
         <div class="chan-banner">
             <img class="banner board_banner" draggable="false" src="../static/imgs/banners/{{ board_id }}.jpg">
         </div>
+        <h1 class="board-title">/{{ board_info.board_uri }}/ - {{ board_info.board_name }}</h1>
         {% include 'utils/threadform.html' %}
         {% include 'utils/board-options-container.html' %}
         {% include 'utils/board_posts.html' %}
