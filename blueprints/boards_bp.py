@@ -35,14 +35,15 @@ def create():
     else:
         return redirect('/conta')
 
-@boards_bp.route('/<board_name>/')
-def board_b(board_name):
-    if not database_module.check_board(board_name):
+@boards_bp.route('/<board_uri>/')
+def board_b(board_uri):
+    if not database_module.check_board(board_uri):
         return redirect(request.referrer)
     posts = database_module.load_db()
+    board_info = database_module.get_board_info(board_uri)
     post_mode = "normal_thread"
     replies = database_module.load_replies()
-    return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_name, post_mode=post_mode)
+    return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
 
 @boards_bp.route('/<board_name>/thread/<thread_id>')
 def replies(board_name, thread_id):
