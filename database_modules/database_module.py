@@ -105,6 +105,12 @@ def get_user_boards(username):
     except:
         return False
 
+def get_board_info(board_uri):
+    boards = load_boards()
+    for board in boards:
+        if board.get('board_uri') == board_uri:
+            return board
+
 def check_timeout_user(user_ip):
     users = load_users()
     for user in users:
@@ -123,10 +129,10 @@ def check_post_exist(reply_to):
         return True
     return False
 
-def check_board(board_name):
+def check_board(board_uri):
     boards = load_boards()
     for board in boards:
-        if board.get('board_name') == board_name:
+        if board.get('board_uri') == board_uri:
             return True
             break
     return False
