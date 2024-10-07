@@ -11,7 +11,7 @@
             {% for board in boards %}
             <tbody>
                 <tr>
-                    <td><a class="board_link" href="/{{ board.get('board_name') }}">/{{ board.get('board_name') }}/</a></td>
+                    <td><a class="board_link" href="/{{ board.get('board_uri') }}">/{{ board.get('board_uri') }}/</a></td>
                     <td>{{ board.get('board_desc') }}</td>
                     <td>
                         {% set post_count = namespace(value=0) %}
