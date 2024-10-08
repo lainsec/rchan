@@ -1,6 +1,15 @@
 <div class="boards-container">
     <div class="tabuas">
         <table class="boards-table">
+            {% set post_counts = {} %}
+            {% for post in all_posts %}
+                {% set board_uri = post.get('board') %}
+                {% if board_uri in post_counts %}
+                    {% set post_counts = post_counts.update({board_uri: post_counts[board_uri] + 1}) %}
+                {% else %}
+                    {% set post_counts = post_counts.update({board_uri: 1}) %}
+                {% endif %}
+            {% endfor %}
             <thead>
                 <tr>
                     <th>Board</th>
@@ -13,15 +22,7 @@
                 <tr>
                     <td><a class="board_link" href="/{{ board.get('board_uri') }}">/{{ board.get('board_uri') }}/</a></td>
                     <td>{{ board.get('board_desc') }}</td>
-                    <td>
-                        {% set post_count = namespace(value=0) %}
-                        {% for post in all_posts %}
-                        {% if post.get('board') == board.get('board_name') %}
-                        {% set post_count.value = post_count.value + 1 %}
-                        {% endif %}
-                        {% endfor %}
-                        {{ post_count.value }}
-                    </td>
+                    <td>{{ post_counts.get(board.get('board_uri'), 0) }}</td>
                 </tr>
             </tbody>
             {% endfor %}
