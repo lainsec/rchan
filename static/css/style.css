@@ -524,6 +524,12 @@
     position: relative;
     flex: 0 0 auto;
   }
+
+  .post_content_container{
+    display: flex;
+    width: 100%;
+    padding: 1em 0em;
+  }
   
   .post_content {
     font-family: "Spline Sans Mono", monospace !important;
@@ -532,12 +538,10 @@
     color: var(--cor-terciaria);
     margin-left: 2em;
     margin-right: 2em;
-    margin-top: 3em;
-    margin-bottom: 3em;
     overflow-wrap: anywhere;
     flex: 1;
     z-index: 1;
-  }
+}
   
   .post_content pre {
     font-family: inherit;
@@ -548,12 +552,11 @@
   .post_image {
     max-width: fit-content;
     max-height: fit-content;
-    margin-top: 3em;
     margin-bottom: 1em;
     margin-left: 10px;
     cursor: pointer;
     flex: 1;
-  }
+}
   
   .post_image img {
     max-width: 200px;
@@ -561,23 +564,24 @@
   }
   
   .postInfo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     color: var(--cor-texto);
-    margin-top: 0.5em;
-    position: absolute;
     margin-left: 10px;
     left: 0;
-    width: 40em;
-    height: 2px;
+    width: 100%;
     font-size: 14px;
-  }
+}
   
   .reply-postInfo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     color: var(--cor-texto);
-    margin-top: 0.5em;
-    position: absolute;
-    margin-left: 10px;
-    width: 40em;
-    height: 10px;
+    padding: 0em 0.5em 0em;
+    left: 0;
+    width: 100%;
     font-size: 14px;
   }
   
@@ -624,6 +628,7 @@
     flex-wrap: wrap;
     max-width: 100%;
     min-width: 30em;
+    padding: 0.4em 0em;
     width: fit-content;
     flex: 0 0 auto;
     color: var(--cor-texto);
@@ -641,11 +646,9 @@
   }
   
   .reply_content {
-    margin-left: 2em;
-    margin-top: 3em;
     flex: 1;
     margin-bottom: 2em;
-    padding: 0em 0.8em;
+    padding: 1em 2em 0em;
     max-width: fit-content;
     font-family: "Spline Sans Mono", monospace !important;
     font-size: 10pt !important;
@@ -866,11 +869,8 @@
       max-width: 100%;
       width: 100%;
     }
-    .post_image {
-      margin-top: 4em;
-    }
-    .post_content {
-      margin-top: 4em;
+    .post_content_container{
+      flex-direction: column;
     }
     .replies {
       width: 100%;
@@ -879,6 +879,14 @@
       width: 100%;
       min-width: 100%;
     }
+    .post_image{
+      max-width: 100%;
+      max-height: fit-content;
+      margin-left: 0;
+    }
+    .post_image img {
+      max-width: 100%;
+  }
     .reply_img {
       max-width: 100px;
     }
@@ -888,13 +896,6 @@
     }
     .last-posts-container {
       max-width: 100%;
-    }
-    .postInfo {
-      width: auto;
-      height: 2px;
-    }
-    .reply-postInfo {
-      width: auto;
     }
     .boards-container {
       max-width: 100%;
