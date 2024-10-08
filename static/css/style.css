@@ -288,7 +288,7 @@
   .post_video {
     user-select: none;
     width: 100%;
-    height: 400px;
+    height: 240px;
     object-fit: fill;
   }
   
@@ -887,7 +887,10 @@
     }
     .post_image img {
       max-width: 100%;
-  }
+    }
+    .post_video {
+      height: 400px;
+    }
     .reply_img {
       max-width: 100px;
     }
