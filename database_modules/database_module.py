@@ -153,9 +153,13 @@ def add_new_post(user_ip,board_id, post_name, comment, embed, file):
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     agora = datetime.datetime.now(fuso_horario_brasilia)
     formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
+    max_post_id = max((post['post_id'] for post in posts), default=0)
+    max_reply_id = max((reply['reply_id'] for reply in replies), default=0)
+    maior_id = max(max_post_id, max_reply_id)
+    new_post_id = maior_id + 1
     new_post = {
         "user_ip": user_ip,
-        "post_id": len(posts) + len(replies) + 1,
+        "post_id": new_post_id,
         "post_user": post_name,
         "post_date": str(formatado),
         "board": board_id,
@@ -171,6 +175,10 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
     fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
     agora = datetime.datetime.now(fuso_horario_brasilia)
     formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
+    max_post_id = max((post['post_id'] for post in posts), default=0)
+    max_reply_id = max((reply['reply_id'] for reply in replies), default=0)
+    maior_id = max(max_post_id, max_reply_id)
+    new_post_id = maior_id + 1
     new_reply = {
         "user_ip": user_ip,
         "reply_id": len(posts) + len(replies) + 1,
