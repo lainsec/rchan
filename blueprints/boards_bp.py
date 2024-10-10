@@ -50,10 +50,14 @@ def board_b(board_uri):
 def board_banners(board_uri):
     if not database_module.check_board(board_uri):
         return redirect(request.referrer)
+    if "username" in session:
+        username = session['username']
+    else:
+        username = 'anon'
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
     banners = database_module.get_all_banners(board_uri)
-    return render_template('board_banners.html',board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info)
+    return render_template('board_banners.html',username=username,board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info)
 
 @boards_bp.route('/<board_uri>/manage')
 def board_mod(board_uri):
@@ -63,9 +67,10 @@ def board_mod(board_uri):
             if not database_module.check_board(board_uri):
                 return redirect(request.referrer)
             posts = database_module.load_db()
+            board_banner = database_module.get_board_banner(board_uri)
             post_mode = "normal_thread"
             replies = database_module.load_replies()
-            return render_template('mod_board.html', posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
+            return render_template('mod_board.html', board_banner=board_banner,posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
         else:
             return redirect(request.referrer)
     return redirect(request.referrer)
