@@ -2,6 +2,7 @@ import json
 import random
 import datetime
 import pytz
+import os
 
 def load_boards():
     try:
@@ -78,7 +79,10 @@ def register_user(username,password):
         if user.get('username') == username:
             return False
             break
-    new_user = {"username": username, "password": password, "role": ""}
+    if len(users) == 0:
+        new_user = {"username": username, "password": password, "role": "mod"}
+    else:
+        new_user = {"username": username, "password": password, "role": ""}
     users.append(new_user)
     save_new_user(users)
     return True
@@ -110,6 +114,22 @@ def get_board_info(board_uri):
     for board in boards:
         if board.get('board_uri') == board_uri:
             return board
+
+def get_board_banner(board_uri):
+    banner_folder = os.path.join('./static/imgs/banners', board_uri)
+    if not os.path.exists(banner_folder):
+        return None  
+    try:
+        images = [f for f in os.listdir(banner_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    except Exception as e:
+        print(f"Erro ao listar imagens: {e}")
+        return None 
+    if not images:
+        return '/static/imgs/banners/default.jpg'
+
+    selected_image = random.choice(images)
+    
+    return f'/static/imgs/banners/{board_uri}/{selected_image}'
 
 def check_timeout_user(user_ip):
     users = load_users()
@@ -219,6 +239,10 @@ def remove_reply(reply_id):
             return True
             break
 
+def create_banner_folder(board_uri):
+    board_folder = os.path.join('./static/imgs/banners/', board_uri)
+    os.makedirs(board_folder, exist_ok=True)
+
 def add_new_board(board_uri, board_name, board_description, username):
     boards = load_boards()
     for board in boards:
@@ -238,6 +262,7 @@ def add_new_board(board_uri, board_name, board_description, username):
     }
     boards.append(new_board)
     save_new_board(boards)
+    create_banner_folder(board_uri)
     return True
 
 if __name__ == '__main__':
