@@ -18,13 +18,21 @@ body {
     --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
 }
 
-
-.last-posts {
+.sobre {
     display: flex;
     width: 100%;
     flex-direction: column;
-    background-color: #b7c9a1;
+    background-color: #ffff;
     border: 1px solid var(--cor-primaria);
+}
+
+.boards-table tbody {
+    background-color: #fff;
+    color: #000;
+}
+
+.boards-table tbody:nth-child(odd) {
+    background-color: #fff;
 }
 
 #togglePostFormLink {
