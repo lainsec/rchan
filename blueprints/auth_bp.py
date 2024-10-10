@@ -5,6 +5,10 @@ import os
 
 auth_bp = Blueprint('auth', __name__)
 
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @auth_bp.before_request
 def before_request():
     return config_module.check_banned_user()
@@ -41,6 +45,8 @@ def register():
 
     return render_template('login.html')
 
+    adicionar_banner
+
 @auth_bp.route('/create_board', methods=['POST'])
 def create_board():
     if request.method == 'POST':
@@ -54,6 +60,21 @@ def create_board():
             flash('ocorreu um erro ai, fdp!')
 
     return redirect('/')
+
+@auth_bp.route('/upload_banner', methods=['POST'])
+def upload_banner():
+    if 'imageUpload' not in request.files:
+        return redirect(request.referrer)
+    file = request.files['imageUpload']
+    if file.filename == '':
+        return redirect(request.referrer)
+    if file and allowed_file(file.filename):
+        board_uri = request.form['board_uri']
+        directory = os.path.join(f'./static/imgs/banners/{board_uri}')
+        os.makedirs(directory, exist_ok=True)  
+        file.save(os.path.join(directory, file.filename))
+        return redirect(request.referrer)
+    return redirect(request.referrer)
 
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
 def delete_post(post_id):
