@@ -882,11 +882,14 @@
     }
     .post_image{
       max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       max-height: fit-content;
-      margin-left: 0;
     }
     .post_image img {
-      max-width: 100%;
+      max-width: 228px;
+      max-height: none;
     }
     .post_video {
       height: 400px;
