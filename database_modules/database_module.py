@@ -181,7 +181,7 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
     new_post_id = maior_id + 1
     new_reply = {
         "user_ip": user_ip,
-        "reply_id": len(posts) + len(replies) + 1,
+        "reply_id": new_post_id,
         "post_id": int(reply_to),
         "post_user": post_name,
         "post_date": str(formatado),
