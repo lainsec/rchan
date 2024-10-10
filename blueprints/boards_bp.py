@@ -41,9 +41,10 @@ def board_b(board_uri):
         return redirect(request.referrer)
     posts = database_module.load_db()
     board_info = database_module.get_board_info(board_uri)
+    board_banner = database_module.get_board_banner(board_uri)
     post_mode = "normal_thread"
     replies = database_module.load_replies()
-    return render_template('board.html', posts=reversed(posts),replies=replies,board_id=board_uri,board_info=board_info, post_mode=post_mode)
+    return render_template('board.html', posts=reversed(posts),replies=replies,board_banner=board_banner,board_id=board_uri,board_info=board_info, post_mode=post_mode)
 
 @boards_bp.route('/<board_uri>/manage')
 def board_mod(board_uri):
