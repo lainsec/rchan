@@ -126,10 +126,19 @@ def get_board_banner(board_uri):
         return None 
     if not images:
         return '/static/imgs/banners/default.jpg'
-
     selected_image = random.choice(images)
-    
     return f'/static/imgs/banners/{board_uri}/{selected_image}'
+
+def get_all_banners(board_uri):
+    banner_folder = os.path.join('./static/imgs/banners', board_uri)
+    if not os.path.exists(banner_folder):
+        return []
+    try:
+        banners = [f for f in os.listdir(banner_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    except Exception as e:
+        print("Erro ao listar banners")
+        return [] 
+    return [os.path.join('/static/imgs/banners', board_uri, banner) for banner in banners]
 
 def check_timeout_user(user_ip):
     users = load_users()
