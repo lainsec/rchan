@@ -64,54 +64,61 @@ body {
 }
 
 @media (max-width: 600px) {
-  .waring-container {
-    width: 20em;
+    .waring-container {
+      width: 20em;
+    }
+    .waring-header h1 {
+      font-size: 14px;
+    }
+    .waring-content {
+      font-size: 10px;
+    }
+    .post {
+      max-width: 100%;
+      width: 100%;
+    }
+    .post_content_container{
+      flex-direction: column;
+    }
+    .replies {
+      width: 100%;
+    }
+    .reply {
+      width: 100%;
+      min-width: 100%;
+    }
+    .post_image{
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: fit-content;
+    }
+    .post_image img {
+      max-width: 228px;
+      max-height: none;
+    }
+    .post_video {
+      height: 400px;
+    }
+    .reply_img {
+      max-width: 100px;
+    }
+    .sobre-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    .last-posts-container {
+      max-width: 100%;
+    }
+    .boards-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    #draggableForm {
+      position: relative;
+    }
+    .sobre-content p {
+      font-size: 14px;
+    }
   }
-  .waring-header h1 {
-    font-size: 14px;
-  }
-  .waring-content {
-    font-size: 10px;
-  }
-  .post {
-    max-width: 100%;
-    width: 100%;
-  }
-  .post_content_container{
-    flex-direction: column;
-  }
-  .replies {
-    width: 100%;
-  }
-  .reply {
-    width: 100%;
-    min-width: 100%;
-  }
-  .post_image{
-    max-width: 100%;
-    max-height: fit-content;
-  }
-  .post_image img {
-    max-width: 100%;
-}
-  .reply_img {
-    max-width: 100px;
-  }
-  .sobre-container {
-    max-width: 100%;
-    width: 100%;
-  }
-  .last-posts-container {
-    max-width: 100%;
-  }
-  .boards-container {
-    max-width: 100%;
-    width: 100%;
-  }
-  #draggableForm {
-    position: relative;
-  }
-  .sobre-content p {
-    font-size: 14px;
-  }
-}
