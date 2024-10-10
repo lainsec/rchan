@@ -16,7 +16,7 @@
     {% include 'utils/navbar.html' %}
     <div class="page-content">
         <div class="chan-banner">
-            <img class="banner board_banner" draggable="false" src="../static/imgs/banners/{{ board_id }}.jpg">
+            <img class="banner board_banner" draggable="false" src="{{ board_banner }}">
         </div>
         <h1 class="board-title">Mod(/{{ board_info.board_uri }}/)</h1>
         {% include 'utils/threadform.html' %}
