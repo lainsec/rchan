@@ -211,6 +211,25 @@
   .boards {
     margin-right: 2em;
   }
+
+  .board_banners_container{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1em;
+    padding: 1em 0em 0em;
+    flex-wrap: wrap;
+  }
+
+  .board_banners_container p{
+    color: var(--cor-terciaria);
+  }
+
+  .all_banners{
+    width: 302px;
+    height: 102px;
+  }
   
   .board-links {
     display: flex;
