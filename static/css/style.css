@@ -892,7 +892,7 @@
       max-height: none;
     }
     .post_video {
-      height: 400px;
+      height: fit-content;
     }
     .reply_img {
       max-width: 100px;
