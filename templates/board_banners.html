@@ -14,27 +14,12 @@
 <body>
     {% include 'utils/navbar.html' %}
     <div class="page-content">
-        <div class="chan-banner">
-            <img class="banner board_banner" draggable="false" src="{{ board_banner }}">
-        </div>
-        <h1 class="board-title">banners(/{{ board_info.board_uri }}/)</h1>
-        {% include 'utils/board-options-container.html' %}
-        <div class="divisoria"></div>
-        <div class="board_banners_container">
-            {% if banners | length == 0 %}
-                <p>Tábua sem banners</p>
-            {% endif %}
-            {% for banner in banners %}
-                <div class="chan_banner">
-                    <img src="{{ banner }}" class="board_banner all_banners">
-                </div>
-            {% endfor %}
-        </div>
-        <div class="divisoria"></div>
+        {% include 'utils/board_banner_content.html' %}
     </div>
     <div id="reinrun"></div>
     {% include 'utils/footer.html' %}
     <script src="/static/js/boardstyle.js"></script>
+    <script src="/static/js/banner_submit.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 </html>
