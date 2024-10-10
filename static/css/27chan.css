@@ -26,6 +26,10 @@ body {
     border: 1px solid var(--cor-primaria);
 }
 
+.last-posts-container{
+    display: none;
+}
+
 .boards-table tbody {
     background-color: #fff;
     color: #000;
