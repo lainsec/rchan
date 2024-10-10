@@ -1,0 +1,23 @@
+<div class="chan-banner">
+    <img class="banner board_banner" draggable="false" src="{{ board_banner }}">
+</div>
+<h1 class="board-title">banners(/{{ board_info.board_uri }}/)</h1>
+{% include 'utils/board-options-container.html' %}
+<div class="divisoria"></div>
+<div class="board_banners_container">
+    {% if banners | length == 0 %}
+        <p>Tábua sem banners</p>
+    {% endif %}
+    {% for banner in banners %}
+        <div class="chan_banner">
+            <img src="{{ banner }}" class="board_banner all_banners">
+        </div>
+    {% endfor %}
+    {% if username == board_info.board_owner %}
+    <form id="bannerForm" action="/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
+        <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
+        <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
+    </form>
+    {% endif %}
+</div>
+<div class="divisoria"></div>
