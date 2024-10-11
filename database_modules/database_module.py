@@ -104,7 +104,7 @@ def get_user_boards(username):
         for board in boards:
             if 'board_owner' in board:
                 if board.get('board_owner') == username:
-                    user_boards.append(board.get('board_name'))
+                    user_boards.append(board)
         return user_boards
     except:
         return False
