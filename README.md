@@ -15,6 +15,7 @@ python3 app.py
 The first account will automatically recive MOD permissions.
 </pre>
 # Features
+- Free creation of boards for all users.
 - Realtime posts with websocket.
 - Responsive style for mobile.
 - Infinity scroll boards.
