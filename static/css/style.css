@@ -646,7 +646,7 @@
   .reply {
     display: flex;
     flex-wrap: wrap;
-    max-width: 100%;
+    max-width: 40em%;
     min-width: 30em;
     padding: 0.4em 0em;
     width: fit-content;
@@ -668,7 +668,7 @@
   .reply_content {
     flex: 1;
     margin-bottom: 2em;
-    padding: 1em 2em 0em;
+    padding: 0em 2em 0em;
     max-width: fit-content;
     font-family: "Spline Sans Mono", monospace !important;
     font-size: 10pt !important;
