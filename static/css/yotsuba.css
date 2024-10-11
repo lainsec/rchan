@@ -1,0 +1,209 @@
+:root {
+    --cor-primaria: #117743;
+    --cor-secundaria: #af0a0f;
+    --cor-terciaria: #af0a0f;
+    --cor-fundo: #141414;
+    --cor-fundo-claro: #f0e0d6;
+    --cor-texto: #000;
+    --cor-texto-claro: #f4c095;
+    --cor-borda: #d2738a;
+    --cor-borda-claro: #789359;
+    --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
+}
+
+.verde{
+    color: #789922;
+}
+
+.vermelho-reply{
+    color: #000080;
+}
+
+body {
+    font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    background: linear-gradient(#fed6af90 3em, #ffe 230px);
+    min-height: 100vh;
+}
+
+.divisoria {
+    border-top: 0.5px solid #d9bfb7;
+}
+
+.board-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cor-fundo-claro);
+    padding: 0em 1em;
+    max-height: 2.3em;
+    border-style: solid;
+    border-color: #d9bfb7;
+    border-width: 0 1px 1px 0;
+}
+
+.reply_content {
+    flex: 1;
+    padding: 0em 2em 0em;
+    margin-bottom: 0;
+    max-width: fit-content;
+    font-family: "Spline Sans Mono", monospace !important;
+    font-size: 10pt !important;
+    color: var(--cor-terciaria);
+    overflow-wrap: anywhere;
+    z-index: 1;
+}
+
+.reply_img {
+    max-width: 300px;
+    max-height: 500px;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 10px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.reply {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 40em;
+    min-width: 30em;
+    padding: 0.4em 0em;
+    width: fit-content;
+    flex: 0 0 auto;
+    color: var(--cor-texto);
+    background-color: var(--cor-fundo-claro);
+    border-style: solid;
+    border-color: #d9bfb7;
+    border-width: 0 1px 1px 0;
+    margin-top: 3em;
+    height: fit-content;
+    margin-top: 1em;
+    align-items: flex-start;
+    justify-content: flex-start;
+    animation: fadeInDown 0.5s ease forwards;
+    box-sizing: border-box;
+}
+
+#togglePostFormLink {
+    font-size: 11px;
+    font-weight: 400;
+    background-color: var(--cor-fundo-claro);
+    border-style: solid;
+    border-color: #d9bfb7;
+    border-width: 0 1px 1px 0;
+    width: 9em;
+    height: 3.3em;
+    text-align: center;
+    margin-top: 3em;
+    color: var(--cor-secundaria);
+    display: block;
+}
+
+.sobre-header {
+    display: flex;
+    font-size: 10px;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background-color: var(--cor-terciaria);
+    max-height: 2.5em;
+}
+
+.sobre {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    background-color: #fff;
+    border: 1px solid #000;
+}
+
+.last-posts-container {
+    display: none;
+}
+
+.boards-container {
+    margin-top: 1em;
+    border: 1px solid #000;
+    background-color: #00000088;
+    border-width: 1px;
+    max-width: 74%;
+    width: 800px;
+}
+
+.boards-table thead {
+    background-color: var(--cor-fundo-claro);
+    color: var(--cor-secundaria);
+}
+
+.boards-table tbody:nth-child(odd) {
+    background-color: #fff;
+}
+
+.boards-table tbody {
+    background-color: #fff;
+    color: var(--cor-secundaria);
+    font-size: 15px;
+    height: 2em;
+}
+
+@media (max-width: 600px) {
+    .waring-container {
+      width: 20em;
+    }
+    .waring-header h1 {
+      font-size: 14px;
+    }
+    .waring-content {
+      font-size: 10px;
+    }
+    .post {
+      max-width: 100%;
+      width: 100%;
+    }
+    .post_content_container{
+      flex-direction: column;
+    }
+    .replies {
+      width: 100%;
+    }
+    .reply {
+      width: 100%;
+      min-width: 100%;
+    }
+    .post_image{
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: fit-content;
+    }
+    .post_image img {
+      max-width: 228px;
+      max-height: none;
+    }
+    .post_video {
+      height: fit-content;
+    }
+    .reply_img {
+      max-width: 100px;
+    }
+    .sobre-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    .last-posts-container {
+      max-width: 100%;
+    }
+    .boards-container {
+      max-width: 100%;
+      width: 100%;
+    }
+    #draggableForm {
+      position: relative;
+    }
+    .sobre-content p {
+      font-size: 14px;
+    }
+  }
