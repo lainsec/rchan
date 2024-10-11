@@ -14,7 +14,7 @@
             <li><a href="/create">criar tábua</a></li>
             {% if user_boards %}
             {% for board in user_boards %}
-            <li><a href="/{{ board }}/">/{{ board }}/</a></li>
+            <li><a href="/{{ board }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a></li>
             {% endfor %}
             {% endif %}
         </ul>
