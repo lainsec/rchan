@@ -773,7 +773,7 @@
     background-color: var(--cor-fundo-claro);
   }
 
-.boards-table td:last-child {
+.boards-table td{
     text-align: center;
 }
   
