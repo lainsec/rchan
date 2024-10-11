@@ -667,7 +667,7 @@
   
   .reply_content {
     flex: 1;
-    margin-bottom: 2em;
+    margin-bottom: 1em;
     padding: 0em 2em 0em;
     max-width: fit-content;
     font-family: "Spline Sans Mono", monospace !important;
@@ -675,7 +675,7 @@
     color: var(--cor-terciaria);
     overflow-wrap: anywhere;
     z-index: 1;
-  }
+}
   
   .reply_content pre {
     white-space: pre-wrap;
