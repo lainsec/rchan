@@ -646,7 +646,7 @@
   .reply {
     display: flex;
     flex-wrap: wrap;
-    max-width: 40em%;
+    max-width: 40em;
     min-width: 30em;
     padding: 0.4em 0em;
     width: fit-content;
