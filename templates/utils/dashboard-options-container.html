@@ -5,11 +5,7 @@
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
         <h1 class="dashboard-section-header">Escolha um tema</h1>
-        <select id="theme-selector">
-            <option value="">Selecione um tema</option>
-            <option value="/static/css/cafe-1.css">café</option>
-            <option value="/static/css/tchan.css">tchan</option>
-        </select>
+        {% include 'utils/theme-selector.html' %}
     </div>
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
