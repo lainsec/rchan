@@ -312,6 +312,8 @@ def pin_post(post_id):
                     for pin in pinned:
                         if pin.get('post_id') == post.get('post_id'):
                             pinned.remove(pin)
+                            save_new_post(posts)
+                            save_new_pinned(pinned)
                             return True
             post['visible'] = 0
             new_pinned = {
