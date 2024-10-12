@@ -3,9 +3,9 @@
         <ul>
             {% for post in posts %}
             <li class="board-option"><a href="/{{post.board}}/">[Index]</a></li>
-            {% endfor %}
-            <li class="board-option"><a href="/{{ board_info.board_uri }}/banners">[Banners]</a></li>
+            <li class="board-option"><a href="/{{ post.board }}/banners">[Banners]</a></li>
             <li class="board-option"><a href="/">[Catálogo]</a></li>
+            {% endfor %}
         </ul>
     </div>
     {% include 'utils/theme-selector.html' %}
