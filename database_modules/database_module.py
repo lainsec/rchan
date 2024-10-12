@@ -28,6 +28,14 @@ def load_db():
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
 
+def load_pinned():
+    try:
+        with open('./database/pinned.json','r') as pin:
+            database = json.load(pin)
+            return database
+    except:
+        print('Ocorreu um erro ao carregar a base de dados.')
+
 def load_replies():
     try:
         with open('./database/replys.json','r') as replies:
@@ -50,6 +58,10 @@ def save_new_user(user):
 
 def save_new_post(post):
     with open('./database/database.json', 'w') as f:
+        json.dump(post, f, indent=4)
+
+def save_new_pinned(post):
+    with open('./database/pinned.json', 'w') as f:
         json.dump(post, f, indent=4)
 
 def save_new_reply(reply):
@@ -288,6 +300,29 @@ def remove_board(board_uri, username):
         save_new_board(boards)
         return True
     return False
+
+def pin_post(post_id):
+    posts = load_db()
+    pinned = load_pinned()
+    for post in posts:
+        if post.get('post_id') == post_id:
+            post['visible'] = 0
+            new_pinned = {
+                "user_ip": post.get('user_ip'),
+                "post_id": post.get('post_id'),
+                "post_user": post.get('post_user'),
+                "post_date": post.get('post_date'),
+                "board": post.get('board'),
+                "post_content": post.get('post_content'),
+                "post_image": post.get('post_image')
+            }
+            save_new_post(posts)
+            pinned.append(new_pinned)
+            save_new_pinned(pinned)
+            return True
+    return False
+
+
 
 if __name__ == '__main__':
     print('dont open this file alone.')
