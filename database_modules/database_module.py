@@ -274,5 +274,20 @@ def add_new_board(board_uri, board_name, board_description, username):
     create_banner_folder(board_uri)
     return True
 
+def remove_board(board_uri, username):
+    board_info = get_board_info(board_uri)
+    boards = load_boards()
+    if board_info.get('board_owner') == username:
+        posts = load_db()
+        for post in posts:
+            if post.get('board') == board_uri:
+                remove_post(post.get('post_id'))
+        for board in boards:
+            if board.get('board_uri') == board_uri:
+                boards.remove(board)
+        save_new_board(boards)
+        return True
+    return False
+
 if __name__ == '__main__':
     print('dont open this file alone.')
