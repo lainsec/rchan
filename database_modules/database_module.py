@@ -99,6 +99,15 @@ def register_user(username,password):
     save_new_user(users)
     return True
 
+def get_pinned_posts(board_uri):
+    pinned = load_pinned()
+    found_pins = []
+    for pin in pinned:
+        if pinned.get('board') == board_uri:
+            found_pins.append(pin)
+            
+    return found_pins
+
 def get_user_role(username):
     users = load_accounts()
     try:
