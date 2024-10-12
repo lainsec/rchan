@@ -306,6 +306,13 @@ def pin_post(post_id):
     pinned = load_pinned()
     for post in posts:
         if post.get('post_id') == post_id:
+            if 'visible' in post:
+                if post.get('visible') == 0:
+                    post['visible'] = 1
+                    for pin in pinned:
+                        if pin.get('post_id') == post.get('post_id'):
+                            pinned.remove(pin)
+                            return True
             post['visible'] = 0
             new_pinned = {
                 "user_ip": post.get('user_ip'),
