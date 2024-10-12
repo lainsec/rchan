@@ -90,6 +90,16 @@ def upload_banner():
         return redirect(request.referrer)
     return redirect(request.referrer)
 
+@auth_bp.route('/pin_post/<post_id>', methods=['POST'])
+def pin_post(post_id):
+    board_owner = request.form['board_owner']
+    post_id = int(post_id)
+    if 'username' in session:
+        if session["role"] == 'mod' or session["username"] == board_owner:
+            if database_module.pin_post(post_id):
+                flash('postagem pinnada!')
+                return redirect(request.referrer)
+
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
 def delete_post(post_id):
     board_owner = request.form['board_owner']
