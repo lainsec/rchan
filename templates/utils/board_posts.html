@@ -1,6 +1,7 @@
 <div class="posts" id="posts_board">
     {% for post in posts %}
     {% if post.board == board_id %}
+    {% if post.visible == 1 or 'visible' not in post %}
     <div class="divisoria"></div>
     <div class="post">
         <div class="postInfo">
@@ -45,6 +46,7 @@
         {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
     {% endif %}
     {% endfor %}
 </div>
