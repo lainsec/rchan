@@ -21,7 +21,6 @@ class PostHandler:
         if database_module.check_timeout_user(self.user_ip):
             flash('você precisa esperar um pouco para postar novamente.')
             return False
-        timeout_module.timeout(self.user_ip)
         return True
 
     def check_board(self):
@@ -48,10 +47,12 @@ class PostHandler:
                 file.save(os.path.join(upload_folder, file.filename))
                 database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file.filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+                timeout_module.timeout(self.user_ip)
                 return True
         file = ""
         database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file)
         self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+        timeout_module.timeout(self.user_ip)
         return True
 
     def handle_post(self):
@@ -63,6 +64,7 @@ class PostHandler:
                 file.save(os.path.join(upload_folder, file.filename))
                 database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, file.filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+                timeout_module.timeout(self.user_ip)
                 return True
         
         if self.post_mode != 'reply':
