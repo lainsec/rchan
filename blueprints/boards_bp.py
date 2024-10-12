@@ -40,7 +40,7 @@ def board_b(board_uri):
     if not database_module.check_board(board_uri):
         return redirect(request.referrer)
     posts = database_module.load_db()
-    pinneds = database_module.load_pinned()
+    pinneds = database_module.get_pinned_posts(board_uri)
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
     post_mode = "normal_thread"
