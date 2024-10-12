@@ -103,7 +103,7 @@ def get_pinned_posts(board_uri):
     pinned = load_pinned()
     found_pins = []
     for pin in pinned:
-        if pinned.get('board') == board_uri:
+        if pin.get('board') == board_uri:
             found_pins.append(pin)
             
     return found_pins
