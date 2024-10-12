@@ -6,7 +6,7 @@ import os
 auth_bp = Blueprint('auth', __name__)
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @auth_bp.before_request
@@ -58,6 +58,20 @@ def create_board():
             return redirect(f'/{uri}')
         else:
             flash('ocorreu um erro ai, fdp!')
+
+    return redirect('/')
+
+@auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
+def remove_board(board_uri):
+    if request.method == 'POST':
+        if 'username' in session:
+            name = session["username"]
+            if database_module.remove_board(board_uri, name):
+                flash('Tábua deletada!')
+                return redirect(request.referrer)
+            else:
+                flash('Você não pode fazer isso!')
+                return redirect(request.referrer)
 
     return redirect('/')
 
