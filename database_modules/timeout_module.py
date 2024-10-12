@@ -28,6 +28,8 @@ class Timer:
         update_user_role(self.user_ip, None)
 
 def timeout(user_ip):
+    if user_ip == '127.0.0.1':
+        return False
     users = load_users()
     for user in users:
         if user.get('user_ip') == user_ip:
