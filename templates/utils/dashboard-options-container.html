@@ -14,7 +14,7 @@
             <li><a href="/create">criar tábua</a></li>
             {% if user_boards %}
             {% for board in user_boards %}
-            <li><a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a></li>
+            <li style="display: flex; gap: 10px;"><a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a> - <a href="/{{ board.board_uri }}/manage">moderar</a> - <form action="/remove_board/{{ board.board_uri }}" method="post"><button style="cursor: pointer; background-color: transparent; border: none;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form></li>
             {% endfor %}
             {% endif %}
         </ul>
