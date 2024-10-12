@@ -104,6 +104,18 @@
     color: var(--cor-terciaria);
     cursor: pointer;
   }
+
+  .detected{
+    background: #faf8f8;
+    color: #3060a8;
+    font-size: small;
+    font-weight: 300;
+  }
+
+  .red-text{
+    color: #d70000;
+    font-weight: bold;
+  }
   
   .spoiler {
     background-color: #000;
