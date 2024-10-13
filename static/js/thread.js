@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var postContents = document.querySelectorAll('pre');
     postContents.forEach(function(postContent) {
         postContent.innerHTML = postContent.innerHTML.replace(/&gt;&gt;(\d+)/g, function(match, p1) {
-            return `<span class="vermelho-reply" data-id="${p1}">&gt;&gt;${p1}</span>`;
+            return `<span class="quote-reply" data-id="${p1}">&gt;&gt;${p1}</span>`;
         });
 
         postContent.innerHTML = postContent.innerHTML.replace(/&gt;([^<&\n]+)(?!(?:<\/span>))/g, function(match, p1, offset, string) {
