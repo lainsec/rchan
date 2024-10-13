@@ -52,6 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function quotePostId(id) {
+    const newBoardForm = document.querySelector('.newboard-form');
+    const textArea = document.getElementById('text');
+
+    newBoardForm.style.display = 'block';
+
+    textArea.value = '>>' + id;
+
+    newBoardForm.scrollIntoView({ behavior: 'smooth' });
+}
+
 const textarea = document.getElementById('text');
 
 let quoteButton;
