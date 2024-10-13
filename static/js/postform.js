@@ -24,14 +24,26 @@ header.addEventListener('mousedown', function(e) {
     let shiftY = e.clientY - rect.top;
 
     function moveAt(pageX, pageY) {
-        draggableForm.style.left = pageX - shiftX + 'px';
-        draggableForm.style.top = pageY - shiftY + 'px';
+        // Calcula as novas posições
+        let newLeft = pageX - shiftX;
+        let newTop = pageY - shiftY;
+
+        // Verifica os limites da janela
+        const rightEdge = window.innerWidth - draggableForm.offsetWidth;
+        const bottomEdge = window.innerHeight - draggableForm.offsetHeight;
+
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > rightEdge) newLeft = rightEdge;
+        if (newTop > bottomEdge) newTop = bottomEdge;
+
+        draggableForm.style.left = newLeft + 'px';
+        draggableForm.style.top = newTop + 'px';
     }
 
     function onMouseMove(e) {
         if (!isDragging) {
             isDragging = true;
-            moveAt(e.pageX, e.pageY);
         }
         moveAt(e.pageX, e.pageY);
     }
