@@ -6,8 +6,20 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
     if (formDiv.style.display === 'none') {
         formDiv.style.display = 'block';
         formDiv.style.position = 'absolute'; 
-        formDiv.style.left = event.pageX + 'px'; 
-        formDiv.style.top = (event.pageY + 10) + 'px'; 
+        
+        let newLeft = event.pageX;
+        let newTop = event.pageY + 10;
+
+        const rightEdge = window.innerWidth - formDiv.offsetWidth;
+        const bottomEdge = window.innerHeight - formDiv.offsetHeight;
+
+        if (newLeft < 0) newLeft = 0;
+        if (newTop < 0) newTop = 0;
+        if (newLeft > rightEdge) newLeft = rightEdge;
+        if (newTop > bottomEdge) newTop = bottomEdge;
+
+        formDiv.style.left = newLeft + 'px'; 
+        formDiv.style.top = newTop + 'px'; 
     } else {
         formDiv.style.display = 'none'; 
     }
@@ -24,11 +36,9 @@ header.addEventListener('mousedown', function(e) {
     let shiftY = e.clientY - rect.top;
 
     function moveAt(pageX, pageY) {
-        // Calcula as novas posições
         let newLeft = pageX - shiftX;
         let newTop = pageY - shiftY;
 
-        // Verifica os limites da janela
         const rightEdge = window.innerWidth - draggableForm.offsetWidth;
         const bottomEdge = window.innerHeight - draggableForm.offsetHeight;
 
