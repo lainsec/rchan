@@ -1,21 +1,23 @@
 document.addEventListener("DOMContentLoaded", function() {
     var postContents = document.querySelectorAll('pre');
     postContents.forEach(function(postContent) {
-        postContent.innerHTML = postContent.innerHTML.replace(/&gt;([^<&\n]+)/g, '<span class="verde">&gt;$1</span>');
+        postContent.innerHTML = postContent.innerHTML.replace(/&gt;&gt;(\d+)/g, function(match, p1) {
+            return `<span class="vermelho-reply" data-id="${p1}">&gt;&gt;${p1}</span>`;
+        });
+
+        postContent.innerHTML = postContent.innerHTML.replace(/&gt;([^<&\n]+)(?!(?:<\/span>))/g, function(match, p1, offset, string) {
+            return `<span class="verde">&gt;${p1}</span>`;
+        });
+
         postContent.innerHTML = postContent.innerHTML.replace(/&lt;([^<&\n]+)/g, '<span class="vermelho">&lt;$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\(\(\(([^()]*?)\)\)\)/g, '<span class="detected">((( $1 )))</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/==([^=]+)==/g, '<span class="red-text">$1</span>');
+        postContent.innerHTML = postContent.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
+        postContent.innerHTML = postContent.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
     });
 
 });
-function substituirSpoilers() {
-    var pres = document.getElementsByTagName('pre');
-    for (var i = 0; i < pres.length; i++) {
-        var pre = pres[i];
-        pre.innerHTML = pre.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
-        pre.innerHTML = pre.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
-    }
-}
+
 const textarea = document.getElementById('text');
 
 let quoteButton;
@@ -59,6 +61,3 @@ let quoteButton;
             window.getSelection().removeAllRanges();
         }
     });
-window.onload = function() {
-    substituirSpoilers();
-};
