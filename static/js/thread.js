@@ -18,6 +18,40 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const quoteReplies = document.querySelectorAll('.quote-reply');
+
+    quoteReplies.forEach(span => {
+        span.addEventListener('click', () => {
+            const targetId = span.getAttribute('data-id');
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                document.querySelectorAll('.target').forEach(el => {
+                    el.style.filter = '';
+                });
+
+                targetElement.style.filter = 'drop-shadow(1px 1px 8px red)';
+
+                setTimeout(() => {
+                    targetElement.style.filter = '';
+                }, 2000);
+
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                const offset = 100; 
+                const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+
 const textarea = document.getElementById('text');
 
 let quoteButton;
