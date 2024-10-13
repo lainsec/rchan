@@ -63,6 +63,41 @@ function quotePostId(id) {
     newBoardForm.scrollIntoView({ behavior: 'smooth' });
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const quoteReplies = document.querySelectorAll('.quote-reply');
+    let preview;
+
+    quoteReplies.forEach(span => {
+        span.addEventListener('mouseenter', (event) => {
+            const targetId = span.getAttribute('data-id');
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                preview = targetElement.cloneNode(true);
+                preview.style.position = 'absolute';
+                preview.style.zIndex = '1000';
+                preview.style.border = '1px solid #ccc';
+                preview.style.padding = '10px';
+                preview.style.display = 'block'; 
+
+                document.body.appendChild(preview);
+
+                const updatePreviewPosition = (e) => {
+                    preview.style.left = `${e.pageX + 10}px`; 
+                    preview.style.top = `${e.pageY + 10}px`; 
+                };
+
+                document.addEventListener('mousemove', updatePreviewPosition);
+
+                span.addEventListener('mouseleave', () => {
+                    document.body.removeChild(preview);
+                    document.removeEventListener('mousemove', updatePreviewPosition);
+                });
+            }
+        });
+    });
+});
+
 const textarea = document.getElementById('text');
 
 let quoteButton;
