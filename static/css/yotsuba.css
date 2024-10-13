@@ -7,16 +7,13 @@
     --cor-texto: #000;
     --cor-texto-claro: #f4c095;
     --cor-borda: #d2738a;
+    --quote-reply: #000080;
     --cor-borda-claro: #789359;
     --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
 }
 
 .verde{
     color: #789922;
-}
-
-.vermelho-reply{
-    color: #000080;
 }
 
 body {
