@@ -7,6 +7,7 @@
     --cor-texto: #fff;
     --cor-texto-claro: #f4c095;
     --cor-borda: #d2738a;
+    --cor-quote: #ffab65;
     --cor-borda-claro: #282a2e;
     --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
   }
@@ -43,8 +44,9 @@
     color: #ff6fc3;
   }
   
-  .vermelho-reply {
-    color: #ffab65;
+  .quote-reply {
+    color: var(--cor-quote);
+    cursor: pointer;
   }
   
   .board-title {
