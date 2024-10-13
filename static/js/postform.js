@@ -1,19 +1,27 @@
 document.getElementById('togglePostFormLink').addEventListener('click', function(event) {
     event.preventDefault();
+    
     var formDiv = document.querySelector('.newboard-form');
-    formDiv.style.display = formDiv.style.display === 'none'? 'block' : 'none';
-
+    
+    if (formDiv.style.display === 'none') {
+        formDiv.style.display = 'block';
+        formDiv.style.position = 'absolute'; 
+        formDiv.style.left = event.pageX + 'px'; 
+        formDiv.style.top = (event.pageY + 10) + 'px'; 
+    } else {
+        formDiv.style.display = 'none'; 
+    }
 });
 
 const draggableForm = document.getElementById('draggableForm');
+const header = document.querySelector('.new-thread-header'); 
 draggableForm.style.position = 'absolute';
 
-draggableForm.addEventListener('mousedown', function(e) {
-    
+header.addEventListener('mousedown', function(e) {
     let isDragging = false;
     let rect = draggableForm.getBoundingClientRect();
     let shiftX = e.clientX - rect.left;
-    let shiftY = e.clientY - rect.top + window.scrollY; // Adicione window.scrollY aqui
+    let shiftY = e.clientY - rect.top;
 
     function moveAt(pageX, pageY) {
         draggableForm.style.left = pageX - shiftX + 'px';
@@ -22,7 +30,8 @@ draggableForm.addEventListener('mousedown', function(e) {
 
     function onMouseMove(e) {
         if (!isDragging) {
-            isDragging = true; 
+            isDragging = true;
+            moveAt(e.pageX, e.pageY);
         }
         moveAt(e.pageX, e.pageY);
     }
@@ -37,5 +46,8 @@ draggableForm.addEventListener('mousedown', function(e) {
     document.addEventListener('mouseup', onMouseUp);
 
     draggableForm.ondragstart = function() {
+        return false; 
     };
+
+    e.preventDefault();
 });
