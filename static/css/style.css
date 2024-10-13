@@ -675,7 +675,7 @@
     margin-top: 1em;
     align-items: flex-start;
     justify-content: flex-start;
-    animation: fadeInDown 0.5s ease forwards;
+    transition: filter 0.3s ease;
     box-sizing: border-box;
   }
   
