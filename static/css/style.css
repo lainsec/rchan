@@ -49,6 +49,11 @@
     cursor: pointer;
   }
   
+  .quote-reply span {
+    color: var(--cor-quote);
+    cursor: pointer;
+  }
+  
   .board-title {
     color: var(--cor-terciaria);
     font: bolder 28px Tahoma, sans-serif;
