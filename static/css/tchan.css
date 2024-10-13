@@ -21,6 +21,7 @@ body {
     --cor-texto: #bd758d;
     --cor-texto-claro: #f4c095;
     --cor-borda: #d2738a;
+    --cor-quote: palevioletred;
     --cor-borda-claro: rgb(26 18 21);
     --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
 }
@@ -48,10 +49,6 @@ body {
 
 .verde{
     color: #789922;
-}
-
-.vermelho-reply {
-    color: palevioletred;
 }
 
 .reply {
