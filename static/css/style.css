@@ -48,7 +48,7 @@
     color: var(--cor-quote);
     cursor: pointer;
   }
-  
+
   .quote-reply span {
     color: var(--cor-quote);
     cursor: pointer;
@@ -790,7 +790,11 @@
 
 .boards-table tbody:nth-child(odd) {
     background-color: var(--cor-fundo-claro);
-  }
+}
+
+.boards-table th{
+    width: 33.33%;
+}
 
 .boards-table td{
     text-align: center;
