@@ -6,9 +6,7 @@ boards_bp = Blueprint('boards', __name__)
 
 @boards_bp.context_processor
 def inject_lang():
-    lang = language_module.get_user_lang('en-us')
-    if 'lang' in session:
-        lang = language_module.get_user_lang(session['lang'])
+    lang = language_module.get_user_lang('default')
     return dict(lang=lang)
 
 @boards_bp.route('/')
@@ -27,7 +25,7 @@ def tabuas():
 def login():
     if 'username' in session:
         user_boards = user_boards=database_module.get_user_boards(session["username"])
-        return render_template('dashboard.html', username=session["username"],user_boards=user_boards)
+        return render_template('dashboard.html', username=session["username"],role=session["role"],user_boards=user_boards)
     return render_template('login.html')
 
 @boards_bp.route('/registrar')
