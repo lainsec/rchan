@@ -1,4 +1,4 @@
-<h2 align="left">Um imageboard lusófono totalmente escrito em python.</h2>
+<h2 align="left">Imageboard engine, full written in python.</h2>
 
 ###
 <a>How to install</a>
