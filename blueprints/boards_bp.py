@@ -1,7 +1,15 @@
 from flask import current_app, Blueprint, render_template, session, redirect, request
 from database_modules import database_module
+from database_modules import language_module
 
 boards_bp = Blueprint('boards', __name__)
+
+@boards_bp.context_processor
+def inject_lang():
+    lang = language_module.get_user_lang('en-us')
+    if 'lang' in session:
+        lang = language_module.get_user_lang(session['lang'])
+    return dict(lang=lang)
 
 @boards_bp.route('/')
 def main_page():
