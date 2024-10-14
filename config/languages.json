@@ -1,0 +1,56 @@
+{
+    "pt-br": [
+        {
+            "navbar-home": "Início",
+            "navbar-boards": "Tábuas",
+            "navbar-account": "Conta",
+            "about-container-header": "sobre",
+            "board-list-boardname": "Tábua",
+            "board-list-boarddesc": "Descrição",
+            "board-list-posts": "Fios",
+            "thread-form-button": "NOVO FIO",
+            "board-options-catalog": "Catalogo",
+            "board-options-banner": "Banners",
+            "board-options-manage": "Moderar",
+            "board-options-back": "Voltar",
+            "theme-selector": "selecione um tema",
+            "thread-reply-button": "Respostas"
+        }
+    ],
+    "eng-us": [
+        {
+            "navbar-home": "Home",
+            "navbar-boards": "Boards",
+            "navbar-account": "Account",
+            "about-container-header": "about",
+            "board-list-boardname": "Board",
+            "board-list-boarddesc": "Description",
+            "board-list-posts": "Posts",
+            "thread-form-button": "NEW THREAD",
+            "board-options-catalog": "Catalog",
+            "board-options-banner": "Banners",
+            "board-options-manage": "Manage",
+            "board-options-back": "Back",
+            "theme-selector": "select a theme",
+            "thread-reply-button": "Replies"
+        }
+    ],
+    "jp": [
+        {
+            "navbar-home": "ホーム",
+            "navbar-boards": "ボード",
+            "navbar-account": "口座",
+            "about-container-header": "およそ",
+            "board-list-boardname": "ボード",
+            "board-list-boarddesc": "叙述",
+            "board-list-posts": "投稿",
+            "thread-form-button": "投稿する",
+            "board-options-catalog": "カタログ",
+            "board-options-banner": "バナー",
+            "board-options-manage": "管理",
+            "board-options-back": "戻る",
+            "theme-selector": "テーマを変更する",
+            "thread-reply-button": "応答する"
+        }
+    ]
+}
