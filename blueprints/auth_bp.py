@@ -18,10 +18,19 @@ def before_request():
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
 
-@auth_bp.route('/change_lang', methods=['POST'])
-def change_lang():
+@auth_bp.route('/change_general_lang', methods=['POST'])
+def change_general_lang():
     new_lang = request.form.get('lang')
-    session['lang'] = new_lang
+    if 'username' in session:
+        if session['role'] == 'mod':
+            if language_module.change_general_language(new_lang):
+                flash('Language changed!')
+                return redirect(request.referrer)
+            flash('You cant do it!')
+            return redirect(request.referrer)
+        flash('You cant do it!')
+        return redirect(request.referrer)
+    flash('You cant do it!')
     return redirect(request.referrer)
 
 @auth_bp.route('/auth_user', methods=['POST'])
