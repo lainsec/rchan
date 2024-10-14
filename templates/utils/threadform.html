@@ -1,4 +1,4 @@
-<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}[NOVA REPLY]{% else %}[NOVO FIO]{% endif %}</a></div>
+<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}[NEW REPLY]{% else %}[{{ lang["thread-form-button"] }}]{% endif %}</a></div>
 
 <div class="newboard-form" id="draggableForm" style="display: none;">
     <form id="postform" action="/new_post" enctype="multipart/form-data" method="POST">
@@ -8,7 +8,7 @@
         
         <div class="new-thread-container">
             <div class="new-thread-header">
-                <h1>{% if post_mode == 'reply' %}Nova Reply{% else %}Novo Fio{% endif %}</h1>
+                <h1>{% if post_mode == 'reply' %}New Reply{% else %}{{ lang["thread-form-button"] }}{% endif %}</h1>
             </div>
             <section class="row"><div class="label" bis_skin_checked="1">Name</div><input class="mr-1" type="text" name="name" placeholder="Anon" maxlength="100"><a class="close postform-style" href="#!" bis_skin_checked="1">×</a></section>
             <section class="row"><div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject" autocomplete="off" maxlength="100"></section>
@@ -16,7 +16,7 @@
             <section class="row"><div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>
                 <small>Max 5 files</small><small>10MB total</small></div><span class="col"><label class="jsonly postform-style filelabel" for="file"> Select/Drop/Paste files</label><input id="file" type="file" name="fileInput" multiple="" style="position: absolute; border: none; height: 1px; width: 1px;"><div class="upload-list" data-spoilers="true" data-strip-filenames="true" bis_skin_checked="1"></div></span><noscript><label class="noselect postform-style ph-5 ml-1 fh"><input type="checkbox" name="spoiler_all" value="true">Spoiler</label></noscript></section>
                 <section class="row"><div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed" autocomplete="off" maxlength="100"></section>
-                <input id="submitpost" type="submit" value="Postar">
+                <input id="submitpost" type="submit" value="{{ lang["thread-form-button"] }}">
         </div>
     </form>
 </div>
