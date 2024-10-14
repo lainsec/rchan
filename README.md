@@ -19,6 +19,7 @@ python3 app.py
 - Realtime posts with websocket.
 - Responsive style for mobile.
 - Infinity scroll boards.
+- Multi language.
 - Simple anti-raid system based on user ip-addr.
 
 <a>If you get any issue please comment</a>
