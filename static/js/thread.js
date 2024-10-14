@@ -1,12 +1,17 @@
 document.addEventListener("DOMContentLoaded", function() {
     var postContents = document.querySelectorAll('pre');
     postContents.forEach(function(postContent) {
-        postContent.innerHTML = postContent.innerHTML.replace(/&gt;&gt;(\d+)/g, function(match, p1) {
-            return `<span class="quote-reply" data-id="${p1}">&gt;&gt;${p1}</span>`;
+
+        postContent.innerHTML = postContent.innerHTML.replace(/(^|>)(?![^<]*<\/span>)&gt;&gt;(\d+)/g, function(match, p1, p2) {
+            return `${p1}<span class="quote-reply" data-id="${p2}">&gt;&gt;${p2}</span>`;
         });
 
-        postContent.innerHTML = postContent.innerHTML.replace(/&gt;([^<&\n]+)(?!(?:<\/span>))/g, function(match, p1, offset, string) {
+        postContent.innerHTML = postContent.innerHTML.replace(/(?<!<span[^>]*>)&gt;([^<&\n]+)(?!(?:<\/span>))/g, function(match, p1) {
             return `<span class="verde">&gt;${p1}</span>`;
+        });
+
+        postContent.innerHTML = postContent.innerHTML.replace(/(https?:\/\/[^\s]+)/g, function(match) {
+            return `<span><a class="quote-reply" href="${match}" target="_blank">${match}</a></span>`;
         });
 
         postContent.innerHTML = postContent.innerHTML.replace(/&lt;([^<&\n]+)/g, '<span class="vermelho">&lt;$1</span>');
@@ -15,8 +20,9 @@ document.addEventListener("DOMContentLoaded", function() {
         postContent.innerHTML = postContent.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
     });
-
 });
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const quoteReplies = document.querySelectorAll('.quote-reply');
