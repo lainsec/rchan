@@ -52,5 +52,23 @@
             "theme-selector": "テーマを変更する",
             "thread-reply-button": "応答する"
         }
+    ],
+    "es": [
+        {
+            "navbar-home": "inicio",
+            "navbar-boards": "tableros",
+            "navbar-account": "Cuenta",
+            "about-container-header": "sobre",
+            "board-list-boardname": "tablero",
+            "board-list-boarddesc": "Descripción",
+            "board-list-posts": "hilos",
+            "thread-form-button": "Nuevo Hilo",
+            "board-options-catalog": "Catálogo",
+            "board-options-banner": "Pancartas",
+            "board-options-manage": "Mod view",
+            "board-options-back": "volver",
+            "theme-selector": "Selecciona un tema",
+            "thread-reply-button": "Respuestas"
+        }
     ]
 }
