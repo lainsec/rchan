@@ -1,17 +1,17 @@
 <div class="container" bis_skin_checked="1">
     <div class="board-header" bis_skin_checked="1">
-        <h1 class="board-title">Welcome, {{ username }}</h1>
+        <h1 class="board-title">{{ lang['dashboard-welcome-message'] }}, {{ username }}</h1>
     </div>
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
-        <h1 class="dashboard-section-header">Escolha um tema</h1>
+        <h1 class="dashboard-section-header">{{ lang['dashboard-choose-theme'] }}</h1>
         {% include 'utils/theme-selector.html' %}
     </div>
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
-        <h1 class="dashboard-section-header">Suas tábuas</h1>
+        <h1 class="dashboard-section-header">Your boards</h1>
         <ul>
-            <li><a href="/create">criar tábua</a></li>
+            <li><a href="/create">Create board</a></li>
             {% if user_boards %}
             {% for board in user_boards %}
             <li style="display: flex; gap: 10px;"><a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a> - <a href="/{{ board.board_uri }}/manage">moderar</a> - <form action="/remove_board/{{ board.board_uri }}" method="post"><button style="cursor: pointer; background-color: transparent; border: none;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form></li>
@@ -19,9 +19,16 @@
             {% endif %}
         </ul>
     </div>
+    {% if role == 'mod' %}
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
-        <h1 class="dashboard-section-header">Conta</h1>
+        <h1 class="dashboard-section-header">{{ lang['dashboard-website-configs'] }}</h1>
+        {% include 'utils/general-language-config.html' %}
+    </div>
+    {% endif %}
+    <div class="divisoria"></div>
+    <div class="dashboard-account-container">
+        <h1 class="dashboard-section-header">{{ lang['dashboard-account'] }}</h1>
         <form action="/logout" method="get">
             <input type="submit" value="Sair">
         </form>
