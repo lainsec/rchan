@@ -15,12 +15,12 @@ python3 app.py
 `The first account will automatically recive MOD permissions.`
 </pre>
 # Features
-- Free creation of boards for all users.
-- Realtime posts with websocket.
-- Responsive style for mobile.
-- Infinity scroll boards.
-- Multi language. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
-- Simple anti-raid system based on user ip-addr.
+- [x] Free creation of boards for all users.
+- [x] Realtime posts with websocket.
+- [x] Responsive style for mobile.
+- [x] Infinity scroll boards.
+- [x] Multi language. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
+- [x] Simple anti-raid system based on user ip-addr.
 
 <a>If you get any issue please comment</a>
 ###
