@@ -35,9 +35,9 @@ def login():
             session['role'] = database_module.get_user_role(username) 
             return redirect('/conta')
         else:
-            flash('Invalid user credentials.', 'danger')
+            flash('Credenciais inválidas. Tente novamente.', 'danger')
 
-    return render_template('login.html')
+    return redirect('/conta')
 
 @auth_bp.route('/register_user', methods=['POST'])
 def register():
@@ -50,7 +50,7 @@ def register():
         else:
             flash('cu')
 
-    return render_template('login.html')
+    return redirect('/conta')
 
 @auth_bp.route('/create_board', methods=['POST'])
 def create_board():
@@ -62,7 +62,7 @@ def create_board():
         if database_module.add_new_board(uri, name, description, session['username']):
             return redirect(f'/{uri}')
         else:
-            flash('You cant do it.')
+            flash('ocorreu um erro ai, fdp!')
 
     return redirect('/')
 
@@ -72,10 +72,10 @@ def remove_board(board_uri):
         if 'username' in session:
             name = session["username"]
             if database_module.remove_board(board_uri, name):
-                flash('Board deleted!')
+                flash('Tábua deletada!')
                 return redirect(request.referrer)
             else:
-                flash('You cant do it!')
+                flash('Você não pode fazer isso!')
                 return redirect(request.referrer)
 
     return redirect('/')
@@ -102,7 +102,7 @@ def pin_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.pin_post(post_id):
-                flash('Post pinned!')
+                flash('postagem pinnada!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
@@ -112,7 +112,7 @@ def delete_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.remove_post(post_id):
-                flash('Post deleted!')
+                flash('postagem deletada!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
@@ -122,14 +122,14 @@ def delete_reply(reply_id):
         if session["role"] == 'mod' or session["username"] == board_owner:
             reply_id = int(reply_id)
             if database_module.remove_reply(reply_id):
-                flash('Reply deleted!')
+                flash('resposta deletada!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/logout')
 def logout():
     if 'username' in session:
         session.pop('username', None)
-        flash('You have been disconnected.', 'info')
+        flash('Você foi desconectado.', 'info')
         return redirect('/')
     else:
         return redirect('/conta')
