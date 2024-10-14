@@ -2,9 +2,9 @@
     <div class="board-options">
         <ul>
             {% for post in posts %}
-            <li class="board-option"><a href="/{{post.board}}/">[Index]</a></li>
-            <li class="board-option"><a href="/{{ post.board }}/banners">[Banners]</a></li>
-            <li class="board-option"><a href="/">[Catálogo]</a></li>
+            <li class="board-option"><a href="/{{ post.board }}/">[Index]</a></li>
+            <li class="board-option"><a href="/{{ post.board }}/banners">[{{ lang["board-options-banner"] }}]</a></li>
+            <li class="board-option"><a href="/">[{{ lang["board-options-catalog"] }}]</a></li>
             {% endfor %}
         </ul>
     </div>
