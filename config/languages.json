@@ -1,12 +1,12 @@
 {
     "pt-br": [
         {
-            "navbar-home": "Início",
-            "navbar-boards": "Tábuas",
+            "navbar-home": "In\u00edcio",
+            "navbar-boards": "T\u00e1buas",
             "navbar-account": "Conta",
             "about-container-header": "sobre",
-            "board-list-boardname": "Tábua",
-            "board-list-boarddesc": "Descrição",
+            "board-list-boardname": "T\u00e1bua",
+            "board-list-boarddesc": "Descri\u00e7\u00e3o",
             "board-list-posts": "Fios",
             "thread-form-button": "NOVO FIO",
             "board-options-catalog": "Catalogo",
@@ -14,10 +14,14 @@
             "board-options-manage": "Moderar",
             "board-options-back": "Voltar",
             "theme-selector": "selecione um tema",
-            "thread-reply-button": "Respostas"
+            "thread-reply-button": "Respostas",
+            "dashboard-welcome-message": "Bem vindo",
+            "dashboard-choose-theme": "Escolha um tema",
+            "dashboard-website-configs": "Configurações do recinto",
+            "dashboard-account": "Conta"
         }
     ],
-    "eng-us": [
+    "en-us": [
         {
             "navbar-home": "Home",
             "navbar-boards": "Boards",
@@ -32,25 +36,34 @@
             "board-options-manage": "Manage",
             "board-options-back": "Back",
             "theme-selector": "select a theme",
-            "thread-reply-button": "Replies"
+            "thread-reply-button": "Replies",
+            "dashboard-welcome-message": "Welcome",
+            "dashboard-choose-theme": "Choose a theme",
+            "dashboard-website-configs": "Imageboard configs",
+            "dashboard-account": "Account"
         }
     ],
     "jp": [
         {
-            "navbar-home": "ホーム",
-            "navbar-boards": "ボード",
-            "navbar-account": "口座",
-            "about-container-header": "およそ",
-            "board-list-boardname": "ボード",
-            "board-list-boarddesc": "叙述",
-            "board-list-posts": "投稿",
-            "thread-form-button": "投稿する",
-            "board-options-catalog": "カタログ",
-            "board-options-banner": "バナー",
-            "board-options-manage": "管理",
-            "board-options-back": "戻る",
-            "theme-selector": "テーマを変更する",
-            "thread-reply-button": "応答する"
+            "navbar-home": "\u30db\u30fc\u30e0",
+            "navbar-boards": "\u30dc\u30fc\u30c9",
+            "navbar-account": "\u53e3\u5ea7",
+            "about-container-header": "\u304a\u3088\u305d",
+            "board-list-boardname": "\u30dc\u30fc\u30c9",
+            "board-list-boarddesc": "\u53d9\u8ff0",
+            "board-list-posts": "\u6295\u7a3f",
+            "thread-form-button": "\u6295\u7a3f\u3059\u308b",
+            "board-options-catalog": "\u30ab\u30bf\u30ed\u30b0",
+            "board-options-banner": "\u30d0\u30ca\u30fc",
+            "board-options-manage": "\u7ba1\u7406",
+            "board-options-back": "\u623b\u308b",
+            "theme-selector": "\u30c6\u30fc\u30de\u3092\u5909\u66f4\u3059\u308b",
+            "thread-reply-button": "\u5fdc\u7b54\u3059\u308b",
+            "dashboard-welcome-message": "ようこそ",
+            "dashboard-choose-theme": "テーマの選択",
+            "dashboard-website-configs": "イメージボード構成",
+            "dashboard-account": "\u53e3\u5ea7"
+            
         }
     ],
     "es": [
@@ -60,15 +73,41 @@
             "navbar-account": "Cuenta",
             "about-container-header": "sobre",
             "board-list-boardname": "tablero",
-            "board-list-boarddesc": "Descripción",
+            "board-list-boarddesc": "Descripci\u00f3n",
             "board-list-posts": "hilos",
             "thread-form-button": "Nuevo Hilo",
-            "board-options-catalog": "Catálogo",
+            "board-options-catalog": "Cat\u00e1logo",
             "board-options-banner": "Pancartas",
             "board-options-manage": "Mod view",
             "board-options-back": "volver",
             "theme-selector": "Selecciona un tema",
-            "thread-reply-button": "Respuestas"
+            "thread-reply-button": "Respuestas",
+            "dashboard-welcome-message": "Bienvenido",
+            "dashboard-choose-theme": "Elige un tema",
+            "dashboard-website-configs": "Configuraciones del sítio",
+            "dashboard-account": "Cuenta"
+        }
+    ],
+    "default": [
+        {
+            "navbar-home": "Home",
+            "navbar-boards": "Boards",
+            "navbar-account": "Account",
+            "about-container-header": "about",
+            "board-list-boardname": "Board",
+            "board-list-boarddesc": "Description",
+            "board-list-posts": "Posts",
+            "thread-form-button": "NEW THREAD",
+            "board-options-catalog": "Catalog",
+            "board-options-banner": "Banners",
+            "board-options-manage": "Manage",
+            "board-options-back": "Back",
+            "theme-selector": "select a theme",
+            "thread-reply-button": "Replies",
+            "dashboard-welcome-message": "Welcome",
+            "dashboard-choose-theme": "Choose a theme",
+            "dashboard-website-configs": "Imageboard configs",
+            "dashboard-account": "Account"
         }
     ]
 }
