@@ -1,5 +1,6 @@
 from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
 from database_modules import database_module
+from database_modules import language_module
 from config import config_module
 import os
 
@@ -17,6 +18,12 @@ def before_request():
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
 
+@auth_bp.route('/change_lang', methods=['POST'])
+def change_lang():
+    new_lang = request.form.get('lang')
+    session['lang'] = new_lang
+    return redirect(request.referrer)
+
 @auth_bp.route('/auth_user', methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -28,7 +35,7 @@ def login():
             session['role'] = database_module.get_user_role(username) 
             return redirect('/conta')
         else:
-            flash('Credenciais inválidas. Tente novamente.', 'danger')
+            flash('Invalid user credentials.', 'danger')
 
     return render_template('login.html')
 
@@ -45,8 +52,6 @@ def register():
 
     return render_template('login.html')
 
-    adicionar_banner
-
 @auth_bp.route('/create_board', methods=['POST'])
 def create_board():
     if request.method == 'POST':
@@ -57,7 +62,7 @@ def create_board():
         if database_module.add_new_board(uri, name, description, session['username']):
             return redirect(f'/{uri}')
         else:
-            flash('ocorreu um erro ai, fdp!')
+            flash('You cant do it.')
 
     return redirect('/')
 
@@ -67,10 +72,10 @@ def remove_board(board_uri):
         if 'username' in session:
             name = session["username"]
             if database_module.remove_board(board_uri, name):
-                flash('Tábua deletada!')
+                flash('Board deleted!')
                 return redirect(request.referrer)
             else:
-                flash('Você não pode fazer isso!')
+                flash('You cant do it!')
                 return redirect(request.referrer)
 
     return redirect('/')
@@ -97,7 +102,7 @@ def pin_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.pin_post(post_id):
-                flash('postagem pinnada!')
+                flash('Post pinned!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
@@ -107,7 +112,7 @@ def delete_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.remove_post(post_id):
-                flash('postagem deletada!')
+                flash('Post deleted!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
@@ -117,14 +122,14 @@ def delete_reply(reply_id):
         if session["role"] == 'mod' or session["username"] == board_owner:
             reply_id = int(reply_id)
             if database_module.remove_reply(reply_id):
-                flash('resposta deletada!')
+                flash('Reply deleted!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/logout')
 def logout():
     if 'username' in session:
         session.pop('username', None)
-        flash('Você foi desconectado.', 'info')
+        flash('You have been disconnected.', 'info')
         return redirect('/')
     else:
         return redirect('/conta')
