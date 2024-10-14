@@ -1,0 +1,115 @@
+:root {
+    --cor-primaria: #ff4782;
+    --cor-secundaria: #840b37;
+    --cor-terciaria: #fff;
+    --cor-fundo: #141414;
+    --cor-fundo-claro: #ffffff8c;
+    --cor-texto: #000;
+    --cor-texto-claro: #f4c095;
+    --cor-borda: #d2738a;
+    --cor-quote: #9e0059;
+    --cor-borda-claro: #FF4775;
+    --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
+}
+
+.verde{
+	color: #3d7710;
+}
+
+body {
+    font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    background: url(https://magalichan.com/static/new_bg.webp), var(--cor-fundo);
+    min-height: 100vh;
+}
+
+#togglePostFormLink {
+    background-color: #f7f7f7;
+    border-radius: 5px;
+    filter: drop-shadow(1px 5px 4px black);
+}
+
+.new-thread-container {
+    background-color: var(--cor-borda-claro);
+     border-radius: 5px;
+}
+
+.new-thread-header {
+    background-color: var(--cor-borda-claro);
+}
+
+input[type=button], input[type=file], input[type=number], input[type=password], input[type=range], input[type=submit], input[type=text], select, textarea {
+    margin: 0;
+    flex-grow: 1;
+    font-size: 13px;
+    outline: none;
+    border-radius: 6px;
+}
+
+.board-title {
+    color: var(--cor-borda-claro);
+}
+
+.post_image img {
+    max-width: 200px;
+    max-height: 400px;
+    border-radius: 8%;
+}
+
+.post_content pre {
+    font-family: inherit;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  	color: #000;
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.reply_content pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  	color: #000;
+  	text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.reply {
+    border-radius: 5px;
+    background-color: #ffafcc;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, .35);
+    border-color: #FF4782;
+    border-width: .1em .2em .2em .1em;
+    border-radius: .30em;
+    border-style: solid;
+}
+
+.sobre {
+    background-color: #ffafcc;
+}
+
+.sobre-content p {
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.sobre-header {
+    color: #fff;
+}
+
+.boards-table tbody:nth-child(odd) {
+    background-color: #ffafcc;
+}
+
+.boards-table tbody {
+    background-color: #ffafcc;
+}
+
+.boards-table tbody {
+    color: #fff;
+}
+
+.boards-table td {
+    text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+
+.last-posts-container {
+    display: none;
+}
