@@ -591,8 +591,7 @@
   .post_image {
     max-width: fit-content;
     max-height: fit-content;
-    margin-bottom: 1em;
-    margin-left: 10px;
+    padding: 1em 0em 0em 10px;
     cursor: pointer;
     flex: 1;
 }
