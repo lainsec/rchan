@@ -16,8 +16,7 @@
 body {
     font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: var(--cor-fundo);
-    background: url(https://1500chan.org/static/cafe-1.jpg
-), var(--cor-fundo);
+    background: url(/static/imgs/backgrounds/cafe-1.jpg), var(--cor-fundo);
     min-height: 100vh;
 }
 
