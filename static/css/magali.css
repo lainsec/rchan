@@ -19,7 +19,7 @@
 body {
     font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: var(--cor-fundo);
-    background: url(https://magalichan.com/static/new_bg.webp), var(--cor-fundo);
+    background: url(/static/imgs/backgrounds/magali.webp), var(--cor-fundo);
     min-height: 100vh;
 }
 
