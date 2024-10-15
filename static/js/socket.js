@@ -16,6 +16,7 @@ function atualizarDiv() {
         url: urlAtual,
         success: function(data) {
             $('#posts_board').html($(data).find('#posts_board').html());
+            manipularConteudo()
         }
     });
 }
