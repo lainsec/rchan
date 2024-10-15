@@ -1,8 +1,7 @@
 body {
     font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: var(--cor-fundo);
-    background: url(https://tchan.lol/static/ib/backgrounds/chika.png
-), var(--cor-fundo);
+    background: url(/static/imgs/backgrounds/tchan.png), var(--cor-fundo);
     min-height: 100vh;
 }
 
