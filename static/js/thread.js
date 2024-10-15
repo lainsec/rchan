@@ -1,7 +1,6 @@
-document.addEventListener("DOMContentLoaded", function() {
+function manipularConteudo() {
     var postContents = document.querySelectorAll('pre');
     postContents.forEach(function(postContent) {
-
         postContent.innerHTML = postContent.innerHTML.replace(/(^|>)(?![^<]*<\/span>)&gt;&gt;(\d+)/g, function(match, p1, p2) {
             return `${p1}<span class="quote-reply" data-id="${p2}">&gt;&gt;${p2}</span>`;
         });
@@ -20,11 +19,11 @@ document.addEventListener("DOMContentLoaded", function() {
         postContent.innerHTML = postContent.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
     });
-});
 
+    adicionarEventosQuoteReply();
+}
 
-
-document.addEventListener('DOMContentLoaded', () => {
+function adicionarEventosQuoteReply() {
     const quoteReplies = document.querySelectorAll('.quote-reply');
 
     quoteReplies.forEach(span => {
@@ -55,31 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-    });
-});
-
-function quotePostId(id) {
-    const newBoardForm = document.querySelector('.newboard-form');
-    const textArea = document.getElementById('text');
-
-    newBoardForm.style.display = 'block';
-
-    textArea.value = '>>' + id;
-
-    newBoardForm.scrollIntoView({ behavior: 'smooth' });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const quoteReplies = document.querySelectorAll('.quote-reply');
-    let preview;
-
-    quoteReplies.forEach(span => {
+        
         span.addEventListener('mouseenter', (event) => {
             const targetId = span.getAttribute('data-id');
             const targetElement = document.getElementById(targetId);
 
             if (targetElement) {
-                preview = targetElement.cloneNode(true);
+                const preview = targetElement.cloneNode(true);
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
                 preview.style.border = '1px solid #ccc';
@@ -96,17 +77,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.addEventListener('mousemove', updatePreviewPosition);
 
                 span.addEventListener('mouseleave', () => {
-                    document.body.removeChild(preview);
-                    document.removeEventListener('mousemove', updatePreviewPosition);
+                    if (preview && document.body.contains(preview)) {
+                        document.body.removeChild(preview);
+                        document.removeEventListener('mousemove', updatePreviewPosition);
+                    }
                 });
             }
         });
     });
-});
+}
 
-const textarea = document.getElementById('text');
+document.addEventListener("DOMContentLoaded", function() {
+    manipularConteudo(); 
 
-let quoteButton;
+    const textarea = document.getElementById('text');
+    let quoteButton;
 
     document.addEventListener('mouseup', () => {
         const selection = window.getSelection();
@@ -147,3 +132,4 @@ let quoteButton;
             window.getSelection().removeAllRanges();
         }
     });
+});
