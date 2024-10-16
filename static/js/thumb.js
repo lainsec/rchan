@@ -13,7 +13,5 @@ const video = document.getElementById('lastpost_video');
     const img = document.createElement('img');
     img.src = imageData;
 
-    document.body.appendChild(img);
-
     canvas.remove();
 });
