@@ -1,17 +1,23 @@
-const video = document.getElementById('lastpost_video');
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+const videos = document.querySelectorAll('video'); 
 
-  video.addEventListener('loadedmetadata', function() {
-    video.currentTime = 2;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+videos.forEach(video => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
-    const imageData = canvas.toDataURL();
+    video.addEventListener('loadedmetadata', function() {
+        video.currentTime = 2; 
 
-    const img = document.createElement('img');
-    img.src = imageData;
+        video.addEventListener('seeked', function() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.remove();
+            const imageData = canvas.toDataURL();
+
+            const thumbnailVideo = document.getElementById('thumbnail_video');
+            thumbnailVideo.setAttribute('poster', imageData);
+
+            canvas.remove();
+        });
+    });
 });
