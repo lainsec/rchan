@@ -248,6 +248,7 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
 
 def remove_post(post_id):
     posts = load_db()
+    pinned = load_pinned()
     replies = load_replies()
     for post in posts:
         if post.get('post_id') == post_id:
@@ -257,6 +258,10 @@ def remove_post(post_id):
                 if reply.get('post_id') == post_id:
                     replies.remove(reply)
             save_new_reply(replies)
+            for pin in pinned:
+                if pin.get('post_id') == post.get('post_id'):
+                    pinned.remove(pin)
+            save_new_pinned(pinned)
             return True
             break
 
