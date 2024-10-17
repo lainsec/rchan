@@ -16,6 +16,7 @@ function manipularConteudo() {
         postContent.innerHTML = postContent.innerHTML.replace(/&lt;([^<&\n]+)/g, '<span class="vermelho">&lt;$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\(\(\(([^()]*?)\)\)\)/g, '<span class="detected">((( $1 )))</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/==([^=]+)==/g, '<span class="red-text">$1</span>');
+        postContent.innerHTML = postContent.innerHTML.replace(/\|\|([^|]+)\|\|/g, '<span class="spoiler">$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
         postContent.innerHTML = postContent.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
     });
@@ -24,6 +25,7 @@ function manipularConteudo() {
 }
 
 function adicionarEventosQuoteReply() {
+    
     const quoteReplies = document.querySelectorAll('.quote-reply');
 
     quoteReplies.forEach(span => {
@@ -85,6 +87,33 @@ function adicionarEventosQuoteReply() {
             }
         });
     });
+}
+
+function quotePostId(postId) {
+    const textarea = document.getElementById('text');
+    const draggableForm = document.getElementById('draggableForm');
+
+    textarea.value += '>>' + (textarea.value ? '\n' : '') + postId;
+
+    draggableForm.style.position = 'absolute';
+
+    const mouseX = event.pageX;
+    const mouseY = event.pageY + 10;
+
+    const rightEdge = window.innerWidth - draggableForm.offsetWidth;
+    const bottomEdge = window.innerHeight - draggableForm.offsetHeight;
+
+    let newLeft = mouseX;
+    let newTop = mouseY;
+
+    if (newLeft < 0) newLeft = 0;
+    if (newTop < 0) newTop = 0;
+    if (newLeft > rightEdge) newLeft = rightEdge;
+    if (newTop > bottomEdge) newTop = bottomEdge;
+
+    draggableForm.style.display = 'block';
+    draggableForm.style.left = `${newLeft}px`;
+    draggableForm.style.top = `${newTop}px`;
 }
 
 document.addEventListener("DOMContentLoaded", function() {
