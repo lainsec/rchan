@@ -8,7 +8,7 @@
             </div>
             <div class="last_post_image">
                 {% if '.mp4' in post.get('post_image') or '.webm' in post.get('post_image')%}
-                <video id="lastpost_video" style="width: 100px; height: 100px; object-fit: cover;" poster="image.jpg">
+                <video id="thumbnail_video" style="width: 100px; height: 100px; object-fit: cover;" poster="image.jpg">
                     <source src="{{ url_for('static', filename='post_images/' + post.post_image) }}" type="video/mp4">
                 </video>
                 {% else %}
