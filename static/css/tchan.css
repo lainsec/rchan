@@ -103,10 +103,6 @@ body {
       justify-content: center;
       max-height: fit-content;
     }
-    .post_image img {
-      max-width: 228px;
-      max-height: none;
-    }
     .post_video {
       height: fit-content;
     }
