@@ -596,10 +596,11 @@
   
   .post_image img {
     max-width: 200px;
-    max-height: 400px;
+    max-height: 200px;
+    object-fit: cover;
     min-width: 200px;
   }
-  
+
   .postInfo {
     display: flex;
     align-items: center;
