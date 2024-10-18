@@ -565,7 +565,6 @@
   }
 
   .post_content_container{
-    display: flex;
     width: 100%;
     padding: 1em 0em;
   }
@@ -578,9 +577,8 @@
     margin-left: 2em;
     margin-right: 2em;
     overflow-wrap: anywhere;
-    flex: 1;
     z-index: 1;
-}
+  }
   
   .post_content pre {
     font-family: inherit;
@@ -591,14 +589,15 @@
   .post_image {
     max-width: fit-content;
     max-height: fit-content;
-    padding: 1em 0em 0em 10px;
+    margin: 10px;
     cursor: pointer;
-    flex: 1;
-}
+    float: left;
+  }
   
   .post_image img {
     max-width: 200px;
     max-height: 400px;
+    min-width: 200px;
   }
   
   .postInfo {
