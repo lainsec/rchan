@@ -7,8 +7,6 @@ body {
 
 .post_image img {
     border-radius: 5px;
-    max-width: 200px;
-    max-height: 400px;
 }
 
 :root {
