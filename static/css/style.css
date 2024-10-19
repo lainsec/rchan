@@ -622,6 +622,10 @@
     width: 100%;
     font-size: 14px;
   }
+
+  .postDate{
+    padding-left: 4px;
+  }
   
   .postLink {
     margin-left: 4px;
