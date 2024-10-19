@@ -948,12 +948,3 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     font-size: 14px;
   }
 }
-
-@-webkit-keyframes slide {
-  from {
-    background-position: 2560px;
-  }
-  to {
-    background-position: -2560px;
-  }
-}
