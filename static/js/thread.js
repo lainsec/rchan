@@ -3,14 +3,12 @@ function manipularConteudo() {
     postContents.forEach(function(postContent) {
         var content = postContent.innerHTML;
 
-        // Handle >>number
         content = content.split('&gt;&gt;').map((part, index) => {
             if (index === 0) return part;
             const number = part.match(/^\d+/);
             return number ? `<span class="quote-reply" data-id="${number}">&gt;&gt;${number}</span>${part.slice(number[0].length)}` : `&gt;&gt;${part}`;
         }).join('');
 
-        // Handle >text
         content = content.split('&gt;').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^[^<&\n]+/);
@@ -25,36 +23,30 @@ function manipularConteudo() {
             return part;
         }).join(' ');
 
-        // Handle <text
         content = content.split('&lt;').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^[^<&\n]+/);
             return match ? `<span class="vermelho">&lt;${match}</span>${part.slice(match[0].length)}` : `&lt;${part}`;
         }).join('');
 
-        // Handle (((text)))
         content = content.split('(((').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^[^()]*\)\)\)/);
             return match ? `<span class="detected">((( ${match}</span>${part.slice(match[0].length)}` : `(((${part}`;
-        }).join(' ');
+        }).join('');
 
-        // Handle ==text==
         content = content.split('==').map((part, index) => {
             if (index % 2 === 1) return `<span class="red-text">${part}</span>`;
             return part;
         }).join('');
 
-        // Handle ||text||
         content = content.split('||').map((part, index) => {
             if (index % 2 === 1) return `<span class="spoiler">${part}</span>`;
             return part;
         }).join('');
 
-        // Handle [spoiler]text[/spoiler]
         content = content.split('[spoiler]').join('<span class="spoiler">').split('[/spoiler]').join('</span>');
 
-        // Handle [r]text[/r]
         content = content.split('[r]').join('<span class="rainbowtext">').split('[/r]').join('</span>');
 
         postContent.innerHTML = content;
