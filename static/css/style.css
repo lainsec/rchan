@@ -62,6 +62,11 @@ body {
   margin: 0;
 }
 
+.hidden-replies{
+  color: var(--cor-terciaria);
+  font-size: 9pt;
+}
+
 .board_banner {
   border: 1px solid var(--cor-primaria);
   max-height: 10em;
@@ -572,6 +577,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .post_content pre {
+  font-size: 9pt;
   font-family: inherit;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
@@ -691,6 +697,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .reply_content pre {
+  font-size: 9pt;
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: anywhere;
