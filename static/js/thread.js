@@ -15,7 +15,6 @@ function manipularConteudo() {
             return match ? `<span class="verde">&gt;${match}</span>${part.slice(match[0].length)}` : `&gt;${part}`;
         }).join('');
 
-        // Handle URLs
         content = content.split(' ').map(part => {
             if (part.startsWith('http')) {
                 return `<span><a class="quote-reply" href="${part}" target="_blank">${part}</a></span>`;
