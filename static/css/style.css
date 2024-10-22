@@ -228,19 +228,6 @@ footer a {
   margin-right: 2em;
 }
 
-.index-banner {
-  background: url(/static/imgs/banners/index_banner/chanbanner.gif), no-repeat;
-  background-size: cover;
-  background-position: center;
-  max-width: 100%;
-  min-height: 325px;
-  min-width: 100%;
-}
-
-.index-banner img{
-  display: none;
-}
-
 .board_banners_container{
   width: 100%;
   display: flex;
