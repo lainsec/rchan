@@ -18,7 +18,8 @@
             "dashboard-welcome-message": "Bem vindo",
             "dashboard-choose-theme": "Escolha um tema",
             "dashboard-website-configs": "Configurações do recinto",
-            "dashboard-account": "Conta"
+            "dashboard-account": "Conta",
+            "hidden-replies": "postagem(ns) escondidas"
         }
     ],
     "en-us": [
@@ -40,7 +41,8 @@
             "dashboard-welcome-message": "Welcome",
             "dashboard-choose-theme": "Choose a theme",
             "dashboard-website-configs": "Imageboard configs",
-            "dashboard-account": "Account"
+            "dashboard-account": "Account",
+            "hidden-replies": "View all"
         }
     ],
     "jp": [
@@ -62,7 +64,8 @@
             "dashboard-welcome-message": "ようこそ",
             "dashboard-choose-theme": "テーマの選択",
             "dashboard-website-configs": "イメージボード構成",
-            "dashboard-account": "\u53e3\u5ea7"
+            "dashboard-account": "\u53e3\u5ea7",
+            "hidden-replies": "隠し投稿"
             
         }
     ],
@@ -85,7 +88,8 @@
             "dashboard-welcome-message": "Bienvenido",
             "dashboard-choose-theme": "Elige un tema",
             "dashboard-website-configs": "Configuraciones del sítio",
-            "dashboard-account": "Cuenta"
+            "dashboard-account": "Cuenta",
+            "hidden-replies": "publicación(es) oculta(s)"
         }
     ],
     "default": [
@@ -107,7 +111,8 @@
             "dashboard-welcome-message": "Welcome",
             "dashboard-choose-theme": "Choose a theme",
             "dashboard-website-configs": "Imageboard configs",
-            "dashboard-account": "Account"
+            "dashboard-account": "Account",
+            "hidden-replies": "post(s) not shown"
         }
     ]
 }
