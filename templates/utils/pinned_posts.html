@@ -21,8 +21,11 @@
                 <pre>{% if pinned.post_content | length >= 500 %}{{ pinned.post_content[:450] }}...<a style="color: #6d98ba;" href="/{{ board_id }}/thread/{{ pinned.post_id }}">Ver mais.</a>{% else %}{{ pinned.post_content }}{% endif %}</pre>
             </div>
             <div class="replies">
-                {% for reply in replies %}
-                {% if reply.post_id == pinned.post_id %}
+                {% set post_replies = replies|selectattr('post_id', 'equalto', pinned.post_id)|list %}
+                {% set last_4_replies = post_replies[-4:] %}
+                {% set hidden_replies_count = post_replies|length - 4 if post_replies|length > 4 else 0 %}
+
+                {% for reply in last_4_replies %}
                 <div class="reply" id="{{ reply.reply_id }}">
                     <div class="reply-postInfo">
                         <input type="checkbox" class="deletionCheckBox" name="{{ pinned.post_id }}" form="banDeleteForm">
@@ -33,7 +36,7 @@
                     <div class="reply_image">
                         {% if '.mp4' in reply.image %}
                          <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
-                        {% endif %}  
+                        {% endif %}
                         <img draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
                     </div>
                     {% endif %}
@@ -41,8 +44,13 @@
                         <pre>{{ reply.content }}</pre>
                     </div>
                 </div>
-                {% endif %}
                 {% endfor %}
+
+                {% if hidden_replies_count > 0 %}
+                <div class="hidden-replies">
+                    <span>{{ hidden_replies_count }} hidden replies {{ lang['hidden-replies'] }}</span>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
