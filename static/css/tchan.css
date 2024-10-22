@@ -9,6 +9,26 @@ body {
     border-radius: 5px;
 }
 
+.index-banner {
+    margin-top: 40px !important;
+    background: url(/static/imgs/banners/index_banner/tchan.png);
+    background-size: cover;
+    background-position: center;
+    max-width: 300px;
+    min-height: 325px;
+    min-width: 300px;
+}
+
+.index-banner img {
+    display: none;
+}
+
+.board_banner {
+    border: 1px solid var(--cor-primaria);
+    max-height: 10em;
+    border-radius: 8px;
+}
+
 :root {
     --cor-primaria: #bd758d;
     --cor-secundaria: #bd758d;
