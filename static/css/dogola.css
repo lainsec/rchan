@@ -25,7 +25,7 @@ textarea#body{
 
 
 body{
-  background: url('https://files.catbox.moe/yw533t.jpg');  
+  background: url(/static/imgs/backgrounds/dogolachan.jpg);  
   background-repeat: repeat;
   color: white;
   font-family: 'Hack', monospace, sans-serif;
