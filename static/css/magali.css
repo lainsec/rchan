@@ -23,6 +23,19 @@ body {
     min-height: 100vh;
 }
 
+.index-banner {
+    margin-top: 40px !important;
+    background: url(/static/imgs/banners/index_banner/magalichan.webp), no-repeat;
+    background-size: contain;
+    background-position: center;
+    max-width: 300px;
+    min-height: 325px;
+    min-width: 150px;
+}
+
+.index-banner img {
+    display: none;
+}
 #togglePostFormLink {
     background-color: #f7f7f7;
     border-radius: 5px;
