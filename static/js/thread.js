@@ -1,28 +1,67 @@
 function manipularConteudo() {
     var postContents = document.querySelectorAll('pre');
     postContents.forEach(function(postContent) {
-        postContent.innerHTML = postContent.innerHTML.replace(/(^|>)(?![^<]*<\/span>)&gt;&gt;(\d+)/g, function(match, p1, p2) {
-            return `${p1}<span class="quote-reply" data-id="${p2}">&gt;&gt;${p2}</span>`;
-        });
+        var content = postContent.innerHTML;
 
-        postContent.innerHTML = postContent.innerHTML.replace(/(?<!<span[^>]*>)&gt;([^<&\n]+)(?!(?:<\/span>))/g, function(match, p1) {
-            return `<span class="verde">&gt;${p1}</span>`;
-        });
+        // Handle >>number
+        content = content.split('&gt;&gt;').map((part, index) => {
+            if (index === 0) return part;
+            const number = part.match(/^\d+/);
+            return number ? `<span class="quote-reply" data-id="${number}">&gt;&gt;${number}</span>${part.slice(number[0].length)}` : `&gt;&gt;${part}`;
+        }).join('');
 
-        postContent.innerHTML = postContent.innerHTML.replace(/(https?:\/\/[^\s]+)/g, function(match) {
-            return `<span><a class="quote-reply" href="${match}" target="_blank">${match}</a></span>`;
-        });
+        // Handle >text
+        content = content.split('&gt;').map((part, index) => {
+            if (index === 0) return part;
+            const match = part.match(/^[^<&\n]+/);
+            return match ? `<span class="verde">&gt;${match}</span>${part.slice(match[0].length)}` : `&gt;${part}`;
+        }).join('');
 
-        postContent.innerHTML = postContent.innerHTML.replace(/&lt;([^<&\n]+)/g, '<span class="vermelho">&lt;$1</span>');
-        postContent.innerHTML = postContent.innerHTML.replace(/\(\(\(([^()]*?)\)\)\)/g, '<span class="detected">((( $1 )))</span>');
-        postContent.innerHTML = postContent.innerHTML.replace(/==([^=]+)==/g, '<span class="red-text">$1</span>');
-        postContent.innerHTML = postContent.innerHTML.replace(/\|\|([^|]+)\|\|/g, '<span class="spoiler">$1</span>');
-        postContent.innerHTML = postContent.innerHTML.replace(/\[spoiler\](.*?)\[\/spoiler\]/g, '<span class="spoiler">$1</span>');
-        postContent.innerHTML = postContent.innerHTML.replace(/\[r\](.*?)\[\/r\]/g, '<span class="rainbowtext">$1</span>');
+        // Handle URLs
+        content = content.split(' ').map(part => {
+            if (part.startsWith('http')) {
+                return `<span><a class="quote-reply" href="${part}" target="_blank">${part}</a></span>`;
+            }
+            return part;
+        }).join(' ');
+
+        // Handle <text
+        content = content.split('&lt;').map((part, index) => {
+            if (index === 0) return part;
+            const match = part.match(/^[^<&\n]+/);
+            return match ? `<span class="vermelho">&lt;${match}</span>${part.slice(match[0].length)}` : `&lt;${part}`;
+        }).join('');
+
+        // Handle (((text)))
+        content = content.split('(((').map((part, index) => {
+            if (index === 0) return part;
+            const match = part.match(/^[^()]*\)\)\)/);
+            return match ? `<span class="detected">((( ${match}</span>${part.slice(match[0].length)}` : `(((${part}`;
+        }).join(' ');
+
+        // Handle ==text==
+        content = content.split('==').map((part, index) => {
+            if (index % 2 === 1) return `<span class="red-text">${part}</span>`;
+            return part;
+        }).join('');
+
+        // Handle ||text||
+        content = content.split('||').map((part, index) => {
+            if (index % 2 === 1) return `<span class="spoiler">${part}</span>`;
+            return part;
+        }).join('');
+
+        // Handle [spoiler]text[/spoiler]
+        content = content.split('[spoiler]').join('<span class="spoiler">').split('[/spoiler]').join('</span>');
+
+        // Handle [r]text[/r]
+        content = content.split('[r]').join('<span class="rainbowtext">').split('[/r]').join('</span>');
+
+        postContent.innerHTML = content;
     });
-
     adicionarEventosQuoteReply();
 }
+
 
 function adicionarEventosQuoteReply() {
     
