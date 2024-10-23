@@ -1,7 +1,8 @@
-import json
-import random
 import datetime
+import hashlib
+import random
 import pytz
+import json
 import os
 
 def load_boards():
@@ -72,29 +73,44 @@ def save_new_board(board):
     with open('./database/boards.json', 'w') as f:
         json.dump(board, f, indent=4)
 
-def login_user(username,password):
+def hash_password(password):
+    salt = os.urandom(16)
+    hashed = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+    return salt.hex() + ':' + hashed.hex()
+
+def verify_password(stored_password, provided_password):
+    salt, hashed = stored_password.split(':')
+    salt = bytes.fromhex(salt)
+    hashed_provided = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)
+    return hashed_provided.hex() == hashed
+
+def login_user(username, password):
     users = load_accounts()
     try:
         for user in users:
             if user.get('username') == username:
-                if user.get('password') == password:
+                if verify_password(user.get('password'), password):
                     return True
                 return False
-    except:
+    except Exception as e:
+        print(f"Erro: {e}")
         return False
 
-def register_user(username,password):
+def register_user(username, password):
     users = load_accounts()
     if len(username) <= 3:
         return False
     for user in users:
         if user.get('username') == username:
             return False
-            break
+    
+    hashed_password = hash_password(password)
+    
     if len(users) == 0:
-        new_user = {"username": username, "password": password, "role": "mod"}
+        new_user = {"username": username, "password": hashed_password, "role": "mod"}
     else:
-        new_user = {"username": username, "password": password, "role": ""}
+        new_user = {"username": username, "password": hashed_password, "role": ""}
+    
     users.append(new_user)
     save_new_user(users)
     return True
