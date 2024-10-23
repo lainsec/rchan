@@ -24,5 +24,7 @@ themeSelector.addEventListener('change', function() {
         newLink.href = selectedStyle;
         newLink.className = 'theme'; 
         document.head.appendChild(newLink);
+
+        location.reload();
     }
 });
