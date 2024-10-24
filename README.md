@@ -7,7 +7,7 @@
 2. cd rchan
 3. python3 -m venv rchanenv
 4. source rchanenv/bin/activate
-5. pip3 -r install requirements.txt
+5. pip install -r requirements.txt
 </pre>
 <a>How to use</a>
 <pre align="left">
