@@ -1,1 +1,32 @@
-<div class="create-container" bis_skin_checked="1"><h1 class="board-title">Create Board</h1><div class="form-wrapper flex-center mv-10" bis_skin_checked="1"><form class="form-post" action="/create_board" method="POST" data-captcha-preload="true"><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">URI e.g. /uri/</div><input type="text" name="uri" maxlength="50" pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only"></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Name</div><input type="text" name="name" maxlength="50" required=""></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Description</div><input type="text" name="description" maxlength="100"></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Tags</div><textarea name="tags" placeholder="Newline separated, max 10"></textarea></div><input type="submit" value="Create"></form></div></div>
+<div class="create-container" bis_skin_checked="1">
+    <h1 class="board-title">Create Board</h1>
+    <div class="form-wrapper flex-center mv-10" bis_skin_checked="1">
+        <form class="form-post" action="/create_board" method="POST" data-captcha-preload="true">
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">URI e.g. /uri/</div><input type="text" name="uri" maxlength="50"
+                    pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">Name</div><input type="text" name="name" maxlength="50"
+                    required="">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">Description</div><input type="text" name="description"
+                    maxlength="100">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">Tags</div><textarea name="tags"
+                    placeholder="Newline separated, max 10"></textarea>
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">captcha</div>
+                <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">captcha</div>
+                <input type="text" name="captcha" maxlength="100">
+            </div>
+            <input type="submit" value="Create">
+        </form>
+    </div>
+</div>
