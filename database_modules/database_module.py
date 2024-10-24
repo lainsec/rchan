@@ -1,9 +1,13 @@
 import datetime
 import hashlib
 import random
+import base64
+import string
 import pytz
 import json
 import os
+import io
+from captcha.image import ImageCaptcha
 
 def load_boards():
     try:
@@ -73,6 +77,14 @@ def save_new_board(board):
     with open('./database/boards.json', 'w') as f:
         json.dump(board, f, indent=4)
 
+def generate_captcha():
+    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    image = ImageCaptcha()
+    image_data = image.generate(captcha_text)
+    image_io = io.BytesIO(image_data.read())
+    image_base64 = base64.b64encode(image_io.getvalue()).decode('utf-8')
+    return captcha_text, f"data:image/png;base64,{image_base64}"
+
 def hash_password(password):
     salt = os.urandom(16)
     hashed = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
@@ -83,6 +95,11 @@ def verify_password(stored_password, provided_password):
     salt = bytes.fromhex(salt)
     hashed_provided = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)
     return hashed_provided.hex() == hashed
+
+def validate_captcha(captcha_input, captcha_text):
+    if captcha_input != captcha_text:
+       return False
+    return True
 
 def login_user(username, password):
     users = load_accounts()
@@ -96,7 +113,9 @@ def login_user(username, password):
         print(f"Erro: {e}")
         return False
 
-def register_user(username, password):
+def register_user(username, password, captcha_input, captcha_text):
+    if not validate_captcha(captcha_input, captcha_text):
+        return False
     users = load_accounts()
     if len(username) <= 3:
         return False
@@ -294,7 +313,9 @@ def create_banner_folder(board_uri):
     board_folder = os.path.join('./static/imgs/banners/', board_uri)
     os.makedirs(board_folder, exist_ok=True)
 
-def add_new_board(board_uri, board_name, board_description, username):
+def add_new_board(board_uri, board_name, board_description, username, captcha_input, captcha_text):
+    if not validate_captcha(captcha_input, captcha_text):
+        return False
     boards = load_boards()
     for board in boards:
         if board.get('uri') == board_uri or board.get('board_name') == board_name:
