@@ -17,17 +17,10 @@
         <div class="chan_title_header">
             <h1 class="board-title">{{ lang["navbar-boards"] }}</h1>
         </div>
-        <div class="sobre-container">
-            <div class="sobre">
-                <div class="sobre-header">
-                    <h1>{{ lang["about-container-header"] }}</h1>
-                </div>
-                <div class="sobre-content">
-                    <p>O fórum mais distópico da internet lusófona!</p>
-                </div>
-            </div>
-        </div>
-        {% include 'utils/boards_list.html' %}
+        {% include 'utils/index-about-container.html' %}
+        {% if boards | length > 0 %}
+            {% include 'utils/boards_list.html' %}
+        {% endif %}
         {% include 'utils/footer.html' %}
     </div>
     <script src="{{ url_for('static', filename='js/socket.js') }}"></script>
