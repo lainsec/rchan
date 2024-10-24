@@ -32,12 +32,16 @@ def login():
 def register():
     if 'username' in session:
         return redirect('/conta')
-    return render_template('register.html')
+    captcha_text, captcha_image = database_module.generate_captcha()
+    session['captcha_text'] = captcha_text
+    return render_template('register.html',captcha_image=captcha_image)
 
 @boards_bp.route('/create')
 def create():
     if 'username' in session:
-        return render_template('board-create.html')
+        captcha_text, captcha_image = database_module.generate_captcha()
+        session['captcha_text'] = captcha_text
+        return render_template('board-create.html',captcha_image=captcha_image)
     else:
         return redirect('/conta')
 
