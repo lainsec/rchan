@@ -20,18 +20,13 @@
         <div class="chan_title_header">
             <h1 class="board-title">ｒｃｈａｎ</h1>
         </div>
-        <div class="sobre-container">
-            <div class="sobre">
-                <div class="sobre-header">
-                    <h1>{{ lang["about-container-header"] }}</h1>
-                </div>
-                <div class="sobre-content">
-                    <p>O fórum mais distópico da internet lusófona!</p>
-                </div>
-            </div>
-        </div>
-        {% include 'utils/last_posts.html' %}
-        {% include 'utils/boards_list.html' %}
+        {% include 'utils/index-about-container.html' %}
+        {% if all_posts | length > 0 %}
+            {% include 'utils/last_posts.html' %}
+        {% endif %}
+        {% if boards | length > 0 %}
+            {% include 'utils/boards_list.html' %}
+        {% endif %}
         {% include 'utils/footer.html' %}
     </div>
     <script src="/static/js/socket.js"></script>
