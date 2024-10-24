@@ -7,7 +7,7 @@ import os
 auth_bp = Blueprint('auth', __name__)
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
+    ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @auth_bp.before_request
@@ -44,7 +44,7 @@ def login():
             session['role'] = database_module.get_user_role(username) 
             return redirect('/conta')
         else:
-            flash('Credenciais inválidas. Tente novamente.', 'danger')
+            flash('Invalid credentials, try again.', 'danger')
 
     return redirect('/conta')
 
@@ -53,11 +53,12 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        captcha_text = request.form['captcha']
 
-        if database_module.register_user(username, password):
+        if database_module.register_user(username, password, captcha_text, session['captcha_text']):
             return redirect('/conta')
         else:
-            flash('cu')
+            flash('Something went wrong, try again.')
 
     return redirect('/conta')
 
@@ -66,12 +67,13 @@ def create_board():
     if request.method == 'POST':
         uri = request.form['uri']
         name = request.form['name']
+        captcha_text = request.form['captcha']
         description = request.form['description']
 
-        if database_module.add_new_board(uri, name, description, session['username']):
+        if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
             return redirect(f'/{uri}')
         else:
-            flash('ocorreu um erro ai, fdp!')
+            flash('Something went wrong, try again.')
 
     return redirect('/')
 
@@ -81,10 +83,10 @@ def remove_board(board_uri):
         if 'username' in session:
             name = session["username"]
             if database_module.remove_board(board_uri, name):
-                flash('Tábua deletada!')
+                flash('Board deleted!')
                 return redirect(request.referrer)
             else:
-                flash('Você não pode fazer isso!')
+                flash('You cant do it!')
                 return redirect(request.referrer)
 
     return redirect('/')
@@ -111,7 +113,7 @@ def pin_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.pin_post(post_id):
-                flash('postagem pinnada!')
+                flash('Post pinned!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
@@ -121,7 +123,7 @@ def delete_post(post_id):
     if 'username' in session:
         if session["role"] == 'mod' or session["username"] == board_owner:
             if database_module.remove_post(post_id):
-                flash('postagem deletada!')
+                flash('Post deleted!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
@@ -131,14 +133,14 @@ def delete_reply(reply_id):
         if session["role"] == 'mod' or session["username"] == board_owner:
             reply_id = int(reply_id)
             if database_module.remove_reply(reply_id):
-                flash('resposta deletada!')
+                flash('Reply deleted!')
                 return redirect(request.referrer)
 
 @auth_bp.route('/logout')
 def logout():
     if 'username' in session:
         session.pop('username', None)
-        flash('Você foi desconectado.', 'info')
+        flash('You has been disconnected.', 'info')
         return redirect('/')
     else:
         return redirect('/conta')
