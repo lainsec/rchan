@@ -20,7 +20,8 @@ python3 app.py
 - [x] Responsive style for mobile.
 - [x] Infinity scroll boards.
 - [x] Multi language. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
-- [x] Simple anti-raid system based on user ip-addr.
+- [x] Encrypted passwords with SHA256.
+- [x] Anti-raid with internal captcha and timeout system.
 
 <a>If you get any issue please comment</a>
 ###
