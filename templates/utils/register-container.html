@@ -1,1 +1,31 @@
-<div class="register-container" bis_skin_checked="1"><h1 class="board-title">Register</h1><div class="mv-10" bis_skin_checked="1"><div class="form-wrapper flex-center mv-10" bis_skin_checked="1"><div class="form-wrapper flex-center" bis_skin_checked="1"><form class="form-post" action="/register_user" method="POST" data-captcha-preload="true"><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Username</div><input type="text" name="username" maxlength="50" pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only"></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Password</div><input type="password" name="password" maxlength="100" required=""></div><div class="row" bis_skin_checked="1"><input type="submit" value="Register"></form></div></div></div><div class="text-center mt-10" bis_skin_checked="1"><p><a href="/conta" bis_skin_checked="1">Login</a></p></div></div>
+<div class="register-container" bis_skin_checked="1">
+    <h1 class="board-title">Register</h1>
+    <div class="mv-10" bis_skin_checked="1">
+        <div class="form-wrapper flex-center mv-10" bis_skin_checked="1">
+            <div class="form-wrapper flex-center" bis_skin_checked="1">
+                <form class="form-post" action="/register_user" method="POST" data-captcha-preload="true">
+                    <div class="row" bis_skin_checked="1">
+                        <div class="label" bis_skin_checked="1">Username</div><input type="text" name="username"
+                            maxlength="50" pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only">
+                    </div>
+                    <div class="row" bis_skin_checked="1">
+                        <div class="label" bis_skin_checked="1">Password</div><input type="password" name="password"
+                            maxlength="100" required="">
+                    </div>
+                    <div class="row" bis_skin_checked="1">
+                        <div class="label" bis_skin_checked="1">captcha</div>
+                        <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                    </div>
+                    <div class="row" bis_skin_checked="1">
+                        <div class="label" bis_skin_checked="1">captcha</div>
+                        <input type="text" name="captcha" maxlength="100">
+                    </div>
+                    <div class="row" bis_skin_checked="1"><input type="submit" value="Register">
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-10" bis_skin_checked="1">
+        <p><a href="/conta" bis_skin_checked="1">Login</a></p>
+    </div>
+</div>
