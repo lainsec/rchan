@@ -13,13 +13,13 @@ def inject_lang():
 def main_page():
     posts = database_module.load_db()
     boards = database_module.load_boards()
-    return render_template('index.html',boards=boards,all_posts=reversed(posts),posts=reversed(posts[-6:]))
+    return render_template('index.html',boards=boards,all_posts=posts,posts=reversed(posts[-6:]))
 
 @boards_bp.route('/tabuas')
 def tabuas():
     boards = database_module.load_boards()
     posts = database_module.load_db()
-    return render_template('tabuas.html',all_posts=reversed(posts),boards=boards)
+    return render_template('tabuas.html',all_posts=posts,boards=boards)
 
 @boards_bp.route('/conta')
 def login():
