@@ -40,6 +40,9 @@ class PostHandler:
         return True
 
     def handle_reply(self, reply_to):
+        if database_module.verify_locked_thread(int(reply_to)):
+            flash("This thread is locked.")
+            return False
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
                 flash("Invalid captcha.")
@@ -89,7 +92,9 @@ def new_post():
     board_id = request.form['board_id']
     comment = request.form['text']
     embed = request.form['embed']
-    captcha_input = request.form['captcha']
+    captcha_input = 'none'
+    if database_module.verify_board_captcha(board_id):
+        captcha_input = request.form['captcha']
 
     handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input)
 
