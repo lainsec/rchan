@@ -12,7 +12,7 @@
 <a>How to use</a>
 <pre align="left">
 python3 app.py
-`The first account will automatically recive MOD permissions.`
+`The first account will automatically recive OWNER permissions.`
 </pre>
 # Features
 - [x] Free creation of boards for all users.
