@@ -96,11 +96,43 @@ def verify_password(stored_password, provided_password):
     hashed_provided = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)
     return hashed_provided.hex() == hashed
 
+def verify_board_captcha(board_uri):
+    boards = load_boards()
+    for board in boards:
+        if 'enable_captcha' in board:
+            if board.get('enable_captcha') == 1:
+                return True
+            else:
+                return False
+        return False
+
 def validate_captcha(captcha_input, captcha_text):
     if captcha_input != captcha_text:
        return False
     return True
 
+def set_all_boards_captcha(option):
+    boards = load_boards()
+    for board in boards:
+        if option == 'disable':
+            board['enable_captcha'] = 0
+        else:
+            board['enable_captcha'] = 1
+    save_new_board(boards)
+    return True
+
+def lock_thread(thread_id):
+    posts = load_db()
+    for post in posts:
+        if post.get('post_id') == thread_id:
+            if not 'locked' in post or post.get('locked') == 0:
+                post['locked'] = 1
+            elif post.get('locked') == 1:
+                post['locked'] = 0
+            save_new_post(posts)
+            return True
+    return False
+    
 def login_user(username, password):
     users = load_accounts()
     try:
@@ -126,7 +158,7 @@ def register_user(username, password, captcha_input, captcha_text):
     hashed_password = hash_password(password)
     
     if len(users) == 0:
-        new_user = {"username": username, "password": hashed_password, "role": "mod"}
+        new_user = {"username": username, "password": hashed_password, "role": "owner"}
     else:
         new_user = {"username": username, "password": hashed_password, "role": ""}
     
