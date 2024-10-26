@@ -25,7 +25,8 @@ def tabuas():
 def login():
     if 'username' in session:
         user_boards = user_boards=database_module.get_user_boards(session["username"])
-        return render_template('dashboard.html', username=session["username"],role=session["role"],user_boards=user_boards)
+        roles = database_module.get_user_role(session["username"])
+        return render_template('dashboard.html', username=session["username"],roles=roles,user_boards=user_boards)
     return render_template('login.html')
 
 @boards_bp.route('/registrar')
@@ -54,8 +55,10 @@ def board_b(board_uri):
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
     post_mode = "normal_thread"
+    captcha_text, captcha_image = database_module.generate_captcha()
+    session['captcha_text'] = captcha_text
     replies = database_module.load_replies()
-    return render_template('board.html',pinneds=pinneds, posts=reversed(posts),replies=replies,board_banner=board_banner,board_id=board_uri,board_info=board_info, post_mode=post_mode)
+    return render_template('board.html',captcha_image=captcha_image, pinneds=pinneds, posts=reversed(posts),replies=replies,board_banner=board_banner,board_id=board_uri,board_info=board_info, post_mode=post_mode)
 
 @boards_bp.route('/<board_uri>/banners')
 def board_banners(board_uri):
@@ -89,12 +92,15 @@ def board_mod(board_uri):
 @boards_bp.route('/<board_name>/thread/<thread_id>')
 def replies(board_name, thread_id):
     board_id = board_name
+    board_info = database_module.get_board_info(board_id)
     posts = database_module.load_db()
     post_mode = "reply"
     replies = database_module.load_replies()
     thread_found = False
     board_posts = []
     post_replies = []
+    captcha_text, captcha_image = database_module.generate_captcha()
+    session['captcha_text'] = captcha_text
     for post in posts:
         if post['post_id'] == int(thread_id):
             thread_found = True
@@ -106,4 +112,4 @@ def replies(board_name, thread_id):
     for reply in replies:
         if reply.get('post_id') == int(thread_id):
             post_replies.append(reply)
-    return render_template('thread_reply.html', posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id), post_mode=post_mode)
+    return render_template('thread_reply.html',captcha_image=captcha_image, board_info=board_info, posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id), post_mode=post_mode)
