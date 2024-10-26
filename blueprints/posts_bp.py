@@ -8,7 +8,7 @@ posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
 
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed):
+    def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input):
         self.socketio = socketio
         self.user_ip = user_ip
         self.post_mode = post_mode
@@ -16,29 +16,34 @@ class PostHandler:
         self.board_id = board_id
         self.comment = comment
         self.embed = embed
+        self.captcha_input = captcha_input
 
     def check_timeout(self):
         if database_module.check_timeout_user(self.user_ip):
-            flash('você precisa esperar um pouco para postar novamente.')
+            flash('Wait a few seconds to post again.')
             return False
         return True
 
     def check_board(self):
         if not database_module.check_board(self.board_id):
-            flash('Eu sei oq vc tentou fazer, seu bobão.')
+            flash('I know what did you tried to do.')
             return False
         return True
 
     def validate_comment(self):
         if len(self.comment) >= 10000:
-            flash('Você atingiu o limite')
+            flash('You reached the limit.')
             return False
         if self.comment == '':
-            flash('Você precisa digitar algo, seu bocó!')
+            flash('You have to type somethig, you bastard.')
             return False
         return True
 
     def handle_reply(self, reply_to):
+        if database_module.verify_board_captcha(self.board_id):
+            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+                flash("Invalid captcha.")
+                return False
         if 'fileInput' in request.files:
             file = request.files['fileInput']
             if file.filename!= '' and file.filename.endswith(('.jpeg','.mov', '.jpg', '.gif', '.png', '.webp', '.webm', '.mp4')):
@@ -56,6 +61,10 @@ class PostHandler:
         return True
 
     def handle_post(self):
+        if database_module.verify_board_captcha(self.board_id):
+            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+                flash("Invalid captcha.")
+                return False
         if 'fileInput' in request.files and self.post_mode != 'reply':
             file = request.files['fileInput']
             if file.filename!= '' and file.filename.endswith(('.jpeg', '.jpg','.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
@@ -68,7 +77,7 @@ class PostHandler:
                 return True
         
         if self.post_mode != 'reply':
-            flash("Você precisa upar alguma imagem, isso é um imageboard...")
+            flash("You have to upload some image, this is an imageboard...")
             return False
 
 @posts_bp.route('/new_post', methods=['POST'])
@@ -80,8 +89,9 @@ def new_post():
     board_id = request.form['board_id']
     comment = request.form['text']
     embed = request.form['embed']
+    captcha_input = request.form['captcha']
 
-    handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed)
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input)
 
     if not handler.check_timeout():
         return redirect(request.referrer)
