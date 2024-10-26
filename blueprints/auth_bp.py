@@ -1,162 +1,128 @@
-from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
-from database_modules import database_module
-from database_modules import language_module
-from config import config_module
+from flask import current_app, Blueprint, render_template, redirect, request, flash, session
+from database_modules import database_module, timeout_module
+from flask_socketio import SocketIO, emit
+import re
 import os
 
-auth_bp = Blueprint('auth', __name__)
+posts_bp = Blueprint('posts', __name__)
+socketio = SocketIO()
 
-def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+class PostHandler:
+    def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input):
+        self.socketio = socketio
+        self.user_ip = user_ip
+        self.post_mode = post_mode
+        self.post_name = post_name
+        self.board_id = board_id
+        self.comment = comment
+        self.embed = embed
+        self.captcha_input = captcha_input
 
-@auth_bp.before_request
-def before_request():
-    return config_module.check_banned_user()
+    def check_timeout(self):
+        if database_module.check_timeout_user(self.user_ip):
+            flash('Wait a few seconds to post again.')
+            return False
+        return True
 
-@auth_bp.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
+    def check_board(self):
+        if not database_module.check_board(self.board_id):
+            flash('I know what did you tried to do.')
+            return False
+        return True
 
-@auth_bp.route('/change_general_lang', methods=['POST'])
-def change_general_lang():
-    new_lang = request.form.get('lang')
-    if 'username' in session:
-        roles = database_module.get_user_role(session["username"])
-        if 'owner' in roles.lower() :
-            if language_module.change_general_language(new_lang):
-                flash('Language changed!')
-                return redirect(request.referrer)
-            flash('You cant do it!')
+    def validate_comment(self):
+        if len(self.comment) >= 10000:
+            flash('You reached the limit.')
+            return False
+        if self.comment == '':
+            flash('You have to type somethig, you bastard.')
+            return False
+        return True
+
+    def handle_reply(self, reply_to):
+        if database_module.verify_board_captcha(self.board_id):
+            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+                flash("Invalid captcha.")
+                return False
+        if 'fileInput' in request.files:
+            file = request.files['fileInput']
+            if file.filename!= '' and file.filename.endswith(('.jpeg','.mov', '.jpg', '.gif', '.png', '.webp', '.webm', '.mp4')):
+                upload_folder = './static/reply_images/'
+                os.makedirs(upload_folder, exist_ok=True)
+                file.save(os.path.join(upload_folder, file.filename))
+                database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file.filename)
+                self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+                timeout_module.timeout(self.user_ip)
+                return True
+        file = ""
+        database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, file)
+        self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+        timeout_module.timeout(self.user_ip)
+        return True
+
+    def handle_post(self):
+        if database_module.verify_board_captcha(self.board_id):
+            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+                flash("Invalid captcha.")
+                return False
+        if 'fileInput' in request.files and self.post_mode != 'reply':
+            file = request.files['fileInput']
+            if file.filename!= '' and file.filename.endswith(('.jpeg', '.jpg','.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
+                upload_folder = './static/post_images/'
+                os.makedirs(upload_folder, exist_ok=True)
+                file.save(os.path.join(upload_folder, file.filename))
+                database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, file.filename)
+                self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
+                timeout_module.timeout(self.user_ip)
+                return True
+        
+        if self.post_mode != 'reply':
+            flash("You have to upload some image, this is an imageboard...")
+            return False
+
+@posts_bp.route('/new_post', methods=['POST'])
+def new_post():
+    socketio = current_app.extensions['socketio']
+    user_ip = request.remote_addr
+    post_mode = request.form["post_mode"]
+    post_name = request.form["name"]
+    board_id = request.form['board_id']
+    comment = request.form['text']
+    embed = request.form['embed']
+    captcha_input = request.form['captcha']
+
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input)
+
+    if not handler.check_timeout():
+        return redirect(request.referrer)
+    if not handler.check_board():
+        return redirect(request.referrer)
+
+    if post_mode == "reply":
+        reply_to = request.form['thread_id']
+        if not handler.validate_comment():
             return redirect(request.referrer)
-        flash('You cant do it!')
-        return redirect(request.referrer)
-    flash('You cant do it!')
-    return redirect(request.referrer)
+        if not handler.handle_reply(reply_to):
+            return redirect(request.referrer)
 
-@auth_bp.route('/auth_user', methods=['POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        if database_module.login_user(username, password):
-            session['username'] = username
-            session['role'] = database_module.get_user_role(username) 
-            return redirect('/conta')
-        else:
-            flash('Invalid credentials, try again.', 'danger')
-
-    return redirect('/conta')
-
-@auth_bp.route('/register_user', methods=['POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        captcha_text = request.form['captcha']
-
-        if database_module.register_user(username, password, captcha_text, session['captcha_text']):
-            return redirect('/conta')
-        else:
-            flash('Something went wrong, try again.')
-
-    return redirect('/conta')
-
-@auth_bp.route('/create_board', methods=['POST'])
-def create_board():
-    if request.method == 'POST':
-        uri = request.form['uri']
-        name = request.form['name']
-        captcha_text = request.form['captcha']
-        description = request.form['description']
-
-        if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
-            return redirect(f'/{uri}')
-        else:
-            flash('Something went wrong, try again.')
-
-    return redirect('/')
-
-@auth_bp.route('/apply_general_captcha', methods=['POST'])
-def apply_general_captcha():
-    if request.method == 'POST':
-        option = request.form['generalcaptcha_option']
-        if 'username' in session:
-            roles = database_module.get_user_role(session["username"])
-            if 'owner' in roles.lower():
-                if database_module.set_all_boards_captcha(option):
-                    flash('Captcha function setted.')
-                    return redirect(request.referrer)
-                else:
-                    flash('Something went wrong, try again.')
-                    return redirect(request.referrer)
-    return redirect('/')
-
-@auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
-def remove_board(board_uri):
-    if request.method == 'POST':
-        if 'username' in session:
-            name = session["username"]
-            if database_module.remove_board(board_uri, name):
-                flash('Board deleted!')
-                return redirect(request.referrer)
-            else:
-                flash('You cant do it!')
-                return redirect(request.referrer)
-
-    return redirect('/')
-
-@auth_bp.route('/upload_banner', methods=['POST'])
-def upload_banner():
-    if 'imageUpload' not in request.files:
-        return redirect(request.referrer)
-    file = request.files['imageUpload']
-    if file.filename == '':
-        return redirect(request.referrer)
-    if file and allowed_file(file.filename):
-        board_uri = request.form['board_uri']
-        directory = os.path.join(f'./static/imgs/banners/{board_uri}')
-        os.makedirs(directory, exist_ok=True)  
-        file.save(os.path.join(directory, file.filename))
-        return redirect(request.referrer)
-    return redirect(request.referrer)
-
-@auth_bp.route('/pin_post/<post_id>', methods=['POST'])
-def pin_post(post_id):
-    board_owner = request.form['board_owner']
-    post_id = int(post_id)
-    if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
-            if database_module.pin_post(post_id):
-                flash('Post pinned!')
-                return redirect(request.referrer)
-
-@auth_bp.route('/delete_post/<post_id>', methods=['POST'])
-def delete_post(post_id):
-    board_owner = request.form['board_owner']
-    post_id = int(post_id)
-    if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
-            if database_module.remove_post(post_id):
-                flash('Post deleted!')
-                return redirect(request.referrer)
-
-@auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
-def delete_reply(reply_id):
-    board_owner = request.form['board_owner']
-    if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
-            reply_id = int(reply_id)
-            if database_module.remove_reply(reply_id):
-                flash('Reply deleted!')
-                return redirect(request.referrer)
-
-@auth_bp.route('/logout')
-def logout():
-    if 'username' in session:
-        session.pop('username', None)
-        flash('You has been disconnected.', 'info')
-        return redirect('/')
+    match = re.match(r'^#(\d+)', comment)
+    if match:
+        if post_mode == "reply":
+            return redirect(request.referrer)
+        reply_to = match.group(1)
+        if not database_module.check_post_exist(int(reply_to)):
+            reply_to = request.form['thread_id']
+            if reply_to == '':
+                reply_to = match.group(1)
+        if not handler.handle_reply(reply_to):
+            return redirect(request.referrer)
     else:
-        return redirect('/conta')
+        if not handler.validate_comment():
+            return redirect(request.referrer)
+        if not handler.handle_post():
+            return redirect(request.referrer)
+    return redirect(request.referrer)
+
+@posts_bp.route('/socket.io/')
+def socket_io():
+    socketio_manage(request.environ, {'/': SocketIOHandler}, request=request)
