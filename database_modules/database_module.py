@@ -106,6 +106,16 @@ def verify_board_captcha(board_uri):
                 return False
         return False
 
+def verify_locked_thread(thread_id):
+    posts = load_db()
+    for post in posts:
+        if post.get('post_id') == thread_id:
+            if 'locked' in post:
+                if post.get('locked') == 1:
+                    return True
+                return False
+            return False
+
 def validate_captcha(captcha_input, captcha_text):
     if captcha_input != captcha_text:
        return False
