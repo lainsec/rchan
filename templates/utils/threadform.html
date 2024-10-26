@@ -1,22 +1,57 @@
-<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}[NEW REPLY]{% else %}[{{ lang["thread-form-button"] }}]{% endif %}</a></div>
+<div id="togglePostFormLink" bis_skin_checked="1"><a href="#">{% if post_mode == 'reply' %}[NEW REPLY]{% else %}[{{
+        lang["thread-form-button"] }}]{% endif %}</a></div>
 
 <div class="newboard-form" id="draggableForm" style="display: none;">
     <form id="postform" action="/new_post" enctype="multipart/form-data" method="POST">
         <input type="hidden" name="board_id" value="{{ board_id }}">
         <input type="hidden" name="thread_id" value="{{ thread_id }}">
         <input type="hidden" name="post_mode" value="{{ post_mode }}">
-        
+
         <div class="new-thread-container">
             <div class="new-thread-header">
                 <h1>{% if post_mode == 'reply' %}New Reply{% else %}{{ lang["thread-form-button"] }}{% endif %}</h1>
             </div>
-            <section class="row"><div class="label" bis_skin_checked="1">Name</div><input class="mr-1" type="text" name="name" placeholder="Anon" maxlength="100"><a class="close postform-style" href="#!" bis_skin_checked="1">×</a></section>
-            <section class="row"><div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject" autocomplete="off" maxlength="100"></section>
-            <section class="row"><div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea id="text" name="text" rows="5" minlength="0" maxlength="20000"></textarea></section>
-            <section class="row"><div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>
-                <small>Max 5 files</small><small>10MB total</small></div><span class="col"><label class="jsonly postform-style filelabel" for="file"> Select/Drop/Paste files</label><input id="file" type="file" name="fileInput" multiple="" style="position: absolute; border: none; height: 1px; width: 1px;"><div class="upload-list" data-spoilers="true" data-strip-filenames="true" bis_skin_checked="1"></div></span><noscript><label class="noselect postform-style ph-5 ml-1 fh"><input type="checkbox" name="spoiler_all" value="true">Spoiler</label></noscript></section>
-                <section class="row"><div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed" autocomplete="off" maxlength="100"></section>
-                <input id="submitpost" type="submit" value="{{ lang["thread-form-button"] }}">
+            <section class="row">
+                <div class="label" bis_skin_checked="1">Name</div><input class="mr-1" type="text" name="name"
+                    placeholder="Anon" maxlength="100"><a class="close postform-style" href="#!"
+                    bis_skin_checked="1">×</a>
+            </section>
+            <section class="row">
+                <div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject"
+                    autocomplete="off" maxlength="100">
+            </section>
+            <section class="row">
+                <div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea
+                    id="text" name="text" rows="5" minlength="0" maxlength="20000"></textarea>
+            </section>
+            <section class="row">
+                <div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>
+                    <small>Max 5 files</small><small>10MB total</small>
+                </div><span class="col"><label class="jsonly postform-style filelabel" for="file"> Select/Drop/Paste
+                        files</label><input id="file" type="file" name="fileInput" multiple=""
+                        style="position: absolute; border: none; height: 1px; width: 1px;">
+                    <div class="upload-list" data-spoilers="true" data-strip-filenames="true" bis_skin_checked="1">
+                    </div>
+                </span><noscript><label class="noselect postform-style ph-5 ml-1 fh"><input type="checkbox"
+                            name="spoiler_all" value="true">Spoiler</label></noscript>
+            </section>
+            <section class="row">
+                <div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed"
+                    autocomplete="off" maxlength="100">
+            </section>
+            {% if board_info.enable_captcha %}
+            {% if board_info.enable_captcha == 1%}
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">captcha</div>
+                <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">captcha</div>
+                <input type="text" name="captcha" maxlength="100">
+            </div>
+            {% endif %}
+            {% endif %}
+            <input id="submitpost" type="submit" value="{{ lang['thread-form-button'] }}">
         </div>
     </form>
 </div>
