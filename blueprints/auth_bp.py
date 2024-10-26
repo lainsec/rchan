@@ -93,6 +93,21 @@ def apply_general_captcha():
                     return redirect(request.referrer)
     return redirect('/')
 
+@auth_bp.route('/lock_thread/<post_id>', methods=['POST'])
+def lock_thread(post_id):
+    if request.method == 'POST':
+        board_owner = request.form['board_owner']
+        if 'username' in session:
+            roles = database_module.get_user_role(session["username"])
+            if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
+                if database_module.lock_thread(int(post_id)):
+                    flash('Thread locked.')
+                    return redirect(request.referrer)
+                else:
+                    flash('You cant do it.')
+                    return redirect(request.referrer)
+    return redirect('/')
+
 @auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
 def remove_board(board_uri):
     if request.method == 'POST':
