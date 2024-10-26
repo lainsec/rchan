@@ -22,7 +22,8 @@ def favicon():
 def change_general_lang():
     new_lang = request.form.get('lang')
     if 'username' in session:
-        if session['role'] == 'mod':
+        roles = database_module.get_user_role(session["username"])
+        if 'owner' in roles.lower() :
             if language_module.change_general_language(new_lang):
                 flash('Language changed!')
                 return redirect(request.referrer)
@@ -75,6 +76,21 @@ def create_board():
         else:
             flash('Something went wrong, try again.')
 
+    return redirect('/')
+
+@auth_bp.route('/apply_general_captcha', methods=['POST'])
+def apply_general_captcha():
+    if request.method == 'POST':
+        option = request.form['generalcaptcha_option']
+        if 'username' in session:
+            roles = database_module.get_user_role(session["username"])
+            if 'owner' in roles.lower():
+                if database_module.set_all_boards_captcha(option):
+                    flash('Captcha function setted.')
+                    return redirect(request.referrer)
+                else:
+                    flash('Something went wrong, try again.')
+                    return redirect(request.referrer)
     return redirect('/')
 
 @auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
