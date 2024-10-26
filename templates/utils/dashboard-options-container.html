@@ -19,11 +19,22 @@
             {% endif %}
         </ul>
     </div>
-    {% if role == 'mod' %}
+    {% if 'mod' in roles.lower() or 'owner' in roles.lower() %}
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
         <h1 class="dashboard-section-header">{{ lang['dashboard-website-configs'] }}</h1>
-        {% include 'utils/general-language-config.html' %}
+        <div style="display: flex; gap: 1em;" class="general_ib_configs">
+            {% if 'owner' in roles.lower() %}
+                {% include 'utils/general-language-config.html' %}
+            {% endif %}
+            <form id="generalcaptchaform" action="/apply_general_captcha" method="POST">
+                <select name="generalcaptcha_option" id="generalcap" onchange="document.getElementById('generalcaptchaform').submit();">
+                    <option value="disable">Captcha form</option>
+                    <option value="enable">Enable</option>
+                    <option value="disable">Disable</option>
+                </select>
+            </form>
+        </div>
     </div>
     {% endif %}
     <div class="divisoria"></div>
