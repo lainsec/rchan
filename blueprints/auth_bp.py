@@ -84,7 +84,7 @@ def apply_general_captcha():
         option = request.form['generalcaptcha_option']
         if 'username' in session:
             roles = database_module.get_user_role(session["username"])
-            if 'owner' in roles.lower():
+            if 'owner' in roles.lower() or 'mod' in roles.lower():
                 if database_module.set_all_boards_captcha(option):
                     flash('Captcha function setted.')
                     return redirect(request.referrer)
