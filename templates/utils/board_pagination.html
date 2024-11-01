@@ -1,0 +1,13 @@
+<div class="paginate-posts-container">
+    <div class="paginate-posts">
+        {% if page > 1 %}
+            <a href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=page - 1) }}"><i class="fa-solid fa-arrow-left"></i></a>
+        {% else %}
+            <i class="fa-solid fa-arrow-left" style="color: #bfbfbf;"></i>
+        {% endif %}
+        <h1>pagina: {{ page }}</h1>
+        {% if posts | length >= posts_per_page %}
+            <a href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=page + 1) }}"><i class="fa-solid fa-arrow-right"></i></a>
+        {% endif %}
+    </div>
+</div>
