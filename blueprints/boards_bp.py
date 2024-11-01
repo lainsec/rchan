@@ -35,6 +35,7 @@ def register():
         return redirect('/conta')
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = captcha_text
+    print(session['captcha_text'])
     return render_template('register.html',captcha_image=captcha_image)
 
 @boards_bp.route('/create')
@@ -47,10 +48,16 @@ def create():
         return redirect('/conta')
 
 @boards_bp.route('/<board_uri>/')
-def board_b(board_uri):
+def board_page(board_uri):
     if not database_module.check_board(board_uri):
         return redirect(request.referrer)
-    posts = database_module.load_db()
+    page_arg = request.args.get('page', '1') 
+    try:
+        page = int(page_arg)
+    except ValueError:
+        page = 1
+    posts_per_page = 6
+    posts = database_module.load_db_page(board_uri, offset=(page - 1) * posts_per_page, limit=posts_per_page)
     pinneds = database_module.get_pinned_posts(board_uri)
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
@@ -58,7 +65,7 @@ def board_b(board_uri):
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = captcha_text
     replies = database_module.load_replies()
-    return render_template('board.html',captcha_image=captcha_image, pinneds=pinneds, posts=reversed(posts),replies=replies,board_banner=board_banner,board_id=board_uri,board_info=board_info, post_mode=post_mode)
+    return render_template('board.html',captcha_image=captcha_image, page=page, posts_per_page=posts_per_page, pinneds=pinneds, posts=posts,replies=replies,board_banner=board_banner,board_id=board_uri,board_info=board_info, post_mode=post_mode)
 
 @boards_bp.route('/<board_uri>/banners')
 def board_banners(board_uri):
