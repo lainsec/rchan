@@ -33,6 +33,17 @@ def load_db():
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
 
+def load_db_page(board_id, offset=0, limit=10):
+    try:
+        with open('./database/database.json', 'r') as file:
+            database = json.load(file)
+            filtered_posts = [post for post in database if post.get('board') == board_id]
+            filtered_posts = filtered_posts[::-1]
+            return filtered_posts[offset:offset + limit]
+    except Exception as e:
+        print(f'Ocorreu um erro ao carregar a base de dados: {e}')
+        return []
+
 def load_pinned():
     try:
         with open('./database/pinned.json','r') as pin:
@@ -379,10 +390,10 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
     create_banner_folder(board_uri)
     return True
 
-def remove_board(board_uri, username):
+def remove_board(board_uri, username, role):
     board_info = get_board_info(board_uri)
     boards = load_boards()
-    if board_info.get('board_owner') == username:
+    if board_info.get('board_owner') == username or 'mod' in role.lower() or 'owner' in role.lower():
         posts = load_db()
         for post in posts:
             if post.get('board') == board_uri:
