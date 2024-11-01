@@ -7,6 +7,7 @@
     <meta property="og:image" content="https://81chan.fun/favicon.ico">
     <meta property="og:description" content="rchan, seu imageboard favorito.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>ｒｃｈａｎ /{{ board_id }}/</title>
@@ -22,6 +23,7 @@
         {% include 'utils/board-options-container.html' %}
         {% include 'utils/pinned_posts.html' %}
         {% include 'utils/board_posts.html' %}
+        {% include 'utils/board_pagination.html' %}
         {% include 'utils/waring-container.html' %}
     </div>
     <div id="reinrun"></div>
