@@ -27,4 +27,4 @@ python3 app.py
 <a>If you get any issue please comment</a>
 ###
 
-<img src="https://i.postimg.cc/3WQNKfs0/rchan.png" style="user-select:none; width:300; height:500;" alt="rein">
+<img src="https://i.postimg.cc/nhkWNZTD/homepage.png" style="user-select:none; max-width:200; max-height:400;" alt="rein">
