@@ -18,7 +18,7 @@ python3 app.py
 - [x] Free creation of boards for all users.
 - [x] Realtime posts with websocket.
 - [x] Responsive style for mobile.
-- [ ] Infinity scroll boards.
+- [x] Tripcode system with SHA256.
 - [x] Board pagination
 - [x] Multi language. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
 - [x] Encrypted passwords with SHA256.
