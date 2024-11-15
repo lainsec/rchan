@@ -58,6 +58,12 @@ pre{
   cursor: pointer;
 }
 
+.tripcode{
+  font-style: italic;
+  font-weight: 100;
+  user-select: none;
+}
+
 .board-title {
   color: var(--cor-terciaria);
   font: bolder 28px Tahoma, sans-serif;
