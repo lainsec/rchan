@@ -7,6 +7,7 @@ import pytz
 import json
 import os
 import io
+import re
 from captcha.image import ImageCaptcha
 
 def load_boards():
@@ -95,6 +96,15 @@ def generate_captcha():
     image_io = io.BytesIO(image_data.read())
     image_base64 = base64.b64encode(image_io.getvalue()).decode('utf-8')
     return captcha_text, f"data:image/png;base64,{image_base64}"
+
+def generate_tripcode(post_name):
+    match = re.search(r'#(.*)', post_name)
+    if match:
+        text_to_encrypt = match.group(1)
+        hashed_text = hashlib.sha256(text_to_encrypt.encode('utf-8')).hexdigest()
+        truncated_hash = hashed_text[:12]
+        post_name = post_name.split('#')[0] + ' <span class="tripcode">!@' + truncated_hash + '</span>'
+    return post_name
 
 def hash_password(password):
     salt = os.urandom(16)
@@ -298,7 +308,7 @@ def add_new_post(user_ip,board_id, post_name, comment, embed, file):
     new_post = {
         "user_ip": user_ip,
         "post_id": new_post_id,
-        "post_user": post_name,
+        "post_user": generate_tripcode(post_name),
         "post_date": str(formatado),
         "board": board_id,
         "post_content": comment,
@@ -321,7 +331,7 @@ def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
         "user_ip": user_ip,
         "reply_id": new_post_id,
         "post_id": int(reply_to),
-        "post_user": post_name,
+        "post_user": generate_tripcode(post_name),
         "post_date": str(formatado),
         "content": comment,
         "image": file
