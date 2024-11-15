@@ -5,7 +5,7 @@
     <div class="post">
         <div class="postInfo">
             <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
-            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user }}{% endif %}</span></span>
+            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
             <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [Respostas]</a><form action="/pin_post/{{ post.post_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-thumbtack" style="color: var(--cor-texto);"></i></button></form><form action="/lock_thread/{{ post.post_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-lock" style="color: var(--cor-texto);"></i></button></form><form action="/delete_post/{{ post.post_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form>
         </div>
@@ -27,7 +27,7 @@
         <div class="reply">
             <div class="reply-postInfo">
                 <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
-                <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span></span>
+                <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
                 <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" >{{ reply.reply_id }}</a><form action="/delete_reply/{{ reply.reply_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form>
             </div>
             <div class="post_content_container">
