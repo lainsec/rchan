@@ -98,12 +98,12 @@ def generate_captcha():
     return captcha_text, f"data:image/png;base64,{image_base64}"
 
 def generate_tripcode(post_name):
-    match = re.search(r'#(.*)', post_name)
+    match = re.search(r'#(\S+)', post_name)
     if match:
         text_to_encrypt = match.group(1)
         hashed_text = hashlib.sha256(text_to_encrypt.encode('utf-8')).hexdigest()
         truncated_hash = hashed_text[:12]
-        post_name = post_name.split('#')[0] + ' <span class="tripcode">!@' + truncated_hash + '</span>'
+        post_name = post_name.replace(f'#{text_to_encrypt}', f' <span class="tripcode">!@{truncated_hash}</span>')
     return post_name
 
 def hash_password(password):
