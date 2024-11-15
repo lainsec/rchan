@@ -6,7 +6,7 @@
     <div class="post" id="{{ pinned.post_id }}">
         <div class="postInfo">
             <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
-            <span class="nameBlock"><span class="name">{% if pinned.post_user == '' or pinned.post_user == 'Anonymous' %}ドワーフ{% else %}{{ pinned.post_user }}{% endif %}</span></span>
+            <span class="nameBlock"><span class="name">{% if pinned.post_user == '' or pinned.post_user == 'Anonymous' %}ドワーフ{% else %}{{ pinned.post_user | safe }}{% endif %}</span></span>
             <span class="postDate">{{ pinned.post_date }}</span><a class="image_url" href="/static/post_images/{{ pinned.get('post_image') }}">file: {{ pinned.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postNumber">{{ pinned.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
         </div>
@@ -29,7 +29,7 @@
                 <div class="reply" id="{{ reply.reply_id }}">
                     <div class="reply-postInfo">
                         <input type="checkbox" class="deletionCheckBox" name="{{ pinned.post_id }}" form="banDeleteForm">
-                        <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user }}{% endif %}</span></span>
+                        <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
                         <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" >{{ reply.reply_id }}</a>
                     </div>
                     <div class="post_content_container">
