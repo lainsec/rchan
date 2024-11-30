@@ -1,13 +1,23 @@
 function manipularConteudo() {
     var postContents = document.querySelectorAll('pre');
-    postContents.forEach(function(postContent) {
-        var content = postContent.innerHTML;
 
-        content = content.split('&gt;&gt;').map((part, index) => {
-            if (index === 0) return part;
-            const number = part.match(/^\d+/);
-            return number ? `<span class="quote-reply" data-id="${number}">&gt;&gt;${number}</span>${part.slice(number[0].length)}` : `&gt;&gt;${part}`;
-        }).join('');
+postContents.forEach(function(postContent) {
+    var content = postContent.innerHTML;
+
+    content = content.split('&gt;&gt;').map((part, index) => {
+        if (index === 0) return part;
+        const number = part.match(/^\d+/);
+        if (number) {
+            const quotedId = number[0];
+            const quotedDiv = document.querySelector(`div[id="${quotedId}"]`);
+            const isOperator = quotedDiv && quotedDiv.getAttribute('post-role') === 'operator';
+
+            const quoteSpan = `<span class="quote-reply" data-id="${quotedId}">&gt;&gt;${quotedId}</span>`;
+            const operatorSpan = isOperator ? `<span class="operator-quote">(OP)</span>` : '';
+            return `${quoteSpan}${operatorSpan}${part.slice(quotedId.length)}`;
+        }
+        return `&gt;&gt;${part}`;
+    }).join('');
 
         content = content.split('&gt;').map((part, index) => {
             if (index === 0) return part;
