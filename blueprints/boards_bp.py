@@ -25,8 +25,9 @@ def tabuas():
 def login():
     if 'username' in session:
         user_boards = user_boards=database_module.get_user_boards(session["username"])
+        all_boards = database_module.load_boards()
         roles = database_module.get_user_role(session["username"])
-        return render_template('dashboard.html', username=session["username"],roles=roles,user_boards=user_boards)
+        return render_template('dashboard.html', username=session["username"],roles=roles,user_boards=user_boards, all_boards=all_boards)
     return render_template('login.html')
 
 @boards_bp.route('/registrar')
@@ -84,7 +85,7 @@ def board_banners(board_uri):
 def board_mod(board_uri):
     if 'username' in session:
         board_info = database_module.get_board_info(board_uri)
-        if session["role"] == 'mod' or session["username"] == board_info.get('board_owner'):
+        if 'mod'.lower() in session["role"].lower() or 'owner'.lower() in session["role"].lower() or session["username"] == board_info.get('board_owner'):
             if not database_module.check_board(board_uri):
                 return redirect(request.referrer)
             posts = database_module.load_db()
