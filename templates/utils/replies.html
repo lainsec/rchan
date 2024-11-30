@@ -3,9 +3,9 @@
     <div class="divisoria"></div>
     <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
-            <input type="checkbox" class="deletionCheckBox" form="banDeleteForm">
+            <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
-            <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>
+            <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>{% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
             <div class="post_image">
@@ -21,9 +21,9 @@
                 {% for reply in replies %}
                 <div class="reply" id="{{ reply.reply_id }}">
                     <div class="reply-postInfo">
-                        <input type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
+                        <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span> </span>
-                        <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ reply.reply_id }})" class="postNumber">{{ reply.reply_id }}</a>
+                        <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ reply.reply_id }})" class="postNumber">{{ reply.reply_id }}</a>{% include 'utils/reply-moderation-options.html' %}
                     </div>
                     <div class="post_content_container">
                         {% if reply.image != '' %}
