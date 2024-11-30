@@ -25,13 +25,6 @@ postContents.forEach(function(postContent) {
             return match ? `<span class="verde">&gt;${match}</span>${part.slice(match[0].length)}` : `&gt;${part}`;
         }).join('');
 
-        content = content.split(' ').map(part => {
-            if (part.startsWith('http')) {
-                return `<span><a class="quote-reply" href="${part}" target="_blank">${part}</a></span>`;
-            }
-            return part;
-        }).join(' ');
-
         content = content.split('&lt;').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^[^<&\n]+/);
@@ -201,4 +194,17 @@ document.addEventListener("DOMContentLoaded", function() {
             window.getSelection().removeAllRanges();
         }
     });
+});
+
+const checkboxes = document.querySelectorAll('#togglemodoptions');
+
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        const parentDiv = checkbox.closest('div');
+        const threadModOptions = parentDiv.querySelector('#threadmodoptions');
+
+        if (threadModOptions) {
+          threadModOptions.style.display = checkbox.checked ? 'flex' : 'none';
+        }
+      });
 });
