@@ -27,4 +27,17 @@ python3 app.py
 <a>If you get any issue please comment</a>
 ###
 
+# Frequently Asked Questions
+- _How to use tripcode ?_
+  - _You have to type your username and put an "#" and an random word all togheter:_
+  - _It will generate an SHA256 hash and display the first 15 digits from it beside your name._
+- _How to style my text ?_
+  - **_>text_** _will display the >text but green painted._
+  - **_<text_** _will display the <text but red painted._
+  - _**==text==**_ _will display the text but red painted and BOLD._
+  - _**[r]text[/r]**_ _will turn the text into a rainbow._
+  - _**[spoiler]text[/spoiler]**_ _will hide the text with a black box and show with your mouse hover._
+  - _**(((text)))**_ _will display the text but with a white background and blue color._
+
+
 <img src="https://i.postimg.cc/nhkWNZTD/homepage.png" style="user-select:none; max-width:200; max-height:400;" alt="rein">
