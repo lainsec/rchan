@@ -17,6 +17,7 @@ body {
   background-color: var(--cor-fundo);
   background: var(--cor-fundo-gradiente), var(--cor-fundo) none repeat scroll 0 0;
   min-height: 100vh;
+  font-size: 10pt;
 }
 
 ::-webkit-scrollbar {
