@@ -18,6 +18,8 @@ body {
   background: var(--cor-fundo-gradiente), var(--cor-fundo) none repeat scroll 0 0;
   min-height: 100vh;
   font-size: 10pt;
+  text-shadow: 4px 3px 6px black;
+  font-family: 'Hack', monospace, sans-serif;
 }
 
 ::-webkit-scrollbar {
