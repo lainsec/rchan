@@ -10,15 +10,54 @@
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
         <h1 class="dashboard-section-header">Your boards</h1>
-        <ul>
-            <li><a href="/create">Create board</a></li>
             {% if user_boards %}
-            {% for board in user_boards %}
-            <li style="display: flex; gap: 10px;"><a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a> - <a href="/{{ board.board_uri }}/manage">moderar</a> - <form action="/remove_board/{{ board.board_uri }}" method="post"><button style="cursor: pointer; background-color: transparent; border: none;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form></li>
-            {% endfor %}
+            <div style="width: 300px; height: 200px; overflow-y: auto; border: 2px solid var(--cor-borda); border-radius: 5px; background-color: var(--cor-fundo); color: var(--cor-texto); padding: 10px; font-family: 'Courier New', Courier, monospace;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <td colspan="2"><a href="/create">Create board</a></td>
+                    {% for board in all_boards %}
+                    <tr>
+                        <td style="padding: 5px; border-bottom: 1px solid var(--cor-borda-claro); color: var(--cor-texto);">
+                            <a href="/{{ board.board_uri }}/" style="text-decoration: none; color: var(--cor-primaria); font-weight: bold;">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
+                        </td>
+                        <td style="padding: 5px; text-align: right; border-bottom: 1px solid var(--cor-borda-claro);">
+                            <a href="/{{ board.board_uri }}/manage" style="text-decoration: none; color: var(--cor-terciaria); font-weight: bold;">Moderate</a>
+                            <form action="/remove_board/{{ board.board_uri }}" method="post" style="display: inline; margin: 0;">
+                                <button style="cursor: pointer; background-color: var(--cor-fundo-claro); color: var(--cor-quote); border: 1px solid var(--cor-borda); padding: 2px 5px; font-size: 12px;" type="submit">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>      
             {% endif %}
-        </ul>
     </div>
+    {% if 'mod' in roles.lower() or 'owner' in roles.lower() %}
+    <div class="divisoria"></div>
+    <div class="dashboard-account-container">
+        <h1 class="dashboard-section-header">All boards</h1>
+        <div style="width: 300px; height: 200px; overflow-y: auto; border: 2px solid var(--cor-borda); border-radius: 5px; background-color: var(--cor-fundo); color: var(--cor-texto); padding: 10px; font-family: 'Courier New', Courier, monospace;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                {% for board in all_boards %}
+                <tr>
+                    <td style="padding: 5px; border-bottom: 1px solid var(--cor-borda-claro); color: var(--cor-texto);">
+                        <a href="/{{ board.board_uri }}/" style="text-decoration: none; color: var(--cor-primaria); font-weight: bold;">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
+                    </td>
+                    <td style="padding: 5px; text-align: right; border-bottom: 1px solid var(--cor-borda-claro);">
+                        <a href="/{{ board.board_uri }}/manage" style="text-decoration: none; color: var(--cor-terciaria); font-weight: bold;">Moderate</a>
+                        <form action="/remove_board/{{ board.board_uri }}" method="post" style="display: inline; margin: 0;">
+                            <button style="cursor: pointer; background-color: var(--cor-fundo-claro); color: var(--cor-quote); border: 1px solid var(--cor-borda); padding: 2px 5px; font-size: 12px;" type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>      
+    </div>
+    {% endif %}
     {% if 'mod' in roles.lower() or 'owner' in roles.lower() %}
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
@@ -41,7 +80,7 @@
     <div class="dashboard-account-container">
         <h1 class="dashboard-section-header">{{ lang['dashboard-account'] }}</h1>
         <form action="/logout" method="get">
-            <input type="submit" value="Sair">
+            <input type="submit" value="logout">
         </form>
     </div>
 </div>
