@@ -73,8 +73,14 @@ class PostHandler:
             if file.filename!= '' and file.filename.endswith(('.jpeg', '.jpg','.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
                 upload_folder = './static/post_images/'
                 os.makedirs(upload_folder, exist_ok=True)
-                file.save(os.path.join(upload_folder, file.filename))
-                database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, file.filename)
+                filename = file.filename
+                base, ext = os.path.splitext(filename)
+                counter = 1
+                while os.path.exists(os.path.join(upload_folder, filename)):
+                    filename = f"{base}_{counter}{ext}"
+                    counter += 1
+                file.save(os.path.join(upload_folder, filename))
+                database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
                 timeout_module.timeout(self.user_ip)
                 return True
