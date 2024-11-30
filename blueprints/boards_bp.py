@@ -1,4 +1,4 @@
-from flask import current_app, Blueprint, render_template, session, redirect, request
+from flask import current_app, Blueprint, render_template, session, redirect, request, url_for
 from database_modules import database_module
 from database_modules import language_module
 
@@ -8,6 +8,10 @@ boards_bp = Blueprint('boards', __name__)
 def inject_lang():
     lang = language_module.get_user_lang('default')
     return dict(lang=lang)
+
+@boards_bp.errorhandler(404)
+def page_not_found(e):
+    return redirect(url_for('boards.main_page'))
 
 @boards_bp.route('/')
 def main_page():
@@ -51,7 +55,7 @@ def create():
 @boards_bp.route('/<board_uri>/')
 def board_page(board_uri):
     if not database_module.check_board(board_uri):
-        return redirect(request.referrer)
+        return redirect(url_for('boards.main_page'))
     page_arg = request.args.get('page', '1') 
     try:
         page = int(page_arg)
@@ -110,10 +114,14 @@ def replies(board_name, thread_id):
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = captcha_text
     for post in posts:
+        try:
+            thread_id = int(thread_id)
+        except:
+            return redirect(request.referrer)
         if post['post_id'] == int(thread_id):
             thread_found = True
     if not thread_found:
-        return redirect('/')
+        return redirect(url_for('boards.main_page'))
     for post in posts:
         if post.get('post_id') == int(thread_id):
             board_posts.append(post)
