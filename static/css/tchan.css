@@ -73,7 +73,7 @@ body {
     background-size: 0.8em;
     display: flex;
     flex-wrap: wrap;
-    max-width: 100%;
+    max-width: 40em;
     min-width: 30em;
     width: fit-content;
     flex: 0 0 auto;
