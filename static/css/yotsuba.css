@@ -43,7 +43,6 @@ body {
     flex: 1;
     padding: 0em 2em 0em;
     margin-bottom: 0;
-    max-width: fit-content;
     font-family: "Spline Sans Mono", monospace !important;
     font-size: 10pt !important;
     color: var(--cor-terciaria);
@@ -52,8 +51,6 @@ body {
 }
 
 .reply_img {
-    max-width: 300px;
-    max-height: 500px;
     margin-top: 1em;
     margin-bottom: 1em;
     margin-left: 10px;
