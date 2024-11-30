@@ -10,7 +10,6 @@
     <div class="divisoria"></div>
     <div class="dashboard-account-container">
         <h1 class="dashboard-section-header">Your boards</h1>
-            {% if user_boards %}
             <div style="width: 300px; height: 200px; overflow-y: auto; border: 2px solid var(--cor-borda); border-radius: 5px; background-color: var(--cor-fundo); color: var(--cor-texto); padding: 10px; font-family: 'Courier New', Courier, monospace;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                     <td colspan="2"><a href="/create">Create board</a></td>
@@ -30,8 +29,7 @@
                     </tr>
                     {% endfor %}
                 </table>
-            </div>      
-            {% endif %}
+            </div>
     </div>
     {% if 'mod' in roles.lower() or 'owner' in roles.lower() %}
     <div class="divisoria"></div>
