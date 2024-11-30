@@ -113,7 +113,8 @@ def remove_board(board_uri):
     if request.method == 'POST':
         if 'username' in session:
             name = session["username"]
-            if database_module.remove_board(board_uri, name):
+            roles = database_module.get_user_role(session["username"])
+            if database_module.remove_board(board_uri, name, roles):
                 flash('Board deleted!')
                 return redirect(request.referrer)
             else:
