@@ -115,4 +115,7 @@ def replies(board_name, thread_id):
     for reply in replies:
         if reply.get('post_id') == int(thread_id):
             post_replies.append(reply)
-    return render_template('thread_reply.html',captcha_image=captcha_image, board_info=board_info, posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id), post_mode=post_mode)
+    roles = 'none'
+    if 'username' in session:
+        roles = database_module.get_user_role(session["username"])
+    return render_template('thread_reply.html',captcha_image=captcha_image, board_info=board_info, posts=board_posts, replies=post_replies,board_id=board_id,thread_id=int(thread_id), post_mode=post_mode, roles=roles)
