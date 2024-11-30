@@ -3,7 +3,7 @@
     {% if post.board == board_id %}
     {% if post.visible == 1 or 'visible' not in post %}
     <div class="divisoria"></div>
-    <div class="post" id="{{ post.post_id }}">
+    <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
             <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
