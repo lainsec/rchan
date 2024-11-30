@@ -1,7 +1,7 @@
 <div class="posts" id="posts_board">
     {% for post in posts %}
     <div class="divisoria"></div>
-    <div class="post">
+    <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
             <input type="checkbox" class="deletionCheckBox" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
