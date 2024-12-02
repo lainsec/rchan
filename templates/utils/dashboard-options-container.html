@@ -19,7 +19,6 @@
                             <a href="/{{ board.board_uri }}/" style="text-decoration: none; color: var(--cor-primaria); font-weight: bold;">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
                         </td>
                         <td style="padding: 5px; text-align: right; border-bottom: 1px solid var(--cor-borda-claro);">
-                            <a href="/{{ board.board_uri }}/manage" style="text-decoration: none; color: var(--cor-terciaria); font-weight: bold;">Moderate</a>
                             <form action="/remove_board/{{ board.board_uri }}" method="post" style="display: inline; margin: 0;">
                                 <button style="cursor: pointer; background-color: var(--cor-fundo-claro); color: var(--cor-quote); border: 1px solid var(--cor-borda); padding: 2px 5px; font-size: 12px;" type="submit">
                                     Delete
@@ -43,7 +42,6 @@
                         <a href="/{{ board.board_uri }}/" style="text-decoration: none; color: var(--cor-primaria); font-weight: bold;">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
                     </td>
                     <td style="padding: 5px; text-align: right; border-bottom: 1px solid var(--cor-borda-claro);">
-                        <a href="/{{ board.board_uri }}/manage" style="text-decoration: none; color: var(--cor-terciaria); font-weight: bold;">Moderate</a>
                         <form action="/remove_board/{{ board.board_uri }}" method="post" style="display: inline; margin: 0;">
                             <button style="cursor: pointer; background-color: var(--cor-fundo-claro); color: var(--cor-quote); border: 1px solid var(--cor-borda); padding: 2px 5px; font-size: 12px;" type="submit">
                                 Delete
