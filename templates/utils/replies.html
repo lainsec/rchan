@@ -12,10 +12,19 @@
                 <div class="post_image_info">
                     <a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">{{ post.get('post_image')[:17] + '.' + post.get('post_image').split('.')[-1] }}</a>
                 </div>
-                {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image  %}
-                <video controls draggable="false" class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
-                {% endif %}
+                {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image %}
+                <video id="video" class="video" style="display:none;">
+                    <source src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                    </video>
+                    <canvas id="canvas" class="video-thumbnail"></canvas>
+                    <video id="video-player" class="post_video" controls>
+                    <source src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                    </video>
+                {% else %}
                 <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+                {% endif %}
             </div>
             <div class="post_content">
                 <pre>{{ post.post_content }}</pre>
