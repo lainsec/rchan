@@ -658,10 +658,12 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   align-items: center;
   flex-wrap: wrap;
   color: var(--cor-texto);
-  padding: 0em 0.5em 0em;
+  border-bottom: 1px solid var(--cor-borda);
+  padding: 0.4em 0.5em 0.2em;
   left: 0;
   width: 100%;
   font-size: 10pt;
+  background-color: var(--cor-borda-claro);
 }
 
 .postLink {
@@ -715,7 +717,6 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   flex-wrap: wrap;
   max-width: 40em;
   min-width: 20em;
-  padding: 0.4em 0em;
   width: fit-content;
   flex: 0 0 auto;
   color: var(--cor-texto);
