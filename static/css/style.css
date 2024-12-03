@@ -15,7 +15,6 @@
 body {
   font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: var(--cor-fundo);
-  background: var(--cor-fundo-gradiente), var(--cor-fundo) none repeat scroll 0 0;
   min-height: 100vh;
   font-size: 10pt;
   text-shadow: 4px 3px 6px black;
@@ -683,10 +682,13 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .image_url {
-  font-size: 14px;
-  margin-left: 4px;
+  font-size: 8pt;
   color: var(--cor-secundaria);
   text-decoration: none;
+}
+
+.reply_image_info{
+  padding-left: 9px;
 }
 
 .postDate{
