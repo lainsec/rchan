@@ -17,7 +17,6 @@ body {
   background-color: var(--cor-fundo);
   min-height: 100vh;
   font-size: 10pt;
-  text-shadow: 4px 3px 6px black;
   font-family: 'Hack', monospace, sans-serif;
 }
 
