@@ -5,10 +5,13 @@
         <div class="postInfo">
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
-            <span class="postDate">{{ post.post_date }}</span><a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">file: {{ post.get('post_image')[:17] }}</a><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>{% include 'utils/thread-moderation-options.html' %}
+            <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>{% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
             <div class="post_image">
+                <div class="post_image_info">
+                    <a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">{{ post.get('post_image')[:17] + '.' + post.get('post_image').split('.')[-1] }}</a>
+                </div>
                 {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image  %}
                 <video controls draggable="false" class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
                 {% endif %}
@@ -28,6 +31,9 @@
                     <div class="post_content_container">
                         {% if reply.image != '' %}
                         <div class="reply_image">
+                            <div class="reply_image_info">
+                                <a class="image_url" href="/static/reply_images/{{ reply.get('image') }}">{{ reply.get('image')[:17] + '.' + reply.get('image').split('.')[-1] }}</a>
+                            </div>
                             {% if '.mp4' in reply.image %}
                             <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
                             {% endif %}
