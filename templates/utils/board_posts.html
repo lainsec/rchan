@@ -16,9 +16,18 @@
                     <a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">{{ post.get('post_image')[:17] + '.' + post.get('post_image').split('.')[-1] }}</a>
                 </div>
                 {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image %}
-                <video controls draggable="false" class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
-                {% endif %}
+                <video id="video" class="video" style="display:none;">
+                    <source src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                    </video>
+                    <canvas id="canvas" class="video-thumbnail"></canvas>
+                    <video id="video-player" class="post_video" controls style="display:none;">
+                    <source src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                    </video>
+                {% else %}
                 <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
+                {% endif %}
             </div>
             <div class="post_content">
                 <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] }}...<a style="color: #6d98ba;" href="/{{ board_id }}/thread/{{ post.post_id }}">Ver mais.</a>{% else %}{{ post.post_content }}{% endif %}</pre>
