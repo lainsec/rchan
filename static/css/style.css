@@ -668,6 +668,17 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   font-size: 10pt;
 }
 
+.reply_image{
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  max-width: fit-content;
+  max-height: fit-content;
+  margin: 10px;
+  cursor: pointer;
+  float: left;
+}
+
 .reply-postInfo {
   display: flex;
   align-items: center;
@@ -770,12 +781,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   max-height: 180px;
   object-fit: cover;
   min-width: 180px;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 10px;
-  margin: 10px;
   cursor: pointer;
-  float: left;
   flex: 1;
 }
 
