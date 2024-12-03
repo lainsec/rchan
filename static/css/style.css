@@ -641,6 +641,22 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   min-width: 200px;
 }
 
+.post_video {
+  user-select: none;
+  display: none;
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+}
+
+.video-thumbnail{
+  cursor: pointer;
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: cover;
+  min-width: 200px;
+}
+
 .postInfo {
   display: flex;
   align-items: center;
@@ -983,6 +999,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     max-height: fit-content;
   }
   .post_video {
+    display: none;
     height: fit-content;
   }
   .reply_img {
