@@ -50,36 +50,6 @@ body {
     z-index: 1;
 }
 
-.reply_img {
-    margin-top: 1em;
-    margin-bottom: 1em;
-    margin-left: 10px;
-    cursor: pointer;
-    flex: 1;
-}
-
-.reply {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 40em;
-    min-width: 30em;
-    padding: 0.4em 0em;
-    width: fit-content;
-    flex: 0 0 auto;
-    color: var(--cor-texto);
-    background-color: var(--cor-fundo-claro);
-    border-style: solid;
-    border-color: #d9bfb7;
-    border-width: 0 1px 1px 0;
-    margin-top: 3em;
-    height: fit-content;
-    margin-top: 1em;
-    align-items: flex-start;
-    justify-content: flex-start;
-    animation: fadeInDown 0.5s ease forwards;
-    box-sizing: border-box;
-}
-
 #togglePostFormLink {
     font-size: 11px;
     font-weight: 400;
