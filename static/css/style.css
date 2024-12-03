@@ -680,7 +680,8 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .reply-postInfo {
-  padding: 0.4em 0.5em 0.2em;
+  padding: 0.2em 0.5em 0.2em;
+  font-size: 10pt;
 }
 
 .postLink {
@@ -752,7 +753,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 
 .reply_content {
   flex: 1;
-  margin-bottom: 1em;
+  margin-bottom: 1.3em;
   padding: 0em 2em 0em;
   font-family: "Spline Sans Mono", monospace !important;
   font-size: 10pt !important;
@@ -996,7 +997,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     padding: 0.4em 0.5em 0.2em;
     left: 0;
     width: 100%;
-    font-size: 10pt;
+    font-size: 8pt;
     background-color: var(--cor-borda-claro);
   }
   .post_image{
