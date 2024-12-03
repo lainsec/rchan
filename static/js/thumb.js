@@ -29,8 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     videos.forEach(function(video, index) {
       const canvas = canvases[index]; 
       const videoPlayer = videoPlayers[index]; 
-  
-      // Espera o vídeo carregar os dados
+
       video.addEventListener('loadeddata', function() {
         video.currentTime = 1;
       });
