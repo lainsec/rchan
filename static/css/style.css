@@ -680,16 +680,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .reply-postInfo {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  color: var(--cor-texto);
-  border-bottom: 1px solid var(--cor-borda);
   padding: 0.4em 0.5em 0.2em;
-  left: 0;
-  width: 100%;
-  font-size: 10pt;
-  background-color: var(--cor-borda-claro);
 }
 
 .postLink {
@@ -995,6 +986,18 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   .reply {
     width: 100%;
     min-width: 100%;
+  }
+  .reply-postInfo {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--cor-texto);
+    border-bottom: 1px solid var(--cor-borda);
+    padding: 0.4em 0.5em 0.2em;
+    left: 0;
+    width: 100%;
+    font-size: 10pt;
+    background-color: var(--cor-borda-claro);
   }
   .post_image{
     max-width: 100%;
