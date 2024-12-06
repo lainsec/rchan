@@ -191,7 +191,7 @@ input, select, textarea {
 
 .post {
     background-color:var(--cor-fundo);
-  	border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda);
     border-radius: 10px;
     padding: 1em;
     display: flex;
@@ -222,6 +222,16 @@ input, select, textarea {
   border-radius: 10px;
 }
 
+.video-thumbnail {
+    cursor: pointer;
+    border-radius: 10px;
+    max-width: 200px;
+    width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    min-width: 200px;
+}
+
 .reply_content {
     flex: 1;
     margin-bottom: 1.3em;
@@ -231,6 +241,16 @@ input, select, textarea {
     color: var(--cor-texto);
     overflow-wrap: anywhere;
     z-index: 1;
+}
+
+.reply_img {
+    max-width: 200px;
+    max-height: 180px;
+    object-fit: cover;
+    min-width: 180px;
+    cursor: pointer;
+    flex: 1;
+    border-radius: 10px;
 }
 
 .postLink {
@@ -298,6 +318,20 @@ input, select, textarea {
 
 .name {
     color: var(--cor-texto);
+}
+
+span.name::before {
+    content: '💀';
+}
+
+.postDate {
+    padding-left: 4px;
+    font-size: 7pt;
+}
+
+a.postLink:last-child::after {
+    content: ' 💬';
+    font-size: 10px;
 }
 
 .verde{
@@ -407,4 +441,59 @@ input, select, textarea {
     padding-left: 1em;
     padding-right: 1em;
     font-size: 8pt;
+}
+
+.quote-button {
+    display: none;
+    position: absolute;
+    background-color: var(--cor-fundo-claro);
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-borda);
+    border-radius: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: -30px;
+    z-index: 1000;
+}
+
+.waring-container {
+    position: fixed;
+    top: 39%;
+    background-color: var(--cor-fundo);
+    border: 1px solid var(--cor-borda);
+    border-radius: 10px;
+    width: 24em;
+    height: auto;
+    z-index: 999;
+}
+
+.waring-header {
+    border-bottom: 1px solid var(--cor-borda);
+    max-height: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cor-borda-claro);
+}
+
+.waring-header h1 {
+    color: var(--cor-texto);
+    font-size: 17px;
+}
+
+.waring-content {
+    padding: 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--cor-texto);
+}
+
+.waring-button button {
+    width: 5em;
+    background-color: transparent;
+    border: 1px solid var(--cor-borda);
+    border-radius: 10px;
+    outline: none;
+    color: var(--cor-texto);
+    cursor: pointer;
 }
