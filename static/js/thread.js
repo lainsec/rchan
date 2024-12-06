@@ -1,23 +1,25 @@
 function manipularConteudo() {
     var postContents = document.querySelectorAll('pre');
 
-postContents.forEach(function(postContent) {
-    var content = postContent.innerHTML;
+    postContents.forEach(function(postContent) {
+        var content = postContent.innerHTML;
 
-    content = content.split('&gt;&gt;').map((part, index) => {
-        if (index === 0) return part;
-        const number = part.match(/^\d+/);
-        if (number) {
-            const quotedId = number[0];
-            const quotedDiv = document.querySelector(`div[id="${quotedId}"]`);
-            const isOperator = quotedDiv && quotedDiv.getAttribute('post-role') === 'operator';
+        content = content.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+(?:\S)*)\)/g, '<a class="hyper-link" href="$2">$1</a>');
 
-            const quoteSpan = `<span class="quote-reply" data-id="${quotedId}">&gt;&gt;${quotedId}</span>`;
-            const operatorSpan = isOperator ? `<span class="operator-quote">(OP)</span>` : '';
-            return `${quoteSpan}${operatorSpan}${part.slice(quotedId.length)}`;
-        }
-        return `&gt;&gt;${part}`;
-    }).join('');
+        content = content.split('&gt;&gt;').map((part, index) => {
+            if (index === 0) return part;
+            const number = part.match(/^\d+/);
+            if (number) {
+                const quotedId = number[0];
+                const quotedDiv = document.querySelector(`div[id="${quotedId}"]`);
+                const isOperator = quotedDiv && quotedDiv.getAttribute('post-role') === 'operator';
+
+                const quoteSpan = `<span class="quote-reply" data-id="${quotedId}">&gt;&gt;${quotedId}</span>`;
+                const operatorSpan = isOperator ? `<span class="operator-quote">(OP)</span>` : '';
+                return `${quoteSpan}${operatorSpan}${part.slice(quotedId.length)}`;
+            }
+            return `&gt;&gt;${part}`;
+        }).join('');
 
         content = content.split('&gt;').map((part, index) => {
             if (index === 0) return part;
@@ -34,7 +36,7 @@ postContents.forEach(function(postContent) {
         content = content.split('(((').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^[^()]*\)\)\)/);
-            return match ? `<span class="detected">((( ${match}</span>${part.slice(match[0].length)}` : `(((${part}`;
+            return match ? `<span class="detected">(((${match}</span>${part.slice(match[0].length)}` : `(((${part}`;
         }).join('');
 
         content = content.split('==').map((part, index) => {
