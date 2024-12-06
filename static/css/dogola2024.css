@@ -35,16 +35,16 @@
 }
 
 a{
-	transition: all 1s ease;
+        transition: all 1s ease;
 }
 
 a:hover{
-	color: red;
+        color: red;
 }
 
 .postLink {
     margin-left: 4px;
-  	text-shadow: rgb(255, 140, 0) 0px 0px 10px;
+        text-shadow: rgb(255, 140, 0) 0px 0px 10px;
     color: var(--cor-texto);
     text-decoration: underline;
     cursor: pointer;
@@ -56,12 +56,12 @@ body {
     min-height: 100vh;
     font-size: 10pt;
     font-family: 'Hack', monospace, sans-serif;
-  	background:url(https://files.catbox.moe/e0fnfw.jpg) center top;
+        background:url(https://files.catbox.moe/e0fnfw.jpg) center top;
     color: var(--cor-texto);
 }
 
 .chan-banner{
-	display: none;
+        display: none;
 }
 
 .board-title{
@@ -117,8 +117,8 @@ body {
     align-items: center;
     justify-content: center;
     background-color: var(--cor-fundo);
-  	border: 1px solid var(--cor-borda);
- 	border-radius: 10px;
+        border: 1px solid var(--cor-borda);
+        border-radius: 10px;
     padding: 0em 1em;
     max-height: 2.3em;
 }
@@ -153,7 +153,7 @@ input, select, textarea {
     z-index: 1;
     cursor: pointer;
     border-style: solid !important;
-  	border-radius: 10px;
+        border-radius: 10px;
     justify-content: center;
     padding: 5px;
     min-width: 220px;
@@ -262,7 +262,7 @@ input, select, textarea {
 }
 
 .divisoria{
- 	display: none;
+        display: none;
 }
 
 .paginate-posts-container {
@@ -282,8 +282,8 @@ input, select, textarea {
     background-color: var(--cor-fundo);
     padding: 0em 1em;
     max-height: 2.3em;
-  	border: 1px solid;
-  	border-radius: 10px;
+        border: 1px solid;
+        border-radius: 10px;
     border-color: var(--cor-borda);
     gap: 1em;
 }
@@ -296,13 +296,13 @@ input, select, textarea {
 
 .paginate-posts a {
     color: var(--cor-texto);
-  	text-shadow: rgb(255, 140, 0) 0px 0px 10px;
+        text-shadow: rgb(255, 140, 0) 0px 0px 10px;
 }
 
 .reply{
-	border-radius: 10px;
-  	background-color: var(--cor-fundo);
-  	border: 1px solid var(--cor-borda);
+        border-radius: 10px;
+        background-color: var(--cor-fundo);
+        border: 1px solid var(--cor-borda);
     overflow: hidden;
 }
 
@@ -335,28 +335,28 @@ a.postLink:last-child::after {
 }
 
 .verde{
-	color: rgb(0, 255, 34);
-  	text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
+        color: rgb(0, 255, 34);
+        text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
 }
 
 .quote-reply{
-	color: rgb(0, 255, 34);
-  	text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
-	transition: all 1s ease;
+        color: rgb(0, 255, 34);
+        text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
+        transition: all 1s ease;
 }
 
 .quote-reply span{
-	color: rgb(0, 255, 34);
-  	text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
-	transition: all 1s ease;
+        color: rgb(0, 255, 34);
+        text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
+        transition: all 1s ease;
 }
 
 .quote-reply span:hover{
-	color: red;
+        color: red;
 }
 
 .quote-reply:hover{
-	color: red;
+        color: red;
 }
 
 .post_image img {
@@ -364,7 +364,7 @@ a.postLink:last-child::after {
     max-height: 200px;
     object-fit: cover;
     min-width: 200px;
-  	border-radius: 10px;
+        border-radius: 10px;
 }
 
 .sobre {
@@ -393,7 +393,7 @@ a.postLink:last-child::after {
     align-items: center;
     justify-content: center;
     color: var(--cor-texto);
-  	text-shadow: rgb(255, 140, 0) 0px 0px 10px;
+        text-shadow: rgb(255, 140, 0) 0px 0px 10px;
     background-color: var(--cor-borda-claro);
     max-height: 2.5em;
 }
@@ -409,14 +409,14 @@ a.postLink:last-child::after {
 }
 
 .last-post:hover{
-	background-color: var(--cor-fundo);
+        background-color: var(--cor-fundo);
 }
 
 .boards-container {
     margin-top: 1em;
-  	overflow: hidden;
+        overflow: hidden;
     border: 1px solid var(--cor-borda);
-  	border-radius: 10px;
+        border-radius: 10px;
     background-color: var(--cor-fundo);
     max-width: 74%;
     width: 800px;
@@ -496,4 +496,23 @@ a.postLink:last-child::after {
     outline: none;
     color: var(--cor-texto);
     cursor: pointer;
+}
+@media (max-width: 600px) {
+    .post_image {
+       max-width: 100%;
+       max-height: fit-content;
+       margin: 10px;
+       cursor: pointer;
+       float: none;
+    }
+    .reply_image {
+       display: flex;
+       align-items: center;
+       flex-direction: column;
+       max-width: 100%;
+       max-height: fit-content;
+       margin: 10px;
+       cursor: pointer;
+       float: none;
+    }
 }
