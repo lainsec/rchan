@@ -359,6 +359,17 @@ a.postLink:last-child::after {
         color: red;
 }
 
+.hyper-link{
+    text-decoration: none;
+    color: var(--cor-texto);
+    text-shadow: rgb(255, 140, 0) 0px 0px 10px;
+    transition: all 1s ease;
+}
+
+.hyper-link:hover{
+    color: red;
+}
+
 .post_image img {
     max-width: 200px;
     max-height: 200px;
