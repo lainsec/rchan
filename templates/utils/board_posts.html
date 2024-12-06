@@ -30,7 +30,7 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] }}...<a style="color: #6d98ba;" href="/{{ board_id }}/thread/{{ post.post_id }}">Ver mais.</a>{% else %}{{ post.post_content }}{% endif %}</pre>
+                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] }}...<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">Ver mais.</a>{% else %}{{ post.post_content }}{% endif %}</pre>
             </div>
             <div class="replies">
                 {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
