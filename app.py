@@ -1,11 +1,9 @@
-from flask import Flask, send_from_directory,session,request
-from database_modules import database_module
+from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO
 from blueprints.posts_bp import posts_bp
 from blueprints.boards_bp import boards_bp
 from blueprints.auth_bp import auth_bp
-import os
 
 app = Flask(__name__)
 socketio = SocketIO(app)
