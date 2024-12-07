@@ -1,5 +1,5 @@
 from flask import current_app, Blueprint, render_template, redirect, request, flash, session
-from database_modules import database_module, timeout_module
+from database_modules import database_module, timeout_module, formatting
 from flask_socketio import SocketIO, emit
 import re
 import os
@@ -14,7 +14,7 @@ class PostHandler:
         self.post_mode = post_mode
         self.post_name = post_name
         self.board_id = board_id
-        self.comment = comment
+        self.comment = formatting.format_comment(comment)
         self.embed = embed
         self.captcha_input = captcha_input
 
@@ -37,6 +37,7 @@ class PostHandler:
         if self.comment == '':
             flash('You have to type somethig, you bastard.')
             return False
+        
         return True
 
     def handle_reply(self, reply_to):
