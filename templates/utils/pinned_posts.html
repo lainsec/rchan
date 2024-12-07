@@ -21,7 +21,7 @@
                 <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + pinned.post_image) }}" alt="">
             </div>
             <div class="post_content">
-                <pre>{% if pinned.post_content | length >= 500 %}{{ pinned.post_content[:450] }}...<a class="toolong" href="/{{ board_id }}/thread/{{ pinned.post_id }}">Ver mais.</a>{% else %}{{ pinned.post_content }}{% endif %}</pre>
+                <pre>{% if pinned.post_content | length >= 500 %}{{ pinned.post_content[:450] | safe }}...<a class="toolong" href="/{{ board_id }}/thread/{{ pinned.post_id }}">Ver mais.</a>{% else %}{{ pinned.post_content | safe }}{% endif %}</pre>
             </div>
             <div class="replies">
                 {% set post_replies = replies|selectattr('post_id', 'equalto', pinned.post_id)|list %}
@@ -48,7 +48,7 @@
                         </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{{ reply.content }}</pre>
+                            <pre>{{ reply.content | safe }}</pre>
                         </div>
                     </div>
                 </div>
