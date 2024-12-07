@@ -745,7 +745,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .reply-postInfo {
-  padding: 0.2em 0.5em 0.2em;
+  padding: 0.4em 0.5em 0.2em;
   font-size: 10pt;
 }
 
