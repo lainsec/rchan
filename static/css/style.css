@@ -12,6 +12,10 @@
   --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
 }
 
+*{
+  transition: all 0.3s ease;
+}
+
 body {
   font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #121212;
