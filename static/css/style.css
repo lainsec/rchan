@@ -1,23 +1,24 @@
 :root {
   --cor-primaria: #d2738a;
-  --cor-secundaria: #6d98ba;
+  --cor-secundaria: #fff;
   --cor-terciaria: #f4c095;
-  --cor-fundo: #141414;
+  --cor-fundo: #141414cc;
   --cor-fundo-claro: #222;
   --cor-texto: #fff;
   --cor-texto-claro: #f4c095;
-  --cor-borda: #d2738a;
+  --cor-borda: #ffffff14;
   --cor-quote: #ffab65;
-  --cor-borda-claro: #282a2e;
+  --cor-borda-claro: #3d3e4140;
   --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
 }
 
 body {
   font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background-color: var(--cor-fundo);
+  background-color: #121212;
   min-height: 100vh;
   font-size: 10pt;
   font-family: 'Hack', monospace, sans-serif;
+  color: var(--cor-texto);
 }
 
 ::-webkit-scrollbar {
@@ -41,22 +42,44 @@ pre{
   background: #9c4f62
 }
 
-.verde {
-  color: #62cf02;
+.verde{
+  color: rgb(0, 255, 34);
+  text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
 }
 
 .vermelho {
   color: #ff6fc3;
 }
 
-.quote-reply {
-  color: var(--cor-quote);
-  cursor: pointer;
+.quote-reply{
+  color: rgb(0, 255, 34);
+  text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
+  transition: all 1s ease;
 }
 
-.quote-reply span {
-  color: var(--cor-quote);
-  cursor: pointer;
+.quote-reply span{
+  color: rgb(0, 255, 34);
+  text-shadow: rgba(255, 255, 0, 0.5) 0px 0px 10px;
+  transition: all 1s ease;
+}
+
+.quote-reply span:hover{
+  color: red;
+}
+
+.quote-reply:hover{
+  color: red;
+}
+
+.hyper-link{
+  text-decoration: none;
+  color: var(--cor-texto);
+  text-shadow: rgb(255, 140, 0) 0px 0px 10px;
+  transition: all 1s ease;
+}
+
+.hyper-link:hover{
+  color: red;
 }
 
 .tripcode{
@@ -65,12 +88,14 @@ pre{
   user-select: none;
 }
 
-.board-title {
-  color: var(--cor-terciaria);
-  font: bolder 28px Tahoma, sans-serif;
-  letter-spacing: -2px;
+.board-title{
+  color: var(--cor-texto);
   text-align: center;
-  margin: 0;
+  font-variant: all-small-caps !important;
+  font-weight: 900 !important;
+  line-height: 17px;
+  display: inline-block;
+  text-shadow: 0 0 10px var(--cor-primaria);
 }
 
 .hidden-replies{
@@ -79,22 +104,25 @@ pre{
 }
 
 .board_banner {
-  border: 1px solid var(--cor-primaria);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
   max-height: 10em;
+  max-width: 20em;
 }
 
 .waring-container {
   position: fixed;
   top: 39%;
-  background-color: var(--cor-fundo-claro);
-  border: 1px solid var(--cor-primaria);
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
   width: 24em;
   height: auto;
   z-index: 999;
 }
 
 .waring-header {
-  border-bottom: 1px solid var(--cor-primaria);
+  border-bottom: 1px solid var(--cor-borda);
   max-height: 2em;
   display: flex;
   align-items: center;
@@ -103,7 +131,7 @@ pre{
 }
 
 .waring-header h1 {
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
   font-size: 17px;
 }
 
@@ -111,7 +139,7 @@ pre{
   padding: 0;
   text-align: center;
   font-size: 13px;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
 }
 
 .waring-button {
@@ -122,9 +150,10 @@ pre{
 .waring-button button {
   width: 5em;
   background-color: transparent;
-  border: 1px solid var(--cor-primaria);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
   outline: none;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
   cursor: pointer;
 }
 
@@ -154,8 +183,9 @@ pre{
   display: none;
   position: absolute;
   background-color: var(--cor-fundo-claro);
-  color: var(--cor-terciaria);
-  border: 1px solid var(--cor-primaria);
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
   padding: 5px 10px;
   cursor: pointer;
   margin-top: -30px;
@@ -208,17 +238,17 @@ footer a {
   top: 0;
   width: 100%;
   max-height: 2.5em;
-  background-color: var(--cor-fundo-claro);
-  justify-content: space-between;
+  background-color: var(--cor-fundo);
+  justify-content: center;
   margin: 0;
-  border-bottom: 1px solid var(--cor-primaria);
+  border-bottom: 1px solid var(--cor-borda);
   z-index: 9999;
 }
 
 .nav-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%;
 }
 
@@ -361,19 +391,33 @@ footer a {
   max-width: 5em;
 }
 
-#togglePostFormLink {
-  font-size: 11px;
-  font-weight: 400;
-  background-color: var(--cor-fundo-claro);
-  border-style: none none none solid;
-  border-color: var(--cor-primaria);
-  border-width: 1px;
-  width: 9em;
-  height: 3.3em;
+#togglePostFormLink{
   text-align: center;
-  margin-top: 3em;
-  color: var(--cor-secundaria);
   display: block;
+  margin-right: auto;
+  margin-left: auto;
+  border: 1px solid transparent;
+  color: var(--cor-fundo);
+  cursor: pointer;
+  animation: 10s 60s fadeIn;
+  width: 100px;
+  height: 2em;
+  margin-top: 1.4em !important;
+  margin-bottom: 3px;
+  transition: 0.15s;
+  letter-spacing: 0.3pt;
+  font: 8.8pt "regular_comfortable", monospace;
+  border-radius: 10px;
+  padding: 12px;
+  background-color: ;
+  background-repeat: ;
+  background-attachment: ;
+  background-origin: ;
+  background-clip: ;
+  background-image: url("/static/imgs/decoration/dogolapostbutton.gif");
+  background-size: auto;
+  background-position: center center;
+  opacity: 0.5;
 }
 
 #togglePostFormLink a {
@@ -393,7 +437,11 @@ footer a {
   position: absolute;
   cursor: move;
   z-index: 990;
-  top: 0;
+  top: 5em;
+}
+
+#draggableForm:target {
+  display: block;
 }
 
 .new-thread-container {
@@ -411,7 +459,7 @@ footer a {
 
 .new-thread-header h1 {
   font-size: 16px;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
 }
 
 .row {
@@ -425,8 +473,8 @@ footer a {
 
 .postform-style {
   display: flex;
-  border: 1px solid var(--cor-primaria);
-  background: var(--cor-fundo-claro);
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
   align-items: center;
   box-sizing: border-box;
 }
@@ -443,9 +491,9 @@ footer a {
 
 input, select, textarea {
   accent-color: var(--cor-primaria);
-  border: 1px solid var(--cor-primaria);
-  border-radius: 0;
-  background: var(--cor-fundo-claro);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  background: var(--cor-fundo);
   color: var(--cor-texto);
   font-family: arial, helvetica, sans-serif;
   font-size: inherit;
@@ -453,9 +501,9 @@ input, select, textarea {
 
 .label, .rlabel {
   padding: 3px;
-  border: 1px solid var(--cor-primaria);
+  border: 1px solid var(--cor-borda);
   min-width: 80px;
-  background: var(--cor-fundo-claro);
+  background: var(--cor-fundo);
   display: flex;
   font-weight: 700;
   font-size: 13px;
@@ -463,7 +511,7 @@ input, select, textarea {
   align-items: start;
   flex-direction: column;
   justify-content: center;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
 }
 
 input[type=button], input[type=file], input[type=number], input[type=password], input[type=range], input[type=submit], input[type=text], select, textarea {
@@ -477,7 +525,8 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   position: relative;
   z-index: 1;
   cursor: pointer;
-  border-style: dashed !important;
+  border-style: solid !important;
+  border-radius: 10px;
   justify-content: center;
   padding: 5px;
   min-width: 220px;
@@ -486,7 +535,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   min-height: 38px;
   height: 100%;
   font-size: 13px;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
 }
 
 .postform-style.dummy-link, input[type=submit] {
@@ -500,7 +549,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   align-items: flex-start;
   flex-direction: column;
   gap: 0.5em;
-  width: 100%;
+  width: 73%;
   margin-top: 2em;
 }
 
@@ -508,12 +557,11 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--cor-fundo-claro);
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
   padding: 0em 1em;
   max-height: 2.3em;
-  border-style: none none none solid;
-  border-color: var(--cor-primaria);
-  border-width: 1px;
 }
 
 .board-options ul {
@@ -538,37 +586,38 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   filter: drop-shadow(1px 1px 6px var(--cor-texto));
 }
 
-.paginate-posts-container{
+.paginate-posts-container {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
   gap: 0.5em;
   width: 100%;
   margin-top: 2em;
-  width: 100%;
+  width: 73%;
 }
 
-.paginate-posts{
+.paginate-posts {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--cor-fundo-claro);
+  background-color: var(--cor-fundo);
   padding: 0em 1em;
   max-height: 2.3em;
-  border-style: none none none solid;
-  border-color: var(--cor-primaria);
-  border-width: 1px;
+  border: 1px solid;
+  border-radius: 10px;
+  border-color: var(--cor-borda);
   gap: 1em;
 }
 
-.paginate-posts h1{
+.paginate-posts h1 {
   user-select: none;
   font-size: 14px;
-  color: var(--cor-primaria);;
+  color: var(--cor-texto);
 }
 
-.paginate-posts a{
-  color: var(--cor-primaria);
+.paginate-posts a {
+  color: var(--cor-texto);
+  text-shadow: rgb(255, 140, 0) 0px 0px 10px;
 }
 
 .posts {
@@ -576,29 +625,30 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   align-items: center;
   flex-wrap: wrap;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   left: 0;
 }
 
-.divisoria {
-  border-top: 0.5px solid var(--cor-primaria);
-  width: 100%;
-  margin-top: 1em;
+.divisoria{
+  display: none;
 }
 
 .name {
   color: var(--cor-texto);
-  font-weight: bold;
 }
 
 .post {
+  background-color:var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  padding: 1em;
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  margin-bottom: 2em;
-  max-width: 83%;
+  margin-bottom: 0.3em;
+  max-width: 70%;
   min-width: 70%;
   margin-top: 1em;
   position: relative;
@@ -614,7 +664,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   font-family: "Spline Sans Mono", monospace !important;
   font-size: 11pt !important;
   font-weight: 300;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
   margin: 10px;
   overflow-wrap: anywhere;
   z-index: 1;
@@ -634,11 +684,19 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   float: left;
 }
 
+.post_image:hover {
+  transition: all 0.3s 1s;
+  transform: scale(1.4);
+  box-shadow: rgba(0, 0, 0, 0.81) 0px 0px 1px 1000px;
+  border-radius: 10px;
+}
+
 .post_image img {
   max-width: 200px;
   max-height: 200px;
   object-fit: cover;
   min-width: 200px;
+  border-radius: 10px;
 }
 
 .post_video {
@@ -649,9 +707,11 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   object-fit: contain;
 }
 
-.video-thumbnail{
+.video-thumbnail {
   cursor: pointer;
+  border-radius: 10px;
   max-width: 200px;
+  width: 200px;
   max-height: 200px;
   object-fit: cover;
   min-width: 200px;
@@ -686,8 +746,9 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 
 .postLink {
   margin-left: 4px;
-  color: var(--cor-secundaria);
-  text-decoration: underline;
+  text-shadow: var(--cor-primaria) 0px 0px 10px;
+  color: var(--cor-texto);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -711,8 +772,14 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   padding-left: 9px;
 }
 
-.postDate{
+.postDate {
   padding-left: 4px;
+  font-size: 7pt;
+}
+
+a.postLink:last-child::after {
+  content: ' 💬';
+  font-size: 10px;
 }
 
 .name {
@@ -737,11 +804,11 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   min-width: 20em;
   width: fit-content;
   flex: 0 0 auto;
+  border-radius: 10px;
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  overflow: hidden;
   color: var(--cor-texto);
-  background-color: var(--cor-fundo-claro);
-  border-style: none none none solid;
-  border-color: var(--cor-primaria);
-  border-width: 1px;
   margin-top: 3em;
   height: fit-content;
   margin-top: 1em;
@@ -757,7 +824,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   padding: 0em 2em 0em;
   font-family: "Spline Sans Mono", monospace !important;
   font-size: 10pt !important;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
   overflow-wrap: anywhere;
   z-index: 1;
 }
@@ -775,6 +842,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   min-width: 180px;
   cursor: pointer;
   flex: 1;
+  border-radius: 10px;
 }
 
 .reply_img img {
@@ -797,7 +865,9 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   width: 100%;
   flex-direction: column;
   background-color: #00000083;
-  border: 1px solid var(--cor-primaria);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .sobre-header {
@@ -805,7 +875,8 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   font-size: 10px;
   align-items: center;
   justify-content: center;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
+  text-shadow: var(--cor-primaria) 0px 0px 10px;
   background-color: var(--cor-borda-claro);
   max-height: 2.5em;
 }
@@ -817,7 +888,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   font-size: 15px !important;
   align-items: center;
   justify-content: center;
-  color: var(--cor-terciaria);
+  color: var(--cor-texto);
 }
 
 .sobre-content p {
@@ -830,8 +901,10 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 
 .boards-container {
   margin-top: 1em;
-  border: 1px solid var(--cor-primaria);
-  background-color: #00000088;
+  overflow: hidden;
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  background-color: var(--cor-fundo);
   max-width: 74%;
   width: 800px;
 }
@@ -843,12 +916,12 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 
 .boards-table thead {
   background-color: var(--cor-borda-claro);
-  color: #dbcfb0;
+  color: var(--cor-texto);
 }
 
 .boards-table tbody {
   background-color: transparent;
-  color: #f1c8a5;
+  color: var(--cor-texto);
   font-size: 15px;
   height: 2em;
 }
@@ -883,8 +956,10 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   display: flex;
   width: 100%;
   flex-direction: column;
-  background-color: #00000096;
-  border: 1px solid var(--cor-primaria);
+  background-color: var(--cor-fundo);
+  border: 1px solid var(--cor-borda);
+  border-radius: 10px;
+  gap: 5px;
 }
 
 .last-post {
@@ -896,8 +971,8 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   transition: all 0.3s ease;
 }
 
-.last-post:hover {
-  background-color: var(--cor-fundo-claro);
+.last-post:hover{
+  background-color: var(--cor-fundo);
 }
 
 .last_post_info {
@@ -944,10 +1019,21 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   margin-right: 1em;
   flex-wrap: wrap;
   color: var(--cor-secundaria);
+  text-decoration: none;
 }
 
 .hidden_service {
   color: var(--cor-secundaria);
+}
+
+.hidden-replies {
+  margin-top: 10px;
+  text-align: center;
+  color: #000;
+  font-size: 7pt;
+  background-color: #fff;
+  max-width: 20em;
+  border-radius: 10px;
 }
 
 .text-center{
@@ -964,6 +1050,15 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   color: var(--cor-terciaria);
 }
 
+.toolong{
+  color: var(--cor-texto);
+  background-color: #000;
+  border-radius: 10px;
+  padding-left: 1em;
+  padding-right: 1em;
+  font-size: 8pt;
+}
+
 @media (max-width: 600px) {
   .waring-container {
     width: 20em;
@@ -973,10 +1068,6 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   }
   .waring-content {
     font-size: 10px;
-  }
-  .post {
-    max-width: 100%;
-    width: 100%;
   }
   .post_content_container{
     flex-direction: column;
@@ -1000,13 +1091,22 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
     font-size: 8pt;
     background-color: var(--cor-borda-claro);
   }
-  .post_image{
+  .post_image {
     max-width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     max-height: fit-content;
+    margin: 10px;
+    cursor: pointer;
+    float: none;
+ }
+ .reply_image {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    max-width: 100%;
+    max-height: fit-content;
+    margin: 10px;
+    cursor: pointer;
+    float: none;
   }
   .post_video {
     display: none;
