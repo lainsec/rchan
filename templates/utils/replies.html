@@ -27,7 +27,7 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{{ post.post_content }}</pre>
+                <pre>{{ post.post_content | safe }}</pre>
             </div>
             <div class="replies">
                 {% for reply in replies %}
@@ -50,7 +50,7 @@
                         </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{{ reply.content }}</pre>
+                            <pre>{{ reply.content | safe }}</pre>
                         </div>
                     </div>
                 </div>
