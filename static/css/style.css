@@ -1097,12 +1097,15 @@ a.postLink:last-child::after {
     background-color: var(--cor-borda-claro);
   }
   .post_image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     max-width: 100%;
     max-height: fit-content;
     margin: 10px;
     cursor: pointer;
     float: none;
- }
+  }
  .reply_image {
     display: flex;
     align-items: center;
