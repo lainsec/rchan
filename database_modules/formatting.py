@@ -1,5 +1,15 @@
 import re
 
+def filter_xss(comment):
+    # Regular expression to search html tags.
+    pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
+    
+    # Verify if any tags were found
+    if pattern.search(comment):
+        return True
+    else:
+        return False
+
 def format_comment(comment):
 
     # Manipulação de '>' e '<'
