@@ -125,6 +125,16 @@ def remove_board(board_uri):
 
 @auth_bp.route('/upload_banner', methods=['POST'])
 def upload_banner():
+    if 'username' in session:
+        board_uri = request.form['board_uri']
+        board_info = database_module.get_board_info(board_uri)
+        if session['username'] != board_info.get('board_owner'):
+            flash('You are not the board owner.')
+            return redirect(request.referrer)
+    else:
+        flash('You must be logged in.')
+        return redirect(request.referrer)
+
     if 'imageUpload' not in request.files:
         return redirect(request.referrer)
     file = request.files['imageUpload']
