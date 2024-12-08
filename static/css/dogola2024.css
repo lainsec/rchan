@@ -51,13 +51,27 @@ a:hover{
 }
 
 body {
+    background: repeating-linear-gradient(-45deg, rgb(35, 35, 35), rgb(35, 35, 35) 2px, rgb(31, 31, 31) 2px, rgb(31, 31, 31) 5px);
     font-family: Graphik-Medium, "Graphik-Regular", "Gotham SSm A", "Gotham SSm B", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background-color: var(--cor-fundo);
+    background-color: #121212;
     min-height: 100vh;
     font-size: 10pt;
     font-family: 'Hack', monospace, sans-serif;
-        background:url(/static/imgs/backgrounds/dogola2024.jpg) center top;
     color: var(--cor-texto);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    background: url(/static/imgs/backgrounds/dogola2024.jpg) no-repeat center center;
+    background-size: cover;
+    filter: opacity(0.8) saturate(0) brightness(0.3);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--cor-texto);
+    z-index: -1;
 }
 
 .chan-banner{
