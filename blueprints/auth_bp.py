@@ -1,23 +1,24 @@
+#imports.
 from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
 from database_modules import database_module
 from database_modules import language_module
 from config import config_module
 import os
-
+#blueprint register.
 auth_bp = Blueprint('auth', __name__)
-
+#check file extension.
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
+#check if user are banned.
 @auth_bp.before_request
 def before_request():
     return config_module.check_banned_user()
-
+#favicon route.
 @auth_bp.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
-
+#change the whole imageboard language.
 @auth_bp.route('/change_general_lang', methods=['POST'])
 def change_general_lang():
     new_lang = request.form.get('lang')
@@ -33,7 +34,7 @@ def change_general_lang():
         return redirect(request.referrer)
     flash('You cant do it!')
     return redirect(request.referrer)
-
+#login endpoint.
 @auth_bp.route('/auth_user', methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -48,7 +49,7 @@ def login():
             flash('Invalid credentials, try again.', 'danger')
 
     return redirect('/conta')
-
+#register endpoint.
 @auth_bp.route('/register_user', methods=['POST'])
 def register():
     if request.method == 'POST':
@@ -62,7 +63,7 @@ def register():
             flash('Something went wrong, try again.')
 
     return redirect('/conta')
-
+#board creation endpoint.
 @auth_bp.route('/create_board', methods=['POST'])
 def create_board():
     if request.method == 'POST':
@@ -77,7 +78,7 @@ def create_board():
             flash('Something went wrong, try again.')
 
     return redirect('/')
-
+#apply captcha row for all boards.
 @auth_bp.route('/apply_general_captcha', methods=['POST'])
 def apply_general_captcha():
     if request.method == 'POST':
@@ -91,8 +92,10 @@ def apply_general_captcha():
                 else:
                     flash('Something went wrong, try again.')
                     return redirect(request.referrer)
+            flash('Not enough permissions.')
+            return redirect(request.referrer)
     return redirect('/')
-
+#locking thread endpoint.
 @auth_bp.route('/lock_thread/<post_id>', methods=['POST'])
 def lock_thread(post_id):
     if request.method == 'POST':
@@ -106,8 +109,10 @@ def lock_thread(post_id):
                 else:
                     flash('You cant do it.')
                     return redirect(request.referrer)
+            flash('You are not the board owner.')
+            return redirect(request.referrer)
     return redirect('/')
-
+#delete board endpoint.
 @auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
 def remove_board(board_uri):
     if request.method == 'POST':
@@ -122,7 +127,7 @@ def remove_board(board_uri):
                 return redirect(request.referrer)
 
     return redirect('/')
-
+#board banner upload endpoint.
 @auth_bp.route('/upload_banner', methods=['POST'])
 def upload_banner():
     if 'username' in session:
@@ -131,6 +136,8 @@ def upload_banner():
         if session['username'] != board_info.get('board_owner'):
             flash('You are not the board owner.')
             return redirect(request.referrer)
+        flash('You are not the board owner.')
+        return redirect(request.referrer)
     else:
         flash('You must be logged in.')
         return redirect(request.referrer)
@@ -147,37 +154,52 @@ def upload_banner():
         file.save(os.path.join(directory, file.filename))
         return redirect(request.referrer)
     return redirect(request.referrer)
-
+#pin thread endpoint.
 @auth_bp.route('/pin_post/<post_id>', methods=['POST'])
 def pin_post(post_id):
     board_owner = request.form['board_owner']
     post_id = int(post_id)
     if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
+        roles = database_module.get_user_role(session["username"])
+        if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
             if database_module.pin_post(post_id):
                 flash('Post pinned!')
                 return redirect(request.referrer)
-
+        flash('You are not the board owner.')
+        return redirect(request.referrer)    
+    flash('You must be logged in.')
+    return redirect(request.referrer)
+#delete thread endpoint.
 @auth_bp.route('/delete_post/<post_id>', methods=['POST'])
 def delete_post(post_id):
     board_owner = request.form['board_owner']
     post_id = int(post_id)
     if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
+        roles = database_module.get_user_role(session["username"])
+        if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
             if database_module.remove_post(post_id):
                 flash('Post deleted!')
                 return redirect(request.referrer)
-
+        flash('You are not the board owner.')
+        return redirect(request.referrer)
+    flash('You must be logged in.')
+    return redirect(request.referrer)
+#delete reply endpoint.
 @auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
 def delete_reply(reply_id):
     board_owner = request.form['board_owner']
     if 'username' in session:
-        if session["role"] == 'mod' or session["username"] == board_owner:
+        roles = database_module.get_user_role(session["username"])
+        if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
             reply_id = int(reply_id)
             if database_module.remove_reply(reply_id):
                 flash('Reply deleted!')
                 return redirect(request.referrer)
-
+        flash('You are not the board owner.')
+        return redirect(request.referrer)
+    flash('You must be logged in.')
+    return redirect(request.referrer)
+#logout user.
 @auth_bp.route('/logout')
 def logout():
     if 'username' in session:
