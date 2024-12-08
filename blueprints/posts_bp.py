@@ -104,6 +104,14 @@ def new_post():
     captcha_input = 'none'
     if database_module.verify_board_captcha(board_id):
         captcha_input = request.form['captcha']
+    
+    if formatting.filter_xss(comment):
+        flash('You cant use html tags.')
+        return redirect(request.referrer)
+    
+    if formatting.filter_xss(post_name):
+        flash('You cant use html tags.')
+        return redirect(request.referrer)
 
     handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input)
 
