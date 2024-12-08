@@ -1,12 +1,14 @@
+#imports
 from flask import current_app, Blueprint, render_template, redirect, request, flash, session
 from database_modules import database_module, timeout_module, formatting
 from flask_socketio import SocketIO, emit
 import re
 import os
-
+#bluepint register.
 posts_bp = Blueprint('posts', __name__)
+#socketIO call.
 socketio = SocketIO()
-
+#post handling class.
 class PostHandler:
     def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input):
         self.socketio = socketio
@@ -17,19 +19,19 @@ class PostHandler:
         self.comment = formatting.format_comment(comment)
         self.embed = embed
         self.captcha_input = captcha_input
-
+    #check if user is on hold or not.
     def check_timeout(self):
         if database_module.check_timeout_user(self.user_ip):
             flash('Wait a few seconds to post again.')
             return False
         return True
-
+    #check if the post's board exists.
     def check_board(self):
         if not database_module.check_board(self.board_id):
             flash('I know what did you tried to do.')
             return False
         return True
-
+    #post content handling.
     def validate_comment(self):
         if len(self.comment) >= 10000:
             flash('You reached the limit.')
@@ -39,7 +41,7 @@ class PostHandler:
             return False
         
         return True
-
+    #reply post handling.
     def handle_reply(self, reply_to):
         if database_module.verify_locked_thread(int(reply_to)):
             flash("This thread is locked.")
@@ -63,7 +65,7 @@ class PostHandler:
         self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
         timeout_module.timeout(self.user_ip)
         return True
-
+    #thread post handling.
     def handle_post(self):
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
@@ -89,7 +91,7 @@ class PostHandler:
         if self.post_mode != 'reply':
             flash("You have to upload some image, this is an imageboard...")
             return False
-
+#new post endpoint.
 @posts_bp.route('/new_post', methods=['POST'])
 def new_post():
     socketio = current_app.extensions['socketio']
