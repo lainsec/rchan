@@ -381,7 +381,7 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         return False
     boards = load_boards()
     for board in boards:
-        if board.get('uri') == board_uri or board.get('board_name') == board_name:
+        if board.get('board_uri') == board_uri or board.get('board_name') == board_name:
             return False
     if len(board_uri) < 1:
         return False
