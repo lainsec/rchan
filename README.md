@@ -1,28 +1,26 @@
-<h2 align="left">Installation</h2>
+## Installation
 
-###
-<a>How to install</a>
-<pre align="left">
+How to install
+```bash
 1. git clone https://github.com/lainsec/rchan
 2. cd rchan
 3. python3 -m venv rchanenv
 4. source rchanenv/bin/activate
 5. pip install -r requirements.txt
-</pre>
-###
-<a>How to use</a>
-<pre align="left">
+```
+How to use
+```bash
 python3 app.py
 `The first account will automatically recive OWNER permissions.`
-</pre>
+```
 # Features
 - [x] Free creation of boards for all users.
 - [x] lightweight source code.
-- [x] Realtime posts with websocket.
+- [x] Real-time posts with websocket.
 - [x] Responsive style for mobile.
 - [x] Tripcode system with SHA256.
-- [x] Board pagination
-- [x] Multi language. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
+- [x] Board pagination.
+- [x] Multi language support. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
 - [x] Encrypted passwords with SHA256.
 - [x] Anti-spam with internal captcha and timeout system.
 
