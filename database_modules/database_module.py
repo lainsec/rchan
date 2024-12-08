@@ -1,3 +1,4 @@
+#imports
 import datetime
 import hashlib
 import random
@@ -9,7 +10,7 @@ import os
 import io
 import re
 from captcha.image import ImageCaptcha
-
+#load boards database.
 def load_boards():
     try:
         with open('./database/boards.json','r') as boards:
@@ -17,7 +18,7 @@ def load_boards():
             return boards
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
-
+#load accounts database.
 def load_accounts():
     try:
         with open('./database/accounts.json','r') as accs:
@@ -25,7 +26,7 @@ def load_accounts():
             return accounts
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
-
+#load threads database.
 def load_db():
     try:
         with open('./database/database.json','r') as db:
@@ -33,7 +34,7 @@ def load_db():
             return database
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
-
+#load paginated threads from the database.
 def load_db_page(board_id, offset=0, limit=10):
     try:
         with open('./database/database.json', 'r') as file:
@@ -44,7 +45,7 @@ def load_db_page(board_id, offset=0, limit=10):
     except Exception as e:
         print(f'Ocorreu um erro ao carregar a base de dados: {e}')
         return []
-
+#load pinned threads database.
 def load_pinned():
     try:
         with open('./database/pinned.json','r') as pin:
@@ -52,7 +53,7 @@ def load_pinned():
             return database
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
-
+#load replies database.
 def load_replies():
     try:
         with open('./database/replys.json','r') as replies:
@@ -60,7 +61,7 @@ def load_replies():
             return repl
     except:
         print('Ocorreu um erro ao carregar a base de dados.')
-
+#load users database.
 def load_users():
     try:
         with open('./database/users.json','r') as users:
