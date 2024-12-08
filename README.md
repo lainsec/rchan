@@ -1,6 +1,6 @@
-## Installation
+# Installation
 
-How to install
+## How to install
 ```bash
 1. git clone https://github.com/lainsec/rchan
 2. cd rchan
@@ -8,7 +8,7 @@ How to install
 4. source rchanenv/bin/activate
 5. pip install -r requirements.txt
 ```
-How to use
+## How to use
 ```bash
 python3 app.py
 `The first account will automatically recive OWNER permissions.`
