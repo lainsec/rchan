@@ -136,8 +136,8 @@ def upload_banner():
         if session['username'] != board_info.get('board_owner'):
             flash('You are not the board owner.')
             return redirect(request.referrer)
-        flash('You are not the board owner.')
-        return redirect(request.referrer)
+        else:
+            pass
     else:
         flash('You must be logged in.')
         return redirect(request.referrer)
