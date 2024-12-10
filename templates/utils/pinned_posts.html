@@ -16,7 +16,9 @@
                     <a class="image_url" href="/static/post_images/{{ pinned.get('post_image') }}">{{ pinned.get('post_image')[:17] + '.' + pinned.get('post_image').split('.')[-1] }}</a>
                 </div>
                 {% if '.mp4' in pinned.post_image or '.mov' in pinned.post_image or '.webm' in pinned.post_image  %}
-                <img class="post_img" id="post_video_thumbnail" draggable="false" src="{{ url_for('static', filename='/post_images/thumbs/thumbnail_' + pinned.post_image|replace(post.post_image.split('.')[-1], 'jpg') ) }}">
+                <a href="{{ url_for('static', filename='/post_images/' + pinned.post_image) }}">
+                <img class="post_img" id="post_video_thumbnail" draggable="false" src="{{ url_for('static', filename='/post_images/thumbs/thumbnail_' + pinned.post_image|replace(pinned.post_image.split('.')[-1], 'jpg') ) }}">
+                </a>
                 <video controls class="post_video" src="{{ url_for('static', filename='/post_images/' + pinned.post_image) }}" style="display: none;"></video>
                 {% endif %}
                 <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + pinned.post_image) }}" alt="">
