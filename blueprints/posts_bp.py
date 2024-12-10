@@ -2,6 +2,8 @@
 from flask import current_app, Blueprint, render_template, redirect, request, flash, session
 from database_modules import database_module, timeout_module, formatting
 from flask_socketio import SocketIO, emit
+from PIL import Image
+import cv2
 import re
 import os
 #bluepint register.
@@ -65,6 +67,42 @@ class PostHandler:
         self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
         timeout_module.timeout(self.user_ip)
         return True
+    #generate videos thumbnail
+    def capture_frame_from_video(self, video_path):
+        try:
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                raise ValueError("Error: Unable to open video.")
+
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            frame_at_second = int(fps)  
+
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_at_second)
+
+            ret, frame = cap.read()
+            if not ret:
+                raise ValueError("Error: Unable to read frame.")
+
+            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            thumb_folder = './static/post_images/thumbs/'
+            os.makedirs(thumb_folder, exist_ok=True)
+
+            base, ext = os.path.splitext(os.path.basename(video_path))
+            thumbnail_filename = f"thumbnail_{base}.jpg"
+            thumb_path = os.path.join(thumb_folder, thumbnail_filename)
+
+            pil_image = Image.fromarray(image)
+            pil_image.save(thumb_path)
+
+            cap.release()
+
+            return thumb_path
+
+        except Exception as e:
+            print(f"Error processing video: {e}")
+            return None
+
     #thread post handling.
     def handle_post(self):
         if database_module.verify_board_captcha(self.board_id):
@@ -83,6 +121,15 @@ class PostHandler:
                     filename = f"{base}_{counter}{ext}"
                     counter += 1
                 file.save(os.path.join(upload_folder, filename))
+                
+                if filename.endswith(('.mp4', '.mov', '.webm')):
+                    thumb_path = self.capture_frame_from_video(os.path.join(upload_folder, filename))
+                    if thumb_path:
+                        print(f"Thumbnail saved at: {thumb_path}")
+                    else:
+                        flash("Error generating thumbnail from video.")
+                        return False
+
                 database_module.add_new_post(self.user_ip, self.board_id, self.post_name, self.comment, self.embed, filename)
                 self.socketio.emit('nova_postagem', 'New Reply', broadcast=True)
                 timeout_module.timeout(self.user_ip)
