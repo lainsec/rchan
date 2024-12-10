@@ -16,7 +16,9 @@
                     <a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">{{ post.get('post_image')[:17] + '.' + post.get('post_image').split('.')[-1] }}</a>
                 </div>
                 {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image %}
+                <a href="{{ url_for('static', filename='/post_images/' + post.post_image) }}">
                 <img class="post_img" id="post_video_thumbnail" draggable="false" src="{{ url_for('static', filename='/post_images/thumbs/thumbnail_' + post.post_image|replace(post.post_image.split('.')[-1], 'jpg') ) }}">
+                </a>
                 <video controls class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" style="display: none;"></video>
                 {% else %}
                 <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
