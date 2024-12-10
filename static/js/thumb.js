@@ -1,50 +1,16 @@
-const videos = document.querySelectorAll('video'); 
+document.addEventListener("DOMContentLoaded", function() {
+  const thumbnails = document.querySelectorAll("#post_video_thumbnail");
 
-videos.forEach(video => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+  thumbnails.forEach(thumbnail => {
+      thumbnail.addEventListener("click", function() {
+          thumbnail.style.display = "none";
 
-    video.addEventListener('loadedmetadata', function() {
-        video.currentTime = 2; 
+          
+          const video = thumbnail.nextElementSibling;
 
-        video.addEventListener('seeked', function() {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const imageData = canvas.toDataURL();
-
-            const thumbnailVideo = document.getElementById('thumbnail_video');
-            thumbnailVideo.setAttribute('poster', imageData);
-
-            canvas.remove();
-        });
-    });
-});
-document.addEventListener('DOMContentLoaded', function() {
-    const videos = document.querySelectorAll('.video');
-    const canvases = document.querySelectorAll('.video-thumbnail');
-    const videoPlayers = document.querySelectorAll('.post_video');
-    
-    videos.forEach(function(video, index) {
-      const canvas = canvases[index]; 
-      const videoPlayer = videoPlayers[index]; 
-
-      video.addEventListener('loadeddata', function() {
-        video.currentTime = 1;
+          if (video && video.classList.contains("post_video")) {
+              video.style.display = "block";
+          }
       });
-      video.addEventListener('seeked', function() {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height); 
-      });
-  
-      canvas.addEventListener('click', function() {
-        canvas.style.display = 'none'; 
-        videoPlayer.style.display = 'block';  
-        videoPlayer.play(); 
-      });
-    });
+  });
 });
