@@ -29,4 +29,4 @@ GNU AGPLv3, see [LICENSE](https://github.com/lainsec/rchan/blob/master/LICENSE)
 
 # Help
 For those who wants to help keep the project up:
-Ethereum: `_0x289cf02233dDE601959d9D6DC9D3D91194583fbb_`
+Ethereum: `0x289cf02233dDE601959d9D6DC9D3D91194583fbb`
