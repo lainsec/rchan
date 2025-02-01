@@ -2,7 +2,7 @@ import json
 
 def load_langs():
     try:
-        with open('./config/languages.json','r') as langs:
+        with open('./config/languages.json','r', encoding="utf-8") as langs:
             lang_db = json.load(langs)
             return lang_db
     except:
