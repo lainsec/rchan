@@ -643,11 +643,15 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   float: left;
 }
 
-.post_image img {
+.post_img{
   max-width: 200px;
   max-height: 200px;
   object-fit: cover;
   min-width: 200px;
+}
+
+.post_img_resized{
+  max-width: 100%;
 }
 
 .post_video {
