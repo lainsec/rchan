@@ -35,8 +35,8 @@ function manipularConteudo() {
 
         content = content.split('(((').map((part, index) => {
             if (index === 0) return part;
-            const match = part.match(/^[^()]*\)\)\)/);
-            return match ? `<span class="detected">(((${match}</span>${part.slice(match[0].length)}` : `(((${part}`;
+            const match = part.match(/^([^\)]+)\)\)\)/);
+            return match ? `<a href="https://wikinet.pro/wiki/${match[1]}" target="_blank" style="text-decoration: none;"><span class="detected">(((${match[1]})))</span></a>` : `(((${part}`;
         }).join('');
 
         content = content.split('==').map((part, index) => {
@@ -70,13 +70,15 @@ function adicionarEventosQuoteReply() {
 
             if (targetElement) {
                 document.querySelectorAll('.target').forEach(el => {
-                    el.style.filter = '';
+                    el.style.backgroundColor = '';
                 });
 
-                targetElement.style.filter = 'drop-shadow(1px 1px 8px red)';
+                targetElement.style.backgroundColor = '#6d99ba73';
+                targetElement.style.borderColor = '#82cece';
 
                 setTimeout(() => {
-                    targetElement.style.filter = '';
+                    targetElement.style.backgroundColor = '';
+                    targetElement.style.borderColor = '';
                 }, 2000);
 
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
