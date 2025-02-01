@@ -35,8 +35,8 @@ function manipularConteudo() {
 
         content = content.split('(((').map((part, index) => {
             if (index === 0) return part;
-            const match = part.match(/^([^\)]+)\)\)\)/);
-            return match ? `<a href="https://wikinet.pro/wiki/${match[1]}" target="_blank" style="text-decoration: none;"><span class="detected">(((${match[1]})))</span></a>` : `(((${part}`;
+            const match = part.match(/^([^\)]+)\)\)\)(.*)/);
+            return match ? `<a href="https://wikinet.pro/wiki/${match[1]}" target="_blank" style="text-decoration: none;"><span class="detected">(((${match[1]})))</span></a>${match[2]}` : `(((${part}`;
         }).join('');
 
         content = content.split('==').map((part, index) => {
