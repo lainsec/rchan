@@ -1,6 +1,10 @@
 const images = document.querySelectorAll('.post_img, .reply_img');
 
 images.forEach(image => {
+    if (image.id === "post_video_thumbnail") {
+        return;
+    }
+
     image.addEventListener('click', function() {
         this.style.display = 'none';
 
