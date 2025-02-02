@@ -100,6 +100,11 @@ function adicionarEventosQuoteReply() {
 
             if (targetElement) {
                 const preview = targetElement.cloneNode(true);
+                const replies = preview.querySelectorAll('div.replies');
+                replies.forEach(reply => reply.remove());
+                if (!preview.style.backgroundColor) {
+                    preview.style.backgroundColor = 'var(--cor-fundo-claro)';
+                }
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
                 preview.style.border = '1px solid #ccc';
@@ -130,7 +135,7 @@ function quotePostId(postId) {
     const textarea = document.getElementById('text');
     const draggableForm = document.getElementById('draggableForm');
 
-    textarea.value += '>>' + (textarea.value ? '\n' : '') + postId;
+    textarea.value += '' + (textarea.value ? '\n>>' : '>>') + postId;
 
     draggableForm.style.position = 'absolute';
 
@@ -193,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (quoteButton && e.target === quoteButton) {
             const selection = window.getSelection();
             const selectedText = selection.toString();
-            textarea.value += '>' + (textarea.value ? '\n' : '') + selectedText;
+            textarea.value += '' + (textarea.value ? '\n>' : '>') + selectedText;
             quoteButton.style.display = 'none';
             window.getSelection().removeAllRanges();
         }
