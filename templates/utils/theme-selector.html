@@ -1,6 +1,7 @@
 <select id="theme-selector">
     <option value="">{{ lang["theme-selector"] }}</option>
     <option value="none">default</option>
-    <option value="/static/css/dogola.css">dogolachan</option>
-    <option value="/static/css/dogola2024.css">dogola2024</option>
+    {% for theme in custom_themes %}
+    <option value="/static/css/custom/{{ theme.theme_file }}">{{ theme.theme_name }}</option>
+    {% endfor %}
 </select>

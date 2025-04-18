@@ -3,29 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="/home/">
-    <meta property="og:image" content="/favicon.ico">
-    <meta property="og:description" content="rchan.top, seu imageboard favorito.">
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <title>ｒｃｈａｎ</title>
+    <title>レインｃｈａｎｎｅｌ</title>
 </head>
 <body>
     {% include 'utils/navbar.html' %}
     <div class="page-content">
-        <div class="index-banner">
-            <img class="banner" draggable="false" src="../static/imgs/banners/index_banner/chanbanner.gif">
+        <div class="index-fixed-pages">
+            <li><a class="about-icon coloredIcon" href="">{{ lang["about-container-header"] }}</a></li>
+            <li><a class="rules-icon coloredIcon" href="/pages/globalrules.html">{{ lang["global-rules"] }}</a></li>
+            <li><a class="boards-icon coloredIcon" href="/tabuas">{{ lang["navbar-boards"] }}</a></li>
+            <li><a class="conta-icon coloredIcon" href="/conta">{{ lang["navbar-account"] }}</a></li>
         </div>
-        <div class="chan_title_header">
-            <h1 class="board-title">ｒｃｈａｎ</h1>
+        <div class="index-chan-presentation">
+            <div class="chan_title_header">
+                <h1 class="board-title">レインchannel</h1>
+            </div>
+            <div class="index-banner">
+                <img class="banner" draggable="false" src="../static/imgs/banners/index_banner/chanbanner.gif">
+            </div>
+            {% include 'utils/index-about-container.html' %}
         </div>
-        {% include 'utils/index-about-container.html' %}
-        {% if all_posts | length > 0 %}
-            {% include 'utils/last_posts.html' %}
-        {% endif %}
         {% if boards | length > 0 %}
             {% include 'utils/boards_list.html' %}
+        {% endif %}
+        {% if all_posts | length > 0 %}
+            {% include 'utils/last_posts.html' %}
         {% endif %}
         {% include 'utils/footer.html' %}
     </div>

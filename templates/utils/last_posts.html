@@ -1,23 +1,14 @@
 {% if posts %}
-<div class="last-posts-container">
     <div class="last-posts">
         {% for post in posts %}
         <div class="last-post">
             <div class="last_post_info">
-                <a href="/{{ post.get('board') }}/">/{{ post.get('board') }}/</a>
-            </div>
-            <div class="last_post_image">
-                {% if '.mp4' in post.get('post_image') or '.webm' in post.get('post_image')%}
-                <img src="{{ url_for('static', filename='/post_images/thumbs/thumbnail_' + post.post_image|replace(post.post_image.split('.')[-1], 'jpg') ) }}">
-                {% else %}
-                <img src="{{ url_for('static', filename='post_images/' + post.post_image) }}" alt="">
-                {% endif %}
+                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}">>>/{{ post.get('board') }}/{{ post.get('post_id') }}</a>
             </div>
             <div class="last_post_content">
-                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}">{{ post.get('post_content')[:67] }}...</a>
+                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}">{{ post.get('original_content')[:179] }}...</a>
             </div>
         </div>
         {% endfor %}
     </div>
-</div>
 {% endif %}

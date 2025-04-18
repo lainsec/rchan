@@ -106,7 +106,13 @@ def format_comment(comment):
     # Manipulação de [r]
     comment = comment.replace('[r]', '<span class="rainbowtext">').replace('[/r]', '</span>')
 
+    comment = re.sub(
+        r'\[wikinet\]([^\[]+)\[/wikinet\]',
+        r'<a class="wikinet-hyper-link" href="https://wikinet.pro/wiki/\1" target="_blank"><span>\1</span></a>',
+        comment
+    )
+
     return comment
 
 if __name__ == '__main__':
-    print('dont open this module alone.')
+    print("This module should not be run directly.")

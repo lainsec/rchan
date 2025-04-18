@@ -32,4 +32,4 @@ def get_user_lang(user_lang):
         return langs["default"][0]
 
 if __name__ == '__main__':
-    print('dont open this file alone.')
+    print("This module should not be run directly.")

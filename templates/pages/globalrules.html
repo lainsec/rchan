@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <title>レインchannel</title>
+</head>
+<body>
+    {% include 'utils/navbar.html' %}
+    <div class="page-content">
+        <div class="index-banner">
+            <img class="banner" draggable="false" src="/static/imgs/banners/index_banner/chanbanner.gif">
+        </div>
+        <div class="chan_title_header">
+            <h1 class="board-title">レインｃｈａｎ</h1>
+        </div>
+        <div class="rules_container">
+            <div class="rules">
+            <div class="rules_header">
+                <h1>Global Rules</h1>
+            </div>
+                <ol start="1">
+                    <li>Em situações específicas, as regras globais poderão ser adaptadas para a situação com o aval do administrador.  </li>
+                    <li>Os usuários estão proibidos de postar, receber ou transmitir conteúdo que seja ilegal sob as leis aplicáveis (ou seja compartilhamento de pornografia infantil e seus portais, está proibido). Este site não fornece uma plataforma para atividades ilegais de qualquer tipo. </li>
+                    <li>Imagens de menores de idades em poses sexualizadas ou projetando um ato sexual (segundo o Dost  https://en.wikipedia.org/wiki/Dost_test), estarão sendo deletadas, se prolongadas, o usuário será banido e poderá ter sua conta e boards deletadas sem aviso prévio (erros poderão acontecer em relação a deleção de um conteúdo supostamente injusto, dependerá do moderador, mesmo assim, ele terá a vantagem e razão nos olhos da administração).</li>
+                    <li>Contas e pranchas criadas pelos usuários poderão ser deletadas com ou sem aviso prévio da administração, caso ocorra, abuso severo, negligência das regras globais.</li>
+                    <li>Plataformas como discord ou similares a mesma, estão banidas de serem compartilhadas globalmente, donos de boards e usuários que negligenciarem essa regra, estarão correndo o risco de serem banidos permanentemente e suas boards deletadas.</li>
+                    <li>Usuários que são conhecidos como paneleiros não são bem vindos, qualquer tentativa de criação de board ou panelice está banido para os mesmos.</li>
+                    <li>Para usar esse site, você deve ser maior de idade.</li>
+                </ul>
+            </div>
+        </div>
+        {% include 'utils/footer.html' %}
+    </div>
+    <script src="/static/js/thumb.js"></script>
+    <script src="/static/js/boardstyle.js"></script>
+</body>
+</html>

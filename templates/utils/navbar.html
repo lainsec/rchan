@@ -2,9 +2,22 @@
     <div class="nav-content">
         <div class="boards">
             <ul class="board-links">
-                <li class="board-link"><a href="/">{{ lang["navbar-home"] }}</a></li>
-                <li class="board-link"><a href="/tabuas">{{ lang["navbar-boards"] }}</a></li>
-                <li class="board-link"><a href="/conta">{{ lang["navbar-account"] }}</a></li>
+                <p>[</p>
+                <li class="board-link"><a class="home coloredIcon" title="{{ lang["navbar-home"] }}" href="/"></a></li>
+                <p>/</p>
+                <li class="board-link"><a class="boards coloredIcon" title="{{ lang["navbar-boards"] }}" href="/tabuas"></a></li>
+                <p>/</p>
+                <li class="board-link"><a class="account coloredIcon" title="{{ lang["navbar-account"] }}" href="/conta"></a></li>
+                <p>/</p>
+                {% include 'utils/theme-selector.html' %}
+                <p>]</p>
+            </ul>
+            <ul class="board-links nav-boards">
+                <p>[</p>
+                {% for board in boards %}
+                <li class="board-link"><a href="/{{ board.board_uri }}/">{{ board.board_uri }}</a><p>/</p></li>
+                {% endfor %}
+                <p>]</p>
             </ul>
         </div>
     </div>

@@ -1,31 +1,7 @@
 <div class="boards-container">
     <div class="tabuas">
-        <table class="boards-table">
-            {% set post_counts = {} %}
-            {% for post in all_posts %}
-                {% set board_uri = post.get('board') %}
-                {% if board_uri in post_counts %}
-                    {% set post_counts = post_counts.update({board_uri: post_counts[board_uri] + 1}) %}
-                {% else %}
-                    {% set post_counts = post_counts.update({board_uri: 1}) %}
-                {% endif %}
-            {% endfor %}
-            <thead>
-                <tr>
-                    <th>{{ lang["board-list-boardname"] }}</th>
-                    <th>{{ lang["board-list-boarddesc"] }}</th>
-                    <th>{{ lang["board-list-posts"] }}</th>
-                </tr>
-            </thead>
-            {% for board in boards %}
-            <tbody>
-                <tr>
-                    <td><a class="board_link" href="/{{ board.get('board_uri') }}">/{{ board.get('board_uri') }}/</a></td>
-                    <td>{{ board.get('board_desc') }}</td>
-                    <td>{{ post_counts.get(board.get('board_uri'), 0) }}</td>
-                </tr>
-            </tbody>
-            {% endfor %}
-        </table>
+        {% for board in boards[:23] %}
+            <a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
+        {% endfor %}
     </div>
 </div>

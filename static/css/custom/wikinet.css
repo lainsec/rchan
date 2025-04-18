@@ -1,0 +1,280 @@
+:root {
+    --cor-primaria: grey;
+    --cor-secundaria: #0645ad;
+    --cor-terciaria: #202122;
+    --cor-fundo: #141414;
+    --cor-fundo-claro: #222;
+    --cor-texto: #202122;
+    --cor-texto-claro: #f4c095;
+    --cor-borda: grey;
+    --cor-quote: red;
+    --cor-borda-claro: #282a2e;
+    --cor-fundo-gradiente: linear-gradient(#6d99BA50, #1c1c1c75 400px calc(100% - 200px), #d2738A90);
+}
+
+body {
+    background: white;
+    min-height: 100vh;
+    min-height: 100vh;
+    font-size: 90%;
+    font-family: 'PixelOperator';
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: -1px;
+    width: 100%;
+    background-image: linear-gradient(to top, #77c1f6 0, #e8f2f8 1px, #ffffff 100%);
+    background-color: transparent;
+    justify-content: space-between;
+    margin: 0;
+    z-index: 9999;
+}
+
+.board-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.3em;
+    margin: 0;
+    height: 0.1px;
+    padding: 1em;
+    font-size: 8pt;
+}
+
+.waring-container {
+    position: fixed;
+    top: 39%;
+    background-image: linear-gradient(to top, #77c1f6 0, #e8f2f8 1px, #ffffff 100%);
+    border: 1px solid #a7d7f9;
+    width: 24em;
+    height: auto;
+    z-index: 999;
+}
+
+.waring-header {
+    border-bottom: transparent;
+    max-height: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #F1F4F6;
+}
+
+.index-fixed-pages {
+    width: calc(80% - 2em);
+    padding: 6px 1em;
+    border: 1px solid #a7d7f9;
+    background: #111;
+    background-image: linear-gradient(to top, #77c1f6 0, #e8f2f8 1px, #ffffff 100%);
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+
+.index-chan-presentation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: linear-gradient(to top, #77c1f6 0, #e8f2f8 1px, #ffffff 100%);
+    background-color: white;
+    border: 1px solid #a7d7f9;
+    width: calc(80% - 2em);
+    padding: 1em;
+}
+
+.sobre-container p {
+    text-align: center;
+    letter-spacing: 4px;
+    color: var(--cor-texto);
+}
+
+#dynamicAnnouncement {
+    margin: auto 25%;
+    padding: .25em 0 .25em 0;
+    line-height: 13px;
+    text-align: left;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: var(--cor-texto);
+    color: var(--cor-texto);
+    font-size: 10pt;
+}
+
+.boards-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1em;
+    border: 1px solid gray;
+    background-color: #f6f6f6;
+    padding: 1em;
+    width: calc(80% - 2em);
+}
+
+.last-posts {
+    display: flex;
+    flex-direction: column;
+    background-color: #f6f6f6;
+    border: 1px solid gray;
+    gap: 10px;
+    width: calc(80% - 2em);
+    padding: 1em 1em;
+    margin-top: 1em;
+}
+
+.last_post_content a {
+    display: flex;
+    margin-left: 1em;
+    margin-right: 1em;
+    flex-wrap: wrap;
+    color: var(--cor-texto);
+    text-decoration: none;
+}
+
+#togglePostFormLink {
+    font-size: 11px;
+    font-weight: 400;
+    background-image: linear-gradient(to bottom, rgba(167, 215, 249, 0) 0, #a7d7f9 100%);
+    border: 1px solid #a7d7f9;
+    background-color: transparent;
+    border-width: 1px;
+    border-color: #a7d7f9;
+    width: 9em;
+    height: 3.3em;
+    text-align: center;
+    color: var(--cor-secundaria);
+    display: block;
+}
+
+.new-thread-container {
+    background-color: #f6f6f6;
+    border: 1px solid gray;
+    padding: 5px;
+}
+
+.label, .rlabel {
+    padding: 3px;
+    border: 1px solid gray;
+    min-width: 80px;
+    background: #f6f6f6;
+    display: flex;
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 1px;
+    align-items: start;
+    flex-direction: column;
+    justify-content: center;
+    color: var(--cor-terciaria);
+}
+
+input, select, textarea {
+    accent-color: var(--cor-primaria);
+    border: 1px solid gray;
+    border-radius: 0;
+    background: #f6f6f6;
+    color: var(--cor-texto);
+    font-size: inherit;
+}
+
+.postform-style {
+    display: flex;
+    border: 1px solid gray;
+    background: #f6f6f6;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.post {
+    background-color: #f6f6f6;
+    border-style: solid;
+    border-width: 1px;
+    border-color: grey;
+    box-shadow: none;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 2em;
+    max-width: 80%;
+    min-width: 80%;
+    margin-top: 1em;
+    position: relative;
+    flex: 0 0 auto;
+    padding: 1em;
+}
+
+.reply {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 40em;
+    width: fit-content;
+    flex: 0 0 auto;
+    color: var(--cor-texto);
+    background-image: linear-gradient(to top, #77c1f6 0, #e8f2f8 1px, #ffffff 100%);
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    margin-top: 3em;
+    height: fit-content;
+    margin-top: 1em;
+    align-items: flex-start;
+    justify-content: flex-start;
+    transition: filter 0.3s ease;
+    box-sizing: border-box;
+    box-shadow: none;
+}
+
+@media (max-width: 600px) {
+    .reply-postInfo {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        color: var(--cor-texto);
+        border-bottom: transparent;
+        padding: 0.4em 0.5em 0.2em;
+        left: 0;
+        width: 100%;
+        background-color: #F1F4F6;
+    }
+}
+
+.board-title {
+    font-family: 'PixelOperator';
+    font-size: 30pt;
+    font-weight: 1;
+    color: var(--cor-texto);
+}
+
+.post_image{
+    border: 1px solid #c8ccd1;
+    padding: 4px;
+    background-color: #f8f9fa;
+}
+
+.post_img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    min-width: 200px;
+    border: 1px solid #c8ccd1;
+}
+
+.reply_image{
+    border: 1px solid #c8ccd1;
+    padding: 4px;
+    background-color: #f8f9fa;
+}
+
+.reply_img {
+    border: 1px solid #c8ccd1;
+}
+
+.image_url {
+    font-size: 8pt;
+    color: #202122;
+    text-decoration: none;

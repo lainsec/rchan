@@ -1,1 +1,25 @@
-{% if 'username' in session %}{% if session["username"] == board_info.board_owner or 'mod'.lower() in roles.lower() or 'owner'.lower() in roles.lower() %}<div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;"><form action="/delete_reply/{{ reply.reply_id }}" method="post"><input type="hidden" name="board_owner" value="{{ board_info.board_owner }}"><button style="background-color:transparent; border: none; cursor: pointer;" type="submit"><i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i></button></form></div>{% endif %}{% endif %}
+{% if 'username' in session %}
+  {% set user_roles = roles|lower %}
+  {% set is_moderator = 'mod' in user_roles or 'owner' in user_roles %}
+  {% set is_board_owner = session["username"] == board_info.board_owner %}
+  
+  {% if is_board_owner or is_moderator %}
+    <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;">
+      <form action="/delete_reply/{{ reply.reply_id }}" method="post" class="mod-action-form"
+            onsubmit="return confirm('Are you sure you want to delete this reply?');">
+        <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
+        <button type="submit" class="mod-action-btn" title="Delete this reply">
+          <i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i>
+        </button>
+      </form>
+
+      <form action="/ban_user/{{ reply.reply_id }}" method="post" class="mod-action-form"
+            onsubmit="return confirm('Are you sure you want to ban the author?');">
+        <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
+        <button type="submit" class="mod-action-btn" title="Ban this user">
+          <i class="fa-solid fa-ban" style="color: var(--cor-texto);"></i>
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endif %}

@@ -4,6 +4,8 @@ function manipularConteudo() {
     postContents.forEach(function(postContent) {
         var content = postContent.innerHTML;
 
+        content = content.replace(/\[wikinet\](.*?)\[\/wikinet\]/g, '<a class="wikinet-hyper-link" href="https://wikinet.pro/wiki/$1" target="_blank"><span>$1</span></a>');
+
         content = content.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+(?:\S)*)\)/g, '<a class="hyper-link" href="$2">$1</a>');
 
         content = content.split('&gt;&gt;').map((part, index) => {
@@ -36,7 +38,7 @@ function manipularConteudo() {
         content = content.split('(((').map((part, index) => {
             if (index === 0) return part;
             const match = part.match(/^([^\)]+)\)\)\)(.*)/);
-            return match ? `<a href="https://wikinet.pro/wiki/${match[1]}" target="_blank" style="text-decoration: none;"><span class="detected">(((${match[1]})))</span></a>${match[2]}` : `(((${part}`;
+            return match ? `<span class="detected">(((${match[1]})))</span>${match[2]}` : `(((${part}`;
         }).join('');
 
         content = content.split('==').map((part, index) => {
@@ -60,7 +62,7 @@ function manipularConteudo() {
 
 
 function adicionarEventosQuoteReply() {
-    
+
     const quoteReplies = document.querySelectorAll('.quote-reply');
 
     quoteReplies.forEach(span => {
@@ -83,7 +85,7 @@ function adicionarEventosQuoteReply() {
 
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                const offset = 100; 
+                const offset = 100;
                 const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
                 const offsetPosition = elementPosition - offset;
 
@@ -93,7 +95,7 @@ function adicionarEventosQuoteReply() {
                 });
             }
         });
-        
+
         span.addEventListener('mouseenter', (event) => {
             const targetId = span.getAttribute('data-id');
             const targetElement = document.getElementById(targetId);
@@ -107,15 +109,14 @@ function adicionarEventosQuoteReply() {
                 }
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
-                preview.style.border = '1px solid #ccc';
-                preview.style.padding = '10px';
-                preview.style.display = 'block'; 
+                preview.style.border = '1px solid var(--cor-borda)';
+                preview.style.display = 'block';
 
                 document.body.appendChild(preview);
 
                 const updatePreviewPosition = (e) => {
-                    preview.style.left = `${e.pageX + 10}px`; 
-                    preview.style.top = `${e.pageY + 10}px`; 
+                    preview.style.left = `${e.pageX + 10}px`;
+                    preview.style.top = `${e.pageY + 10}px`;
                 };
 
                 document.addEventListener('mousemove', updatePreviewPosition);
@@ -159,7 +160,7 @@ function quotePostId(postId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    manipularConteudo(); 
+    manipularConteudo();
 
     const textarea = document.getElementById('text');
     let quoteButton;
@@ -171,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 quoteButton = document.createElement('button');
                 quoteButton.className = 'quote-button';
                 quoteButton.innerText = 'Quotar';
-                document.body.appendChild(quoteButton); 
+                document.body.appendChild(quoteButton);
             }
 
             const range = selection.getRangeAt(0);
@@ -181,10 +182,10 @@ document.addEventListener("DOMContentLoaded", function() {
             quoteButton.style.top = `${rect.top + window.scrollY - 10}px`;
 
             requestAnimationFrame(() => {
-                quoteButton.style.display = 'block'; 
+                quoteButton.style.display = 'block';
             });
         } else if (quoteButton) {
-            quoteButton.style.display = 'none'; 
+            quoteButton.style.display = 'none';
         }
     });
 
@@ -203,6 +204,110 @@ document.addEventListener("DOMContentLoaded", function() {
             window.getSelection().removeAllRanges();
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Função principal que formata a data
+    function formatDate(element) {
+        const dateString = element.textContent.trim();
+        
+        try {
+            // Converte a string para um objeto Date (formato dd/mm/aaaa HH:MM:SS)
+            const [datePart, timePart] = dateString.split(' ');
+            const [day, month, year] = datePart.split('/').map(Number);
+            const [hours, minutes, seconds] = timePart.split(':').map(Number);
+            
+            const date = new Date(year, month - 1, day, hours, minutes, seconds);
+            
+            // Calcula a diferença em relação ao agora
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            // Define os intervalos de tempo
+            const intervals = {
+                ano: 31536000,
+                mês: 2592000,
+                semana: 604800,
+                dia: 86400,
+                hora: 3600,
+                minuto: 60,
+                segundo: 1
+            };
+            
+            // Calcula o tempo relativo
+            let relativeTime = '';
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(diffInSeconds / secondsInUnit);
+                if (interval >= 1) {
+                    relativeTime = interval === 1 ? 
+                        `há 1 ${unit}` : 
+                        `há ${interval} ${unit}${unit !== 'mês' ? 's' : 'es'}`;
+                    break;
+                }
+            }
+            
+            // Se não encontrou nenhum intervalo ou é menos de 1 segundo
+            if (!relativeTime) {
+                relativeTime = 'agora mesmo';
+            }
+            
+            // Armazena a data original como um atributo de dados
+            element.dataset.originalDate = dateString;
+            
+            // Atualiza o conteúdo do elemento
+            element.textContent = relativeTime;
+            
+            // Adiciona um título com a data original para acessibilidade
+            element.setAttribute('title', dateString);
+            
+            return true;
+        } catch (e) {
+            console.error('Erro ao formatar data no elemento:', element, 'Erro:', e);
+            return false;
+        }
+    }
+
+    // Função para atualizar todas as datas periodicamente
+    function updateAllDates() {
+        document.querySelectorAll('span.postDate').forEach(element => {
+            // Restaura a data original antes de formatar novamente
+            if (element.dataset.originalDate) {
+                element.textContent = element.dataset.originalDate;
+            }
+            formatDate(element);
+        });
+    }
+
+    // Observador de mutação para novos elementos adicionados dinamicamente
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                // Verifica se o nó é um elemento
+                if (node.nodeType === 1) {
+                    // Verifica se é um span.postDate
+                    if (node.matches('span.postDate')) {
+                        formatDate(node);
+                    }
+                    // Verifica os descendentes
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('span.postDate').forEach(formatDate);
+                    }
+                }
+            });
+        });
+    });
+
+    // Configura e inicia o observador
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    // Formata todas as datas inicialmente
+    document.querySelectorAll('span.postDate').forEach(formatDate);
+
+    // Atualiza as datas a cada minuto (60000 ms)
+    setInterval(updateAllDates, 60000);
 });
 
 const checkboxes = document.querySelectorAll('#togglemodoptions');

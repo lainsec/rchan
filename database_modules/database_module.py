@@ -1,4 +1,8 @@
-#imports
+"""
+Imageboard Database Module using LainDB
+This module handles all database operations for an imageboard system.
+"""
+
 import datetime
 import hashlib
 import random
@@ -10,87 +14,66 @@ import os
 import io
 import re
 from captcha.image import ImageCaptcha
-#load boards database.
-def load_boards():
-    try:
-        with open('./database/boards.json','r') as boards:
-            boards = json.load(boards)
-            return boards
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
-#load accounts database.
-def load_accounts():
-    try:
-        with open('./database/accounts.json','r') as accs:
-            accounts = json.load(accs)
-            return accounts
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
-#load threads database.
-def load_db():
-    try:
-        with open('./database/database.json','r') as db:
-            database = json.load(db)
-            return database
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
-#load paginated threads from the database.
-def load_db_page(board_id, offset=0, limit=10):
-    try:
-        with open('./database/database.json', 'r') as file:
-            database = json.load(file)
-            filtered_posts = [post for post in database if post.get('board') == board_id]
-            filtered_posts = filtered_posts[::-1]
-            return filtered_posts[offset:offset + limit]
-    except Exception as e:
-        print(f'Ocorreu um erro ao carregar a base de dados: {e}')
-        return []
-#load pinned threads database.
-def load_pinned():
-    try:
-        with open('./database/pinned.json','r') as pin:
-            database = json.load(pin)
-            return database
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
-#load replies database.
-def load_replies():
-    try:
-        with open('./database/replys.json','r') as replies:
-            repl = json.load(replies)
-            return repl
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
-#load users database.
-def load_users():
-    try:
-        with open('./database/users.json','r') as users:
-            database = json.load(users)
-            return database
-    except:
-        print('Ocorreu um erro ao carregar a base de dados.')
+from laindb.laindb import Lainconfig
 
-def save_new_user(user):
-    with open('./database/accounts.json', 'w') as f:
-        json.dump(user, f, indent=4)
+# Initialize LainDB databases
+DB = Lainconfig.load_db('imageboard')
+DB.create_table('boards', {
+    'id': 'int',
+    'board_uri': 'str',
+    'board_name': 'str',
+    'board_desc': 'str',
+    'board_owner': 'str',
+    'enable_captcha': 'int'
+})
+DB.create_table('accounts', {
+    'id': 'int',
+    'username': 'str',
+    'password': 'str',
+    'role': 'str'
+})
+DB.create_table('posts', {
+    'id': 'int',
+    'user_ip': 'str',
+    'post_id': 'int',
+    'post_user': 'str',
+    'post_date': 'str',
+    'board': 'str',
+    'original_content': 'str',
+    'post_content': 'str',
+    'post_images': 'list',
+    'locked': 'int',
+    'visible': 'int'
+})
+DB.create_table('pinned', {
+    'id': 'int',
+    'user_ip': 'str',
+    'post_id': 'int',
+    'post_user': 'str',
+    'post_date': 'str',
+    'board': 'str',
+    'post_content': 'str',
+    'post_images': 'list'
+})
+DB.create_table('replies', {
+    'id': 'int',
+    'user_ip': 'str',
+    'reply_id': 'int',
+    'post_id': 'int',
+    'post_user': 'str',
+    'post_date': 'str',
+    'content': 'str',
+    'images': 'list'
+})
+DB.create_table('users', {
+    'id': 'int',
+    'user_ip': 'str',
+    'user_role': 'str'
+})
 
-def save_new_post(post):
-    with open('./database/database.json', 'w') as f:
-        json.dump(post, f, indent=4)
-
-def save_new_pinned(post):
-    with open('./database/pinned.json', 'w') as f:
-        json.dump(post, f, indent=4)
-
-def save_new_reply(reply):
-    with open('./database/replys.json', 'w') as f:
-        json.dump(reply, f, indent=4)
-
-def save_new_board(board):
-    with open('./database/boards.json', 'w') as f:
-        json.dump(board, f, indent=4)
-
+# Utility Functions
 def generate_captcha():
+    """Generate a CAPTCHA challenge."""
     captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     image = ImageCaptcha()
     image_data = image.generate(captcha_text)
@@ -99,6 +82,7 @@ def generate_captcha():
     return captcha_text, f"data:image/png;base64,{image_base64}"
 
 def generate_tripcode(post_name):
+    """Generate a tripcode from post name."""
     match = re.search(r'#(\S+)', post_name)
     if match:
         text_to_encrypt = match.group(1)
@@ -108,345 +92,652 @@ def generate_tripcode(post_name):
     return post_name
 
 def hash_password(password):
+    """Hash a password with PBKDF2."""
     salt = os.urandom(16)
     hashed = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
     return salt.hex() + ':' + hashed.hex()
 
 def verify_password(stored_password, provided_password):
+    """Verify a password against its hash."""
     salt, hashed = stored_password.split(':')
     salt = bytes.fromhex(salt)
     hashed_provided = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)
     return hashed_provided.hex() == hashed
 
-def verify_board_captcha(board_uri):
-    boards = load_boards()
-    for board in boards:
-        if 'enable_captcha' in board:
-            if board.get('enable_captcha') == 1:
-                return True
-            else:
-                return False
-        return False
-
-def verify_locked_thread(thread_id):
-    posts = load_db()
-    for post in posts:
-        if post.get('post_id') == thread_id:
-            if 'locked' in post:
-                if post.get('locked') == 1:
-                    return True
-                return False
-            return False
-
 def validate_captcha(captcha_input, captcha_text):
-    if captcha_input != captcha_text:
-       return False
-    return True
+    """Validate CAPTCHA input."""
+    return captcha_input == captcha_text
+
+def get_current_datetime():
+    """Get current datetime in Brazil timezone."""
+    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
+    return datetime.datetime.now(fuso_horario_brasilia).strftime("%d/%m/%Y %H:%M:%S")
+
+# Board Operations
+def verify_board_captcha(board_uri):
+    """Check if CAPTCHA is enabled for a board."""
+    board = DB.query('boards', {'board_uri': {'==': board_uri}})
+    if board and 'enable_captcha' in board[0]:
+        return board[0]['enable_captcha'] == 1
+    return False
 
 def set_all_boards_captcha(option):
-    boards = load_boards()
+    """Enable/disable CAPTCHA for all boards."""
+    boards = DB.find_all('boards')
     for board in boards:
-        if option == 'disable':
-            board['enable_captcha'] = 0
-        else:
-            board['enable_captcha'] = 1
-    save_new_board(boards)
+        board['enable_captcha'] = 1 if option == 'enable' else 0
+        DB.update('boards', board['id'], board)
     return True
-
-def lock_thread(thread_id):
-    posts = load_db()
-    for post in posts:
-        if post.get('post_id') == thread_id:
-            if not 'locked' in post or post.get('locked') == 0:
-                post['locked'] = 1
-            elif post.get('locked') == 1:
-                post['locked'] = 0
-            save_new_post(posts)
-            return True
-    return False
-    
-def login_user(username, password):
-    users = load_accounts()
-    try:
-        for user in users:
-            if user.get('username') == username:
-                if verify_password(user.get('password'), password):
-                    return True
-                return False
-    except Exception as e:
-        print(f"Erro: {e}")
-        return False
-
-def register_user(username, password, captcha_input, captcha_text):
-    if not validate_captcha(captcha_input, captcha_text):
-        return False
-    users = load_accounts()
-    if len(username) <= 3:
-        return False
-    for user in users:
-        if user.get('username') == username:
-            return False
-    
-    hashed_password = hash_password(password)
-    
-    if len(users) == 0:
-        new_user = {"username": username, "password": hashed_password, "role": "owner"}
-    else:
-        new_user = {"username": username, "password": hashed_password, "role": ""}
-    
-    users.append(new_user)
-    save_new_user(users)
-    return True
-
-def get_pinned_posts(board_uri):
-    pinned = load_pinned()
-    found_pins = []
-    for pin in pinned:
-        if pin.get('board') == board_uri:
-            found_pins.append(pin)
-            
-    return found_pins
-
-def get_user_role(username):
-    users = load_accounts()
-    try:
-        for user in users:
-            if user.get('username') == username:
-                role = user.get('role')
-                return role
-    except:
-        return False
-
-def get_user_boards(username):
-    boards = load_boards()
-    user_boards = []
-    try:
-        for board in boards:
-            if 'board_owner' in board:
-                if board.get('board_owner') == username:
-                    user_boards.append(board)
-        return user_boards
-    except:
-        return False
 
 def get_board_info(board_uri):
-    boards = load_boards()
-    for board in boards:
-        if board.get('board_uri') == board_uri:
-            return board
+    """Get information about a specific board."""
+    board = DB.query('boards', {'board_uri': {'==': board_uri}})
+    return board[0] if board else None
 
 def get_board_banner(board_uri):
+    """Get a random banner for a board."""
     banner_folder = os.path.join('./static/imgs/banners', board_uri)
     if not os.path.exists(banner_folder):
-        return None  
+        return None
+    
     try:
         images = [f for f in os.listdir(banner_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     except Exception as e:
-        print(f"Erro ao listar imagens: {e}")
-        return None 
+        print(f"Error listing images: {e}")
+        return None
+    
     if not images:
         return '/static/imgs/banners/default.jpg'
+    
     selected_image = random.choice(images)
     return f'/static/imgs/banners/{board_uri}/{selected_image}'
 
-def get_all_banners(board_uri):
-    banner_folder = os.path.join('./static/imgs/banners', board_uri)
-    if not os.path.exists(banner_folder):
-        return []
+def get_all_posts(include_replies=False, board_filter=None, sort_by_date=False):
+    """
+    Get all posts from the database, optionally filtered by board and including replies.
+    Can control whether to sort by date or not.
+    
+    Args:
+        include_replies (bool): Whether to include replies in the results
+        board_filter (str): Optional board URI to filter posts by
+        sort_by_date (bool): Whether to sort posts by date (newest first). Default True.
+        
+    Returns:
+        list: List of all posts (and optionally replies) matching the criteria
+    """
     try:
-        banners = [f for f in os.listdir(banner_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+        # Get all main posts
+        query = {}
+        if board_filter:
+            query['board'] = {'==': board_filter}
+        
+        posts = DB.query('posts', query)
+        
+        if include_replies:
+            # Get all replies
+            replies = DB.find_all('replies')
+            
+            # Combine posts and replies
+            all_content = posts + replies
+        else:
+            all_content = posts
+        
+        # Sort by date if requested
+        if sort_by_date:
+            all_content.sort(key=lambda x: x['post_date'], reverse=True)
+        
+        return all_content
+    
     except Exception as e:
-        print("Erro ao listar banners")
-        return [] 
-    return [os.path.join('/static/imgs/banners', board_uri, banner) for banner in banners]
+        print(f"Error retrieving posts: {e}")
+        return []
 
-def check_timeout_user(user_ip):
-    users = load_users()
-    for user in users:
-        if user.get('user_ip') == user_ip:
-            role = user.get('user_role')
-            if role == 'timeout':
-                return True
-                break
-            return False
-            break
-    return False
+def get_all_boards(include_stats=False):
+    """
+    Get all boards from the database, optionally with statistics.
+    
+    Args:
+        include_stats (bool): Whether to include post and thread counts for each board
+        
+    Returns:
+        list: List of all boards, each as a dictionary with board information
+    """
+    try:
+        boards = DB.find_all('boards')
+        
+        if include_stats:
+            for board in boards:
+                board_uri = board['board_uri']
+                
+                # Get all posts for this board
+                posts = DB.query('posts', {
+                    'board': {'==': board_uri}
+                })
+                
+                # Thread count is just the number of posts
+                board['thread_count'] = len(posts)
+                
+                # Get reply count for each post
+                reply_count = 0
+                last_activity = None
+                
+                for post in posts:
+                    # Get replies for this post
+                    replies = DB.query('replies', {
+                        'post_id': {'==': post['post_id']}
+                    })
+                    
+                    reply_count += len(replies)
+                    
+                    # Check for last activity in replies
+                    for reply in replies:
+                        if not last_activity or reply['post_date'] > last_activity:
+                            last_activity = reply['post_date']
+                
+                # Total posts is threads + replies
+                board['total_posts'] = board['thread_count'] + reply_count
+                
+                # Check for last activity in posts
+                for post in posts:
+                    if not last_activity or post['post_date'] > last_activity:
+                        last_activity = post['post_date']
+                
+                board['last_activity'] = last_activity
+        
+        return boards
+    
+    except Exception as e:
+        print(f"Error retrieving boards: {e}")
+        return []
 
-def check_post_exist(reply_to):
-    posts = load_db()
-    if reply_to in posts:
-        return True
-    return False
-
-def check_board(board_uri):
-    boards = load_boards()
-    for board in boards:
-        if board.get('board_uri') == board_uri:
-            return True
-            break
-    return False
-
-def check_banned_user(user_ip):
-    users = load_users()
-    for user in users:
-        if user.get('user_ip') == user_ip:
-            role = user.get('user_role')
-            if role == 'banned':
-                return True
-            return False
-            break     
-
-def add_new_post(user_ip,board_id, post_name, comment, embed, file):
-    posts = load_db()
-    replies = load_replies()
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    agora = datetime.datetime.now(fuso_horario_brasilia)
-    formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
-    max_post_id = max((post['post_id'] for post in posts), default=0)
-    max_reply_id = max((reply['reply_id'] for reply in replies), default=0)
-    maior_id = max(max_post_id, max_reply_id)
-    new_post_id = maior_id + 1
-    new_post = {
-        "user_ip": user_ip,
-        "post_id": new_post_id,
-        "post_user": generate_tripcode(post_name),
-        "post_date": str(formatado),
-        "board": board_id,
-        "post_content": comment,
-        "post_image": file
+def get_board_stats(board_uri):
+    """
+    Get detailed statistics for a specific board.
+    
+    Args:
+        board_uri (str): The URI of the board
+        
+    Returns:
+        dict: Dictionary containing board statistics
+    """
+    stats = {
+        'thread_count': 0,
+        'reply_count': 0,
+        'total_posts': 0,
+        'last_activity': None,
+        'pinned_threads': 0
     }
-    posts.append(new_post)
-    save_new_post(posts)
+    
+    try:
+        # Get thread count
+        stats['thread_count'] = len(DB.query('posts', {
+            'board': {'==': board_uri}
+        }))
+        
+        # Get reply count
+        thread_ids = [post['post_id'] for post in DB.query('posts', {
+            'board': {'==': board_uri}
+        })]
+        
+        if thread_ids:
+            stats['reply_count'] = len(DB.query('replies', {
+                'post_id': {'in': thread_ids}
+            }))
+        
+        stats['total_posts'] = stats['thread_count'] + stats['reply_count']
+        
+        # Get pinned threads count
+        stats['pinned_threads'] = len(DB.query('pinned', {
+            'board': {'==': board_uri}
+        }))
+        
+        # Get last activity
+        last_post = DB.query('posts', {
+            'board': {'==': board_uri}
+        }, sort_by='post_date', sort_desc=True, limit=1)
+        
+        last_reply = None
+        if thread_ids:
+            last_reply = DB.query('replies', {
+                'post_id': {'in': thread_ids}
+            }, sort_by='post_date', sort_desc=True, limit=1)
+        
+        if last_post:
+            stats['last_activity'] = last_post[0]['post_date']
+        if last_reply:
+            if not stats['last_activity'] or last_reply[0]['post_date'] > stats['last_activity']:
+                stats['last_activity'] = last_reply[0]['post_date']
+        
+        return stats
+    
+    except Exception as e:
+        print(f"Error getting stats for board {board_uri}: {e}")
+        return stats
 
-def add_new_reply(user_ip,reply_to, post_name, comment, embed, file):
-    posts = load_db()
-    replies = load_replies()
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    agora = datetime.datetime.now(fuso_horario_brasilia)
-    formatado = agora.strftime("%d/%m/%Y %H:%M:%S")
-    max_post_id = max((post['post_id'] for post in posts), default=0)
-    max_reply_id = max((reply['reply_id'] for reply in replies), default=0)
-    maior_id = max(max_post_id, max_reply_id)
-    new_post_id = maior_id + 1
-    new_reply = {
-        "user_ip": user_ip,
-        "reply_id": new_post_id,
-        "post_id": int(reply_to),
-        "post_user": generate_tripcode(post_name),
-        "post_date": str(formatado),
-        "content": comment,
-        "image": file
-    }
-    replies.append(new_reply)
-    save_new_reply(replies)
-    post_to_move = next((p for p in posts if p['post_id'] == int(reply_to)), None)
-    if post_to_move:
-        posts.remove(post_to_move)
-        posts.append(post_to_move)
-        save_new_post(posts)
+def search_boards(search_term):
+    """
+    Search boards by name or description.
+    
+    Args:
+        search_term (str): Term to search for in board names and descriptions
+        
+    Returns:
+        list: List of matching boards
+    """
+    try:
+        # Search in board names
+        name_results = DB.query('boards', {
+            'board_name': {'LIKE': f'%{search_term}%'}
+        })
+        
+        # Search in board descriptions
+        desc_results = DB.query('boards', {
+            'board_desc': {'LIKE': f'%{search_term}%'}
+        })
+        
+        # Combine results and remove duplicates
+        combined = name_results + desc_results
+        seen = set()
+        unique_results = []
+        
+        for board in combined:
+            identifier = board['board_uri']
+            if identifier not in seen:
+                seen.add(identifier)
+                unique_results.append(board)
+        
+        return unique_results
+    
+    except Exception as e:
+        print(f"Error searching boards: {e}")
+        return []
 
-def remove_post(post_id):
-    posts = load_db()
-    pinned = load_pinned()
-    replies = load_replies()
-    for post in posts:
-        if post.get('post_id') == post_id:
-            posts.remove(post)
-            save_new_post(posts)
-            for reply in replies:
-                if reply.get('post_id') == post_id:
-                    replies.remove(reply)
-            save_new_reply(replies)
-            for pin in pinned:
-                if pin.get('post_id') == post.get('post_id'):
-                    pinned.remove(pin)
-            save_new_pinned(pinned)
-            return True
-            break
+def get_popular_boards(limit=5):
+    """
+    Get the most active boards based on recent activity.
+    
+    Args:
+        limit (int): Number of boards to return
+        
+    Returns:
+        list: List of popular boards with activity stats
+    """
+    try:
+        all_boards = get_all_boards(include_stats=True)
+        
+        # Filter boards with activity and sort by last activity
+        active_boards = [b for b in all_boards if b.get('last_activity')]
+        active_boards.sort(key=lambda x: x['last_activity'], reverse=True)
+        
+        return active_boards[:limit]
+    
+    except Exception as e:
+        print(f"Error getting popular boards: {e}")
+        return []
 
-def remove_reply(reply_id):
-    replies = load_replies()
-    for reply in replies:
-        if reply.get('reply_id') == reply_id:
-            replies.remove(reply)
-            save_new_reply(replies)
-            return True
-            break
+def get_max_post_id():
+    max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
+    max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
+    max_id = max(max_post_id, max_reply_id)
+    return max_id
 
 def create_banner_folder(board_uri):
+    """Create a folder for board banners."""
     board_folder = os.path.join('./static/imgs/banners/', board_uri)
     os.makedirs(board_folder, exist_ok=True)
 
 def add_new_board(board_uri, board_name, board_description, username, captcha_input, captcha_text):
+    """Create a new board."""
     if not validate_captcha(captcha_input, captcha_text):
         return False
-    boards = load_boards()
-    for board in boards:
-        if board.get('board_uri') == board_uri or board.get('board_name') == board_name:
-            return False
-    if len(board_uri) < 1:
+    
+    existing_boards = DB.query('boards', {'board_uri': {'==': board_uri}})
+    if existing_boards:
         return False
-    if len(board_name) < 1:
+    
+    if len(board_uri) < 1 or len(board_name) < 1 or len(board_description) <= 3:
         return False
-    if len(board_description) <= 3:
-        return False
+    
+    max_board_id = max([board['id'] for board in DB.find_all('boards')] + [0])
+    
     new_board = {
-        "board_owner": username,
-        "board_uri": board_uri,
-        "board_name": board_name,
-        "board_desc": board_description
+        'id': max_board_id,
+        'board_owner': username,
+        'board_uri': board_uri,
+        'board_name': board_name,
+        'board_desc': board_description,
+        'enable_captcha': 0
     }
-    boards.append(new_board)
-    save_new_board(boards)
+    
+    DB.insert('boards', new_board)
     create_banner_folder(board_uri)
     return True
 
 def remove_board(board_uri, username, role):
+    """Remove a board."""
     board_info = get_board_info(board_uri)
-    boards = load_boards()
-    if board_info.get('board_owner') == username or 'mod' in role.lower() or 'owner' in role.lower():
-        posts = load_db()
-        for post in posts:
-            if post.get('board') == board_uri:
-                remove_post(post.get('post_id'))
-        for board in boards:
-            if board.get('board_uri') == board_uri:
-                boards.remove(board)
-        save_new_board(boards)
+    if not board_info:
+        return False
+    
+    if board_info.get('board_owner') != username and 'mod' not in role.lower() and 'owner' not in role.lower():
+        return False
+    
+    # Remove all posts from this board
+    posts = DB.query('posts', {'board': {'==': board_uri}})
+    for post in posts:
+        remove_post(post['post_id'])
+    
+    # Remove the board
+    DB.delete('boards', board_info['id'])
+    return True
+
+# User Operations
+def login_user(username, password):
+    """Authenticate a user."""
+    user = DB.query('accounts', {'username': {'==': username}})
+    if user and verify_password(user[0]['password'], password):
+        return True
+    return False
+
+def register_user(username, password, captcha_input, captcha_text):
+    """Register a new user."""
+    if not validate_captcha(captcha_input, captcha_text) or len(username) <= 3:
+        return False
+    
+    existing_user = DB.query('accounts', {'username': {'==': username}})
+    if existing_user:
+        return False
+    
+    hashed_password = hash_password(password)
+    role = 'owner' if len(DB.find_all('accounts')) == 0 else ''
+    
+    max_account_id = max([account['id'] for account in DB.find_all('accounts')] + [0])
+    new_user = {
+        'id': max_account_id,
+        'username': username,
+        'password': hashed_password,
+        'role': role
+    }
+    
+    DB.insert('accounts', new_user)
+    return True
+
+def get_user_role(username):
+    """Get a user's role."""
+    user = DB.query('accounts', {'username': {'==': username}})
+    return user[0]['role'] if user else None
+
+def get_post_ip(post_id):
+    """Get the IP from post."""
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    if not post:
+        reply = DB.query('replies', {'reply_id': {'==': post_id}})
+        return reply[0]['user_ip'] if reply else None
+    return post[0]['user_ip'] if post else None
+
+def check_post_exist(post_id):
+    """Verify if thread exists."""
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    if not post:
+        reply = DB.query('replies', {'reply_id': {'==': post_id}})
+        return True if reply else False
+    return True
+
+def check_replyto_exist(post_id):
+    """Verify if reply_to thread exists."""
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    return True if post else False
+
+# Post Operations
+def bump_thread(thread_id):
+    """
+    Bump a thread by deleting and recreating for keep the thread new on DB.
+    This brings the thread to the end of the database (making it appear first in descending order).
+    
+    Args:
+        thread_id (int): The ID of the thread to bump
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Remove the thread from DB.
+        thread = DB.query('posts', {'post_id': {'==': thread_id}})
+        if not thread:
+            return False
+        
+        thread = thread[0]
+        DB.delete('posts', thread_id)
+        
+        # Finally insert again.
+        DB.insert('posts', thread)
+        
+        return True
+    
+    except Exception as e:
+        print(f"Error bumping thread {thread_id}: {e}")
+        return False
+
+def add_new_post(user_ip, board_id, post_name, original_content, comment, embed, files):
+    """Create a new post with multiple files."""
+    # First verify if board exists
+    board = DB.query('boards', {'board_uri': {'==': board_id}})
+    if not board:
+        raise ValueError(f"Board '{board_id}' does not exist")
+    
+    # Get the next post ID
+    max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
+    max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
+    max_id = max(max_post_id, max_reply_id)
+    new_post_id = max_id + 1
+    
+    # Create the new post
+    new_post = {
+        'id': new_post_id,
+        'user_ip': user_ip,
+        'post_id': new_post_id,
+        'post_user': generate_tripcode(post_name),
+        'post_date': get_current_datetime(),
+        'board': board_id,
+        'original_content': original_content,
+        'post_content': comment,
+        'post_images': files,  # Now stores a list of files
+        'locked': 0,
+        'visible': 1
+    }
+    
+    # Insert into database
+    DB.insert('posts', new_post)
+    return new_post_id
+
+def add_new_reply(user_ip, reply_to, post_name, comment, embed, files):
+    """Add a reply to a post with multiple files."""
+    max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
+    max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
+    max_id = max(max_post_id, max_reply_id)
+    new_reply_id = max_id + 1
+    new_reply = {
+        'id': new_reply_id,
+        'user_ip': user_ip,
+        'reply_id': new_reply_id,
+        'post_id': int(reply_to),
+        'post_user': generate_tripcode(post_name),
+        'post_date': get_current_datetime(),
+        'content': comment,
+        'images': files  # Now stores a list of files
+    }
+    
+    bump_thread(int(reply_to))
+    DB.insert('replies', new_reply)
+    
+    return new_reply_id
+
+def remove_post(post_id):
+    """Remove a post, its replies, and all associated media files."""
+    def delete_media_files(file_list, base_path, is_video=False):
+        """Helper function to delete multiple media files"""
+        if not file_list:
+            return
+        
+        for filename in file_list:
+            if not filename:  # Skip empty entries
+                continue
+                
+            try:
+                # Delete main file
+                file_path = os.path.join(base_path, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                
+                # Delete thumbnail if it's a video
+                if is_video and filename.lower().endswith(('.mp4', '.mov', '.webm')):
+                    thumb_name = f"thumbnail_{os.path.splitext(filename)[0]}.jpg"
+                    thumb_path = os.path.join(base_path, 'thumbs', thumb_name)
+                    if os.path.exists(thumb_path):
+                        os.remove(thumb_path)
+            except Exception as e:
+                print(f"Error deleting file {filename}: {e}")
+
+    # Remove main post and its media
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    if post:
+        post = post[0]
+        # Delete all associated media files
+        delete_media_files(post.get('post_images', []), './static/post_images/', is_video=True)
+        DB.delete('posts', post_id)
+    
+    # Remove from pinned posts
+    DB.delete('pinned', post_id)
+    
+    # Remove all replies and their media
+    replies = DB.query('replies', {'post_id': {'==': post_id}})
+    for reply in replies:
+        delete_media_files(reply.get('images', []), './static/reply_images/')
+        DB.delete('replies', reply['reply_id'])
+    
+    return True
+
+def remove_reply(reply_id):
+    """Remove a reply."""
+    reply = DB.query('replies', {'reply_id': {'==': reply_id}})
+    if reply:
+        # Check if post has an associated image
+        if reply[0].get('image'):
+            image_path = os.path.join('./static/reply_images/', reply[0]['image'])
+            try:
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+            except Exception as e:
+                print(f"Error deleting image: {e}")
+
+        DB.delete('replies', reply_id)
+
+        return True
+
+    return False
+
+def verify_locked_thread(thread_id):
+    """Check if a thread is locked."""
+    post = DB.query('posts', {'post_id': {'==': thread_id}})
+    return post and post[0].get('locked', 0) == 1 if post else False
+
+def lock_thread(thread_id):
+    """Lock or unlock a thread."""
+    post = DB.query('posts', {'post_id': {'==': thread_id}})
+    if post:
+        post[0]['locked'] = 1 if post[0].get('locked', 0) == 0 else 0
+        DB.update('posts', thread_id, post[0])
         return True
     return False
 
 def pin_post(post_id):
-    posts = load_db()
-    pinned = load_pinned()
-    for post in posts:
-        if post.get('post_id') == post_id:
-            if 'visible' in post:
-                if post.get('visible') == 0:
-                    post['visible'] = 1
-                    for pin in pinned:
-                        if pin.get('post_id') == post.get('post_id'):
-                            pinned.remove(pin)
-                            save_new_post(posts)
-                            save_new_pinned(pinned)
-                            return True
-            post['visible'] = 0
-            new_pinned = {
-                "user_ip": post.get('user_ip'),
-                "post_id": post.get('post_id'),
-                "post_user": post.get('post_user'),
-                "post_date": post.get('post_date'),
-                "board": post.get('board'),
-                "post_content": post.get('post_content'),
-                "post_image": post.get('post_image')
-            }
-            save_new_post(posts)
-            pinned.append(new_pinned)
-            save_new_pinned(pinned)
-            return True
-    return False
+    """Pin or unpin a post."""
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    if not post:
+        return False
+    
+    post = post[0]  # Pegamos o primeiro (e único) post
+    
+    # Verifica se o post está visível (não pinado)
+    if post.get('visible', 1) == 0:
+        # Se estiver invisível (já pinado), tornamos visível novamente
+        post['visible'] = 1
+        pinned = DB.query('pinned', {'post_id': {'==': post_id}})
+        if pinned:
+            DB.delete('pinned', post_id)
+        DB.update('posts', post_id, post)
+        return True
+    
+    # Se chegou aqui, vamos pinar o post
+    post['visible'] = 0  # Marcamos como invisível na lista normal
+    DB.update('posts', post_id, post)
+    
+    # Preparamos os dados para a tabela pinned
+    new_pinned = {
+        'id': post['id'],
+        'user_ip': post['user_ip'],
+        'post_id': post['post_id'],
+        'post_user': post['post_user'],
+        'post_date': post['post_date'],
+        'board': post['board'],
+        'post_content': post['post_content'],
+        # Usa post_images se existir, senão usa post_image (para compatibilidade)
+        'post_images': post.get('post_images', [post.get('post_image', '')])
+    }
+    
+    # Remove a chave post_image se existir para manter consistência
+    if 'post_image' in new_pinned:
+        del new_pinned['post_image']
+    
+    DB.insert('pinned', new_pinned)
+    return True
 
+# Query Operations
+def load_db_page(board_id, offset=0, limit=10):
+    """Load paginated posts for a board."""
+    posts = DB.query('posts', {'board': {'==': board_id}})
+    return posts[::-1][offset:offset + limit]
 
+def get_pinned_posts(board_uri):
+    """Get pinned posts for a board."""
+    return DB.query('pinned', {'board': {'==': board_uri}})
+
+def get_user_boards(username):
+    """Get all boards owned by a user."""
+    return DB.query('boards', {'board_owner': {'==': username}})
+
+def get_custom_themes():
+    """Get available custom themes."""
+    custom_css_path = './static/css/custom/'
+    temas = []
+    
+    if os.path.exists(custom_css_path):
+        for arquivo in os.listdir(custom_css_path):
+            if arquivo.endswith('.css'):
+                nome_sem_extensao = os.path.splitext(arquivo)[0]
+                tema = {
+                    "theme_name": nome_sem_extensao,
+                    "theme_file": arquivo
+                }
+                temas.append(tema)
+    else:
+        print(f'Directory {custom_css_path} does not exist.')
+    
+    return temas
+
+def get_all_banners(board_uri):
+    """Get all banners for a board."""
+    banner_folder = os.path.join('./static/imgs/banners', board_uri)
+    if not os.path.exists(banner_folder):
+        return []
+    
+    try:
+        banners = [f for f in os.listdir(banner_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+    except Exception as e:
+        print("Error listing banners")
+        return []
+    
+    return [os.path.join('/static/imgs/banners', board_uri, banner) for banner in banners]
 
 if __name__ == '__main__':
-    print('dont open this file alone.')
+    print('This module should not be run directly.')

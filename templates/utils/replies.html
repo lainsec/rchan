@@ -8,18 +8,27 @@
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>{% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
-            <div class="post_image">
-                <div class="post_image_info">
-                    <a class="image_url" href="/static/post_images/{{ post.get('post_image') }}">{{ post.get('post_image')[:17] + '.' + post.get('post_image').split('.')[-1] }}</a>
-                </div>
-                {% if '.mp4' in post.post_image or '.mov' in post.post_image or '.webm' in post.post_image %}
-                <a href="{{ url_for('static', filename='/post_images/' + post.post_image) }}">
-                <img class="post_img" id="post_video_thumbnail" draggable="false" src="{{ url_for('static', filename='/post_images/thumbs/thumbnail_' + post.post_image|replace(post.post_image.split('.')[-1], 'jpg') ) }}">
-                </a>
-                <video controls class="post_video" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" style="display: none;"></video>
-                {% else %}
-                <img draggable="false" class="post_img" src="{{ url_for('static', filename='/post_images/' + post.post_image) }}" alt="">
-                {% endif %}
+            <div class="post_files {% if post.post_images|length > 1 %}multiple_files{% endif %}">
+                {% for image in post.post_images %}
+                    <div class="post_image">
+                        <div class="post_image_info">
+                            <a class="image_url" href="/static/post_images/{{ image }}">
+                                {{ image[:17] ~ '...' ~ image.split('.')[-1] if image|length > 17 else image }}
+                            </a>
+                        </div>
+                        {% if image.split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
+                        <img class="post_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                            src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
+                            <video controls class="post_video"
+                                   src="{{ url_for('static', filename='post_images/' ~ image) }}" 
+                                   style="display: none;"></video>
+                        {% else %}
+                            <img draggable="false" class="post_img" 
+                                 src="{{ url_for('static', filename='post_images/' ~ image) }}" 
+                                 alt="">
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
             <div class="post_content">
                 <pre>{{ post.post_content | safe }}</pre>
@@ -33,16 +42,32 @@
                         <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ reply.reply_id }})" class="postNumber">{{ reply.reply_id }}</a>{% include 'utils/reply-moderation-options.html' %}
                     </div>
                     <div class="post_content_container">
-                        {% if reply.image != '' %}
-                        <div class="reply_image">
-                            <div class="reply_image_info">
-                                <a class="image_url" href="/static/reply_images/{{ reply.get('image') }}">{{ reply.get('image')[:17] + '.' + reply.get('image').split('.')[-1] }}</a>
+                        {% if reply.get('images') or reply.get('image') %}
+                            <div class="reply_files {% if reply.get('images') and reply.images|length > 1 %}multiple_files{% endif %}">
+                                {% for image in reply.get('images', [reply.get('image', '')]) %}
+                                <div class="reply_image">
+                                        {% if image %}
+                                            <div class="reply_file">
+                                                <div class="reply_image_info">
+                                                    <a class="image_url" href="/static/reply_images/{{ image }}">
+                                                        {{ image[:17] ~ '...' ~ image.split('.')[-1] if image|length > 17 else image }}
+                                                    </a>
+                                                </div>
+                                                {% if image.split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
+                                                <img class="reply_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                                                    src="{{ url_for('static', filename='reply_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
+                                                    <video controls draggable="false" class="reply_img post_video" 
+                                                        src="{{ url_for('static', filename='reply_images/' ~ image) }}"></video>
+                                                {% else %}
+                                                    <img draggable="false" class="reply_img" 
+                                                        src="{{ url_for('static', filename='reply_images/' ~ image) }}" 
+                                                        alt="">
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% if '.mp4' in reply.image %}
-                            <video controls draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
-                            {% endif %}
-                            <img draggable="false" class="reply_img" src="{{ url_for('static', filename='/reply_images/' + reply.image) }}" alt="">
-                        </div>
                         {% endif %}
                         <div class="reply_content">
                             <pre>{{ reply.content | safe }}</pre>
