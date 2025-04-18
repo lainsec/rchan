@@ -29,7 +29,7 @@ class PostHandler:
     def check_banned(self):
         banned_status = self.ban_manager.is_banned(self.user_ip)
         if banned_status.get('is_banned', True):
-            flash(f'You has been banned, reason: {banned_status.get('reason')}')
+            flash(f"You has been banned, reason: {banned_status.get('reason')}")
             return False
         return True
 
