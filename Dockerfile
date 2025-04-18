@@ -1,10 +1,8 @@
-# Use a slightly larger base image that includes more system libraries
 FROM python:3.12-bookworm
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies for OpenCV and other requirements
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libgl1 \
@@ -18,15 +16,15 @@ RUN apt-get update && \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Upgrade pip first
+# Upgrade pip
 RUN pip install --upgrade pip
 
-# Copy requirements first to leverage Docker cache
+# Copy requirements first for caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
 
-# Command to run the application
-CMD ["python", "app.py"]
+# Use a production WSGI server (choose one option below)
+CMD ["gunicorn", "--bind", "0.0.0.0:3000", "-k", "eventlet", "app:app"]
