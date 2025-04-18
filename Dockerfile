@@ -1,14 +1,17 @@
-# Use a base Python image instead of Nixpacks for simpler dependency management
-FROM python:3.12-slim
+# Use a slightly larger base image that includes more system libraries
+FROM python:3.12-bookworm
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies for OpenCV and other requirements
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl \
-    wget \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create and activate virtual environment
@@ -24,10 +27,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
-
-# Set environment variables if needed
-# ENV FLASK_APP=app.py
-# ENV FLASK_ENV=production
 
 # Command to run the application
 CMD ["python", "app.py"]
