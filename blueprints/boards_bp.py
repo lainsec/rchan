@@ -112,6 +112,42 @@ def board_page(board_uri):
         replies=replies,
         board_banner=board_banner,
         board_id=board_uri,)
+#board page endpoint
+@boards_bp.route('/<board_uri>/catalog')
+def board_catalog(board_uri):
+    # Check if board exists
+    if not database_module.get_board_info(board_uri):
+        return redirect(url_for('boards.main_page'))
+
+    posts = database_module.load_db_page(board_uri, limit=75)
+    pinneds = database_module.get_pinned_posts(board_uri)
+    board_info = database_module.get_board_info(board_uri)
+    board_banner = database_module.get_board_banner(board_uri)
+    
+    # Generate CAPTCHA
+    captcha_text, captcha_image = database_module.generate_captcha()
+    session['captcha_text'] = captcha_text
+    
+    # Get replies for the current page's posts (alternative method)
+    visible_post_ids = [post['post_id'] for post in posts]
+    all_replies = database_module.DB.find_all('replies')
+    replies = [reply for reply in all_replies if reply['post_id'] in visible_post_ids]
+    
+    # Get user role if logged in
+    roles = 'none'
+    if 'username' in session:
+        roles = database_module.get_user_role(session["username"])
+    
+    return render_template(
+        'catalog.html',
+        board_info=board_info,
+        captcha_image=captcha_image,
+        roles=roles,
+        pinneds=pinneds,
+        posts=posts,
+        replies=replies,
+        board_banner=board_banner,
+        board_id=board_uri,)
 #board banners page route.
 @boards_bp.route('/<board_uri>/banners')
 def board_banners(board_uri):
