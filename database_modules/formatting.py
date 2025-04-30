@@ -1,9 +1,14 @@
+"""
+formatting Module using Regex.
+Handles user reply, preventing XSS failures and text decoration.
+"""
+
 import re
 
 def filter_xss(comment):
     # Regular expression to search html tags.
     pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
-    
+
     # Verify if any tags were found
     if pattern.search(comment):
         return True
@@ -12,13 +17,37 @@ def filter_xss(comment):
 
 def format_comment(comment):
 
-    # Manipulação de '>' e '<'
+    parts = comment.split('>>')
+    formatted_comment = [parts[0]]
+    for part in parts[1:]:
+        number = re.match(r'^\d+', part)
+        if number:
+            quoted_id = number.group(0)
+            quote_span = f'<span class="quote-reply" data-id="{quoted_id}">&gt;&gt;{quoted_id}</span>'
+            formatted_comment.append(f'{quote_span}{part[len(quoted_id):]}')
+        else:
+            formatted_comment.append(f'&gt;&gt;{part}')
+    comment = ''.join(formatted_comment)
+
+    # Now handle greentext (>)
     formatted_comment = []
     inside_verde = False
     inside_vermelho = False
     buffer = []
 
-    for char in comment:
+    i = 0
+    while i < len(comment):
+        # Skip if we're inside a quote-reply span
+        if comment.startswith('<span class="quote-reply"', i):
+            if buffer:
+                formatted_comment.append(''.join(buffer))
+                buffer = []
+            end_tag = comment.find('</span>', i) + len('</span>')
+            formatted_comment.append(comment[i:end_tag])
+            i = end_tag
+            continue
+
+        char = comment[i]
         if char == '>':
             if not inside_verde:
                 if buffer:
@@ -51,6 +80,7 @@ def format_comment(comment):
                 inside_vermelho = False
         else:
             buffer.append(char)
+        i += 1
 
     if buffer:
         formatted_comment.append(''.join(buffer))

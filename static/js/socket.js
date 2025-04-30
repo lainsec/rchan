@@ -10,6 +10,68 @@ function getCurrentBoard() {
     return segments[0] || '';
 }
 
+socket.on('delete_post', function(data) {
+    const postId = data.post.id;
+    const postElement = document.getElementById(postId);
+    
+    if (postElement) {
+        // Aplica o estilo de opacidade 50%
+        postElement.style.opacity = '0.5';
+        postElement.style.transition = 'opacity 0.3s ease';
+        
+        // Adiciona uma marcação visual indicando que foi deletado
+        const deletedMarker = document.createElement('div');
+        deletedMarker.textContent = '[BALEETED]';
+        deletedMarker.style.color = '#ff4444';
+        deletedMarker.style.fontWeight = 'bold';
+        deletedMarker.style.marginLeft = '10px';
+        
+        // Encontra o cabeçalho do post para inserir a marcação
+        const postHeader = postElement.querySelector('.postInfo') || 
+                          postElement.querySelector('.reply-postInfo');
+        
+        if (postHeader) {
+            postHeader.appendChild(deletedMarker);
+        }
+        
+        // Opcional: Desabilita interações com o post deletado
+        postElement.style.pointerEvents = 'none';
+        
+    } else {
+        console.log(`Post ${postId} não encontrado na página`);
+    }
+});
+
+socket.on('ban_post', function(data) {
+    const postId = data.post.id;
+    const postElement = document.getElementById(postId);
+    
+    if (postElement) {
+        // Aplica o estilo de opacidade 50%
+        postElement.style.opacity = '0.5';
+        postElement.style.transition = 'opacity 0.3s ease';
+        
+        // Adiciona uma marcação visual indicando que foi deletado
+        const deletedMarker = document.createElement('div');
+        deletedMarker.textContent = '[The user has banned from this thread]';
+        deletedMarker.style.color = '#ff4444';
+        deletedMarker.style.fontWeight = 'bold';
+        deletedMarker.style.marginLeft = '10px';
+        
+        // Encontra o cabeçalho do post para inserir a marcação
+        const postHeader = postElement.querySelector('.postInfo') || 
+                          postElement.querySelector('.reply-postInfo');
+        
+        if (postHeader) {
+            postHeader.appendChild(deletedMarker);
+        }
+        
+        // Opcional: Desabilita interações com o post deletado
+        postElement.style.pointerEvents = 'none';
+        
+    }
+});
+
 socket.on('nova_postagem', function(data) {
     const currentBoard = getCurrentBoard();
     const isSameBoard = currentBoard === data.post.board;

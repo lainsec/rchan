@@ -1,9 +1,11 @@
 from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
 from database_modules import database_module, language_module, moderation_module
+from flask_socketio import SocketIO, emit
 import os
 
 # Blueprint register
 auth_bp = Blueprint('auth', __name__)
+socketio = SocketIO()
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
@@ -155,6 +157,12 @@ def delete_post(post_id):
     if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
         if database_module.remove_post(int(post_id)):
             flash('Post deleted!')
+            current_app.extensions['socketio'].emit('delete_post', {
+            'type': 'Delete Post',
+            'post': {
+                'id': post_id,
+            }
+        }, broadcast=True)
         else:
             flash('You are not the board owner.')
     return redirect(request.referrer)
@@ -170,6 +178,12 @@ def delete_reply(reply_id):
     if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
         if database_module.remove_reply(int(reply_id)):
             flash('Reply deleted!')
+            current_app.extensions['socketio'].emit('delete_post', {
+            'type': 'Delete Post',
+            'post': {
+                'id': reply_id,
+            }
+        }, broadcast=True)
         else:
             flash('You are not the board owner.')
     return redirect(request.referrer)
@@ -187,6 +201,13 @@ def ban_user(post_id):
             ban_manager = moderation_module.BanManager()
             ban_manager.ban_user(database_module.get_post_ip(int(post_id)), duration_seconds=None, reason="No reason.", moderator=session["username"])
             flash('The user has been banned!')
+            current_app.extensions['socketio'].emit('ban_post', {
+            'type': 'Ban Post',
+            'post': {
+                'id': post_id,
+            }
+            }, broadcast=True)
+            return redirect(request.referrer)
         else:
             flash('An error ocurred while trying to ban the user.')
     flash("You don't have permission to ban.")

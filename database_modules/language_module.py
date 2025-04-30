@@ -1,3 +1,8 @@
+"""
+Imageboard Language Management, to manage the entire IB language.
+Handles admin's choosen language.
+"""
+
 import json
 
 def load_langs():
