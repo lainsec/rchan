@@ -15,6 +15,7 @@ class PostHandler:
     def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input):
         self.socketio = socketio
         self.user_ip = user_ip
+        self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
         self.post_name = post_name
         self.board_id = board_id
@@ -101,19 +102,24 @@ class PostHandler:
         os.makedirs(upload_folder, exist_ok=True)
         
         saved_files, _ = self.process_uploaded_files(upload_folder, is_thread=False)
+        name_parts = self.post_name.split('#', 1)  # Divide no primeiro #
+        display_name = name_parts[0]
+        tripcode_html = ''
+        if len(name_parts) > 1:
+            tripcode_html = f' <span class="tripcode">[tripcode protected]</span>'
         self.socketio.emit('nova_postagem', {
             'type': 'New Reply',
             'post': {
                 'id': database_module.get_max_post_id() + 1,
                 'thread_id': reply_to,
-                'name': self.post_name,
+                'name': f'{display_name}{tripcode_html}',
                 'content': self.comment,
                 'files': saved_files,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id
             }
         }, broadcast=True)
-        database_module.add_new_reply(self.user_ip, reply_to, self.post_name, self.comment, self.embed, saved_files)
+        database_module.add_new_reply(self.user_ip, self.account_name, reply_to, self.post_name, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
 
@@ -169,11 +175,16 @@ class PostHandler:
         if not saved_files:
             flash("You need to upload at least one image/video to start a thread.")
             return False
+        name_parts = self.post_name.split('#', 1)  # Divide no primeiro #
+        display_name = name_parts[0]
+        tripcode_html = ''
+        if len(name_parts) > 1:
+            tripcode_html = f' <span class="tripcode">[tripcode protected]</span>'
         self.socketio.emit('nova_postagem', {
             'type': 'New Thread',
             'post': {
                 'id': database_module.get_max_post_id() + 1,
-                'name': self.post_name,
+                'name': f'{display_name}{tripcode_html}',
                 'content': self.comment,
                 'files': saved_files,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
@@ -181,7 +192,7 @@ class PostHandler:
                 'role': 'user'  # or whatever role system you have
             }
         }, broadcast=True)
-        database_module.add_new_post(self.user_ip, self.board_id, self.post_name, 
+        database_module.add_new_post(self.user_ip, self.account_name, self.board_id, self.post_name, 
                                    self.original_content, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True

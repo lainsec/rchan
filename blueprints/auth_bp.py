@@ -68,6 +68,7 @@ def create_board():
         if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
             return redirect(f'/{uri}')
         flash('Something went wrong, try again.')
+        return redirect(request.referrer)
     return redirect('/')
 
 @auth_bp.route('/apply_general_captcha', methods=['POST'])

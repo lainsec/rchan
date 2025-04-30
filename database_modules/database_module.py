@@ -81,14 +81,34 @@ def generate_captcha():
     image_base64 = base64.b64encode(image_io.getvalue()).decode('utf-8')
     return captcha_text, f"data:image/png;base64,{image_base64}"
 
-def generate_tripcode(post_name):
-    """Generate a tripcode from post name."""
+def generate_tripcode(post_name, account_name, board_owner):
+    """Generate a tripcode from post name and handle board owner tags."""
+    # Handle board owner tag (##) first
+    if '##' in post_name:
+        existing_user = DB.query('accounts', {'username': {'==': account_name}})
+        if existing_user:
+            if existing_user[0]['role'] == 'mod':
+                user_role = 'General Moderator'
+                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+            elif existing_user[0]['role'] == 'owner':
+                user_role = 'General Owner'
+                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+            elif existing_user[0]['role'] == '' and account_name == board_owner:
+                user_role = 'Board Owner'
+                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+            elif existing_user[0]['role'] == '' or account_name == '':
+                post_name = post_name.replace('##', '')
+    
+    # Then handle regular tripcode (#text)
     match = re.search(r'#(\S+)', post_name)
     if match:
         text_to_encrypt = match.group(1)
-        hashed_text = hashlib.sha256(text_to_encrypt.encode('utf-8')).hexdigest()
-        truncated_hash = hashed_text[:12]
-        post_name = post_name.replace(f'#{text_to_encrypt}', f' <span class="tripcode">!@{truncated_hash}</span>')
+        # Skip if it was part of the board owner tag
+        if text_to_encrypt != '#':
+            hashed_text = hashlib.sha256(text_to_encrypt.encode('utf-8')).hexdigest()
+            truncated_hash = hashed_text[:12]
+            post_name = post_name.replace(f'#{text_to_encrypt}', f' <span class="tripcode">!@{truncated_hash}</span>')
+    
     return post_name
 
 def hash_password(password):
@@ -399,9 +419,10 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         return False
     
     max_board_id = max([board['id'] for board in DB.find_all('boards')] + [0])
+    new_board_id = max_board_id + 1
     
     new_board = {
-        'id': max_board_id,
+        'id': new_board_id,
         'board_owner': username,
         'board_uri': board_uri,
         'board_name': board_name,
@@ -518,10 +539,11 @@ def bump_thread(thread_id):
         print(f"Error bumping thread {thread_id}: {e}")
         return False
 
-def add_new_post(user_ip, board_id, post_name, original_content, comment, embed, files):
+def add_new_post(user_ip, account_name, board_id, post_name, original_content, comment, embed, files):
     """Create a new post with multiple files."""
     # First verify if board exists
     board = DB.query('boards', {'board_uri': {'==': board_id}})
+    board_owner = board[0]['board_owner']
     if not board:
         raise ValueError(f"Board '{board_id}' does not exist")
     
@@ -530,13 +552,13 @@ def add_new_post(user_ip, board_id, post_name, original_content, comment, embed,
     max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
     max_id = max(max_post_id, max_reply_id)
     new_post_id = max_id + 1
-    
+
     # Create the new post
     new_post = {
         'id': new_post_id,
         'user_ip': user_ip,
         'post_id': new_post_id,
-        'post_user': generate_tripcode(post_name),
+        'post_user': generate_tripcode(post_name, account_name, board_owner),
         'post_date': get_current_datetime(),
         'board': board_id,
         'original_content': original_content,
@@ -550,8 +572,12 @@ def add_new_post(user_ip, board_id, post_name, original_content, comment, embed,
     DB.insert('posts', new_post)
     return new_post_id
 
-def add_new_reply(user_ip, reply_to, post_name, comment, embed, files):
+def add_new_reply(user_ip, account_name, reply_to, post_name, comment, embed, files):
     """Add a reply to a post with multiple files."""
+    existing_post = DB.query('posts', {'post_id': {'==': int(reply_to)}})
+    board = DB.query('boards', {'board_uri': {'==': existing_post[0]['board']}})
+    board_owner = board[0]['board_owner']
+
     max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
     max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
     max_id = max(max_post_id, max_reply_id)
@@ -561,7 +587,7 @@ def add_new_reply(user_ip, reply_to, post_name, comment, embed, files):
         'user_ip': user_ip,
         'reply_id': new_reply_id,
         'post_id': int(reply_to),
-        'post_user': generate_tripcode(post_name),
+        'post_user': generate_tripcode(post_name, account_name, board_owner),
         'post_date': get_current_datetime(),
         'content': comment,
         'images': files  # Now stores a list of files

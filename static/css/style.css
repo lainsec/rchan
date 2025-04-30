@@ -131,6 +131,13 @@ pre {
   padding-right: 6px;
 }
 
+.user_name_role{
+  font-style: italic;
+  font-weight: bolder;
+  padding-right: 6px;
+  color: #06ff00;
+}
+
 .wikinet-hyper-link {
   position: relative;
   text-decoration: none;
