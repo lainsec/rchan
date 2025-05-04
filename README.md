@@ -13,6 +13,10 @@
 python3 app.py
 `The first account will automatically recive OWNER permissions.`
 ```
+
+# Live instances (Unofficial)
+- 🇷🇺 [pejchan](https://pejchan.mooo.com)
+
 # Features
 - [x] Free creation of boards for all users.
 - [x] lightweight source code.
