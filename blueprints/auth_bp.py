@@ -88,7 +88,8 @@ def apply_general_captcha():
 @auth_bp.route('/lock_thread/<post_id>', methods=['POST'])
 def lock_thread(post_id):
     if request.method == 'POST' and 'username' in session:
-        board_owner = request.form['board_owner']
+        board_uri = database_module.get_post_board(post_id)
+        board_owner = database_module.get_board_info(board_uri)["board_owner"]
         roles = database_module.get_user_role(session["username"])
         if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
             if database_module.lock_thread(int(post_id)):
@@ -116,7 +117,7 @@ def upload_banner():
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_uri = request.form['board_uri']
+    board_uri = database_module.get_board_info(board_uri)["board_owner"]
     board_info = database_module.get_board_info(board_uri)
     if session['username'] != board_info.get('board_owner'):
         flash('You are not the board owner.')
@@ -138,7 +139,8 @@ def pin_post(post_id):
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_owner = request.form['board_owner']
+    board_uri = database_module.get_post_board(post_id)
+    board_owner = database_module.get_board_info(board_uri)["board_owner"]
     roles = database_module.get_user_role(session["username"])
     if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
         if database_module.pin_post(int(post_id)):
@@ -153,7 +155,8 @@ def delete_post(post_id):
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_owner = request.form['board_owner']
+    board_uri = database_module.get_post_board(post_id)
+    board_owner = database_module.get_board_info(board_uri)["board_owner"]
     roles = database_module.get_user_role(session["username"])
     if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
         if database_module.remove_post(int(post_id)):
@@ -174,7 +177,8 @@ def delete_reply(reply_id):
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_owner = request.form['board_owner']
+    board_uri = database_module.get_post_board(reply_id)
+    board_owner = database_module.get_board_info(board_uri)["board_owner"]
     roles = database_module.get_user_role(session["username"])
     if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
         if database_module.remove_reply(int(reply_id)):
@@ -195,12 +199,27 @@ def ban_user(post_id):
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_owner = request.form['board_owner']
+    board_uri = database_module.get_post_board(post_id)
+    board_owner = database_module.get_board_info(board_uri)["board_owner"]
     roles = database_module.get_user_role(session["username"])
     if 'owner' in roles.lower() or 'mod' in roles.lower():
         if database_module.check_post_exist(int(post_id)):
             ban_manager = moderation_module.BanManager()
-            ban_manager.ban_user(database_module.get_post_ip(int(post_id)), duration_seconds=None, reason="No reason.", moderator=session["username"])
+            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=None, boards=None, reason="No reason.", moderator=session["username"])
+            flash('The user has been banned!')
+            current_app.extensions['socketio'].emit('ban_post', {
+            'type': 'Ban Post',
+            'post': {
+                'id': post_id,
+            }
+            }, broadcast=True)
+            return redirect(request.referrer)
+        else:
+            flash('An error ocurred while trying to ban the user.')
+    elif session["username"] == board_owner:
+        if database_module.check_post_exist(int(post_id)):
+            ban_manager = moderation_module.BanManager()
+            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=None, boards=[board_uri], reason="No reason.", moderator=session["username"])
             flash('The user has been banned!')
             current_app.extensions['socketio'].emit('ban_post', {
             'type': 'Ban Post',

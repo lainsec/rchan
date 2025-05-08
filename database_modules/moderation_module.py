@@ -186,56 +186,52 @@ class BanManager:
             'reason': 'str',
             'moderator': 'str',
             'applied_at': 'str',
+            'boards': 'list',
             'is_permanent': 'bool'
         })
         
         self.lock = threading.Lock()
         self.active_timers = {}
-        
-    def ban_user(self, user_ip, duration_seconds=None, reason="", moderator="System"):
+
+    def ban_user(self, user_ip, duration_seconds=None, boards=None, reason="", moderator="System"):
         """
         Ban a user by IP address.
-        
+
         Args:
             user_ip (str): User's IP address
             duration_seconds (int): Optional ban duration in seconds (None for permanent)
+            boards (list): List of boards where the user is banned
             reason (str): Reason for ban
             moderator (str): Moderator who applied the ban
-            
+
         Returns:
             bool: True if ban was applied successfully
         """
+        if boards is None:
+            boards = []  # default to empty list (ban all boards if logic applies)
+        
         with self.lock:
             applied_at = datetime.now().isoformat()
             is_permanent = duration_seconds is None
+            end_time = "permanent" if is_permanent else (datetime.now() + timedelta(seconds=duration_seconds)).isoformat()
             
-            if is_permanent:
-                end_time = "permanent"
-            else:
-                end_time = (datetime.now() + timedelta(seconds=duration_seconds)).isoformat()
-            
-            # Check for existing ban
             existing = self.db.query('bans', {'user_ip': {'==': user_ip}})
             
             if existing:
-                # Update existing ban
                 ban_id = existing[0]['id']
                 self.db.update('bans', ban_id, {
                     'end_time': end_time,
                     'reason': reason,
                     'moderator': moderator,
                     'applied_at': applied_at,
+                    'boards': boards,
                     'is_permanent': is_permanent
                 })
-                
-                # Cancel any existing timer for this ban
                 if ban_id in self.active_timers:
                     self.active_timers[ban_id].cancel()
             else:
-                # Create new ban record
                 max_id = max([ban['id'] for ban in self.db.find_all('bans')] + [0])
                 ban_id = max_id + 1
-                
                 self.db.insert('bans', {
                     'id': ban_id,
                     'user_ip': user_ip,
@@ -243,76 +239,22 @@ class BanManager:
                     'reason': reason,
                     'moderator': moderator,
                     'applied_at': applied_at,
+                    'boards': boards,
                     'is_permanent': is_permanent
                 })
             
-            # Setup timer for temporary bans
             if not is_permanent:
                 self._setup_timer(ban_id, duration_seconds)
-            
+
             return True
-    
-    def _setup_timer(self, ban_id, duration):
-        """
-        Setup a timer to automatically remove temporary ban.
-        
-        Args:
-            ban_id (int): ID of the ban record
-            duration (int): Ban duration in seconds
-        """
-        if ban_id in self.active_timers:
-            self.active_timers[ban_id].cancel()
-        
-        timer = threading.Timer(duration, self.unban_user_by_id, args=[ban_id])
-        timer.daemon = True
-        timer.start()
-        self.active_timers[ban_id] = timer
-    
-    def unban_user(self, user_ip):
-        """
-        Remove a ban by user IP.
-        
-        Args:
-            user_ip (str): User's IP address
-            
-        Returns:
-            bool: True if unban was successful, False if user wasn't banned
-        """
-        with self.lock:
-            bans = self.db.query('bans', {'user_ip': {'==': user_ip}})
-            
-            if not bans:
-                return False
-                
-            ban_id = bans[0]['id']
-            return self.unban_user_by_id(ban_id)
-    
-    def unban_user_by_id(self, ban_id):
-        """
-        Remove a ban by its ID.
-        
-        Args:
-            ban_id (int): ID of the ban record
-            
-        Returns:
-            bool: True if unban was successful
-        """
-        with self.lock:
-            self.db.delete('bans', ban_id)
-            
-            if ban_id in self.active_timers:
-                timer = self.active_timers.pop(ban_id)
-                timer.cancel()
-            
-            return True
-    
+
     def is_banned(self, user_ip):
         """
         Check if a user is currently banned.
-        
+
         Args:
             user_ip (str): User's IP address
-            
+
         Returns:
             dict: Ban information if active, else {'is_banned': False}
         """
@@ -320,13 +262,14 @@ class BanManager:
         
         if not bans:
             return {'is_banned': False}
-            
+        
         ban = bans[0]
         
         if ban['is_permanent']:
             return {
                 'is_banned': True,
                 'is_permanent': True,
+                'boards': ban.get('boards', []),
                 'reason': ban.get('reason', ''),
                 'moderator': ban.get('moderator', 'System'),
                 'applied_at': datetime.fromisoformat(ban['applied_at']),
@@ -334,12 +277,12 @@ class BanManager:
             }
         else:
             end_time = datetime.fromisoformat(ban['end_time'])
-            
             if datetime.now() < end_time:
                 return {
                     'is_banned': True,
                     'is_permanent': False,
                     'end_time': end_time,
+                    'boards': ban.get('boards', []),
                     'reason': ban.get('reason', ''),
                     'moderator': ban.get('moderator', 'System'),
                     'applied_at': datetime.fromisoformat(ban['applied_at']),
@@ -348,11 +291,11 @@ class BanManager:
             else:
                 self.unban_user_by_id(ban['id'])
                 return {'is_banned': False}
-    
+
     def get_active_bans(self):
         """
         Get all currently active bans.
-        
+
         Returns:
             dict: Dictionary of active bans keyed by user IP
         """
@@ -363,6 +306,7 @@ class BanManager:
             if ban['is_permanent']:
                 active[ban['user_ip']] = {
                     'is_permanent': True,
+                    'boards': ban.get('boards', []),
                     'reason': ban.get('reason', ''),
                     'moderator': ban.get('moderator', 'System'),
                     'applied_at': datetime.fromisoformat(ban['applied_at']),
@@ -370,11 +314,11 @@ class BanManager:
                 }
             else:
                 end_time = datetime.fromisoformat(ban['end_time'])
-                
                 if now < end_time:
                     active[ban['user_ip']] = {
                         'is_permanent': False,
                         'end_time': end_time,
+                        'boards': ban.get('boards', []),
                         'reason': ban.get('reason', ''),
                         'moderator': ban.get('moderator', 'System'),
                         'applied_at': datetime.fromisoformat(ban['applied_at']),

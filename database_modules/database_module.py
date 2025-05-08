@@ -488,13 +488,24 @@ def get_user_role(username):
     user = DB.query('accounts', {'username': {'==': username}})
     return user[0]['role'] if user else None
 
-def get_post_ip(post_id):
-    """Get the IP from post."""
+def get_post_info(post_id):
+    """Get the info from post."""
+    post_id = int(post_id)
     post = DB.query('posts', {'post_id': {'==': post_id}})
     if not post:
         reply = DB.query('replies', {'reply_id': {'==': post_id}})
-        return reply[0]['user_ip'] if reply else None
-    return post[0]['user_ip'] if post else None
+        return reply[0]
+    return post[0]
+
+def get_post_board(post_id):
+    """Get the info from post."""
+    post_id = int(post_id)
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    if not post:
+        reply = DB.query('replies', {'reply_id': {'==': post_id}})
+        post = DB.query('posts', {'post_id': {'==': reply[0]['post_id']}})
+        return post[0]['board'] if post else None
+    return post[0]['board'] if post else None
 
 def check_post_exist(post_id):
     """Verify if thread exists."""
