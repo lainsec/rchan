@@ -117,7 +117,7 @@ def upload_banner():
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_uri = database_module.get_board_info(board_uri)["board_owner"]
+    board_uri = request.form['board_uri']
     board_info = database_module.get_board_info(board_uri)
     if session['username'] != board_info.get('board_owner'):
         flash('You are not the board owner.')
