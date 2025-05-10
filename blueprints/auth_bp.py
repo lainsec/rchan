@@ -117,7 +117,7 @@ def upload_banner():
         flash('You must be logged in.')
         return redirect(request.referrer)
     
-    board_uri = database_module.get_board_info(board_uri)["board_owner"]
+    board_uri = request.form['board_uri']
     board_info = database_module.get_board_info(board_uri)
     if session['username'] != board_info.get('board_owner'):
         flash('You are not the board owner.')
@@ -198,14 +198,22 @@ def ban_user(post_id):
     if 'username' not in session:
         flash('You must be logged in.')
         return redirect(request.referrer)
-    
+
+    ban_from = request.form['board']
+    ban_for = request.form['ban_time']
     board_uri = database_module.get_post_board(post_id)
-    board_owner = database_module.get_board_info(board_uri)["board_owner"]
+    if ban_from == 'all':
+        ban_from = None
+        board_owner = database_module.get_board_info(board_uri)["board_owner"]
+    if ban_for == 'Perm':
+        ban_for = None
+    else:
+        ban_for = int(ban_for)
     roles = database_module.get_user_role(session["username"])
     if 'owner' in roles.lower() or 'mod' in roles.lower():
         if database_module.check_post_exist(int(post_id)):
             ban_manager = moderation_module.BanManager()
-            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=None, boards=None, reason="No reason.", moderator=session["username"])
+            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
             flash('The user has been banned!')
             current_app.extensions['socketio'].emit('ban_post', {
             'type': 'Ban Post',
@@ -217,9 +225,12 @@ def ban_user(post_id):
         else:
             flash('An error ocurred while trying to ban the user.')
     elif session["username"] == board_owner:
+        if ban_form == 'all':
+            flash("You don't have permission to ban from all boards.")
+            return redirect(request.referrer)
         if database_module.check_post_exist(int(post_id)):
             ban_manager = moderation_module.BanManager()
-            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=None, boards=[board_uri], reason="No reason.", moderator=session["username"])
+            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
             flash('The user has been banned!')
             current_app.extensions['socketio'].emit('ban_post', {
             'type': 'Ban Post',

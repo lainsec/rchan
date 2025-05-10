@@ -192,6 +192,35 @@ class BanManager:
         
         self.lock = threading.Lock()
         self.active_timers = {}
+    
+    def _setup_timer(self, ban_id, duration):
+        """
+        Setup a timer to automatically remove a ban.
+
+        Args:
+            ban_id (int): ID of the ban record
+            duration (int): Ban duration in seconds
+        """
+        if ban_id in self.active_timers:
+            self.active_timers[ban_id].cancel()
+
+        timer = threading.Timer(duration, self.unban_user_by_id, args=[ban_id])
+        timer.daemon = True
+        timer.start()
+        self.active_timers[ban_id] = timer
+
+    def unban_user_by_id(self, ban_id):
+        """
+        Remove a ban by its ID.
+
+        Args:
+            ban_id (int): ID of the ban record
+        """
+        with self.lock:
+            self.db.delete('bans', ban_id)
+            if ban_id in self.active_timers:
+                self.active_timers[ban_id].cancel()
+                del self.active_timers[ban_id]
 
     def ban_user(self, user_ip, duration_seconds=None, boards=None, reason="", moderator="System"):
         """

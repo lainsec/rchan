@@ -250,24 +250,38 @@
             <section id="boards" class="mod-section">
                 <h2>{{ lang["dashboard-my-boards"] }}</h2>
                 <div class="board-list">
-                    {% for board in user_boards %}
-                        <div class="board-card">
-                            <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
-                            <p>{{ board.board_desc }}</p>
-                            <p><small>/{{ board.board_uri }}/</small></p>
+                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
+                        {% for board in boards %}
+                            <div class="board-card">
+                                <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
+                                <p>{{ board.board_desc }}</p>
+                                <p><small>/{{ board.board_uri }}/</small></p>
 
-                            <div class="action-buttons">
-                                <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                <form action="/remove_board/{{ board.board_uri }}" method="POST">
-                                    <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
-                                </form>
+                                <div class="action-buttons">
+                                    <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
+                                    <form action="/remove_board/{{ board.board_uri }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        {% for board in user_boards %}
+                            <div class="board-card">
+                                <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
+                                <p>{{ board.board_desc }}</p>
+                                <p><small>/{{ board.board_uri }}/</small></p>
 
-                    {% if not user_boards %}
-                        <p>You still don't have any board. <a href="/create">Create Board</a></p>
+                                <div class="action-buttons">
+                                    <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
+                                    <form action="/remove_board/{{ board.board_uri }}" method="POST">
+                                        <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
                     {% endif %}
+                    <p>You should create a new board! <a href="/create">Create Board</a></p>
                 </div>
             </section>
 
@@ -283,28 +297,6 @@
                             <a href="#recent-posts" class="btn btn-primary">{{ lang["dashboard-recent-posts"] }}</a>
                             <a href="#reported-content" class="btn btn-warning">{{ lang["dashboard-content-moderation-reported"] }}</a>
                         </div>
-                    </div>
-
-                    <div id="recent-posts" class="stat-card">
-                        <h3>{{ lang["dashboard-recent-posts"] }} (10)</h3>
-                        <ul>
-                            {% for post in database_module.get_all_posts(sort_by_date=True)[:10] %}
-                                <li>
-                                    <strong>{{ post.post_user }}</strong> em /{{ post.board }}/
-                                    <small>{{ post.post_date }}</small>
-                                    <div class="action-buttons">
-                                        <form action="/delete_post/{{ post.post_id }}" method="POST">
-                                            <input type="hidden" name="board_owner" value="{{ database_module.get_board_info(post.board).board_owner }}">
-                                            <button type="submit" class="btn btn-danger">{{ lang["dashboard-recent-posts-remove"] }}</button>
-                                        </form>
-                                        <form action="/ban_user/{{ post.post_id }}" method="POST">
-                                            <input type="hidden" name="board_owner" value="{{ database_module.get_board_info(post.board).board_owner }}">
-                                            <button type="submit" class="btn btn-warning">{{ lang["dashboard-recent-posts-ban"] }}</button>
-                                        </form>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
                     </div>
                 </section>
 

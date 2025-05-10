@@ -1,0 +1,34 @@
+<dialog class="ban_post_popup popup-ban">
+    <div class="header">
+        <h1>Ban Post</h1>
+    </div>
+    <form action="/ban_user/{{ post.post_id }}" method="post">
+        <div class="board_ban_selector">
+            <h1>Which board do you wish to ban the user from?</h1>
+            <select name="board">
+                {% if is_board_owner or is_moderator %}
+                    {% for board in boards %}
+                     <option value="{{ board.board_uri }}">{{ board.board_uri }} - {{ board.board_name }}</option>
+                    {% endfor %}
+                    <option value="all">All boards</option>
+                    {% else %}
+                        {% for board in boards %}
+                            {% if board.board_owner == session.username %}
+                                <option value="{{ board.board_uri }}">{{ board.board_uri }} - {{ board.board_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="ban_times">
+            <ul>
+                <li class="ban_time"><button name="ban_time" value="86400" type="submit">1d</button></li>
+                <li class="ban_time"><button name="ban_time" value="259200" type="submit">3d</button></li>
+                <li class="ban_time"><button name="ban_time" value="604800" type="submit">7d</button></li>
+                <li class="ban_time"><button name="ban_time" value="2592000" type="submit">1m</button></li>
+                <li class="ban_time"><button name="ban_time" value="7776000" type="submit">3m</button></li>
+                <li class="ban_time"><button name="ban_time" value="Perm" type="submit">Perm</button></li>
+            </ul>
+        </div>
+    </form>
+</dialog>

@@ -12,14 +12,10 @@
           <i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i>
         </button>
       </form>
-
-      <form action="/ban_user/{{ reply.reply_id }}" method="post" class="mod-action-form"
-            onsubmit="return confirm('Are you sure you want to ban the author?');">
-        <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
-        <button type="submit" class="mod-action-btn" title="Ban this user">
-          <i class="fa-solid fa-ban" style="color: var(--cor-texto);"></i>
-        </button>
-      </form>
+      <button type="submit" class="ban mod-action-btn" title="Ban this user">
+        <i class="fa-solid fa-ban" style="color: var(--cor-texto);"></i>
+      </button>
     </div>
+    {% include 'popups/mod_ban_reply_popup.html' %}
   {% endif %}
 {% endif %}

@@ -5,7 +5,7 @@
     <div class="divisoria"></div>
     <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
-            <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
+            <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>{% include 'utils/thread-moderation-options.html' %}

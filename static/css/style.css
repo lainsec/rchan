@@ -224,6 +224,87 @@ pre {
   cursor: pointer;
 }
 
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.ban_post_popup{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 30em;
+  height: fit-content;
+  padding: 1em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  outline: none;
+  background-color: var(--cor-borda-claro);
+  border: 1px solid var(--cor-borda);
+  box-shadow: 4px 4px 0px #d2738a2e;
+}
+
+.ban_post_popup .header{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.ban_post_popup .header h1{
+  line-height: 0;
+}
+
+.ban_post_popup form{
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  width: 100%;
+}
+
+.ban_post_popup .remove_all_ip_posts{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6pt;
+}
+
+.ban_post_popup .remove_all_ip_posts{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6pt;
+}
+
+.ban_post_popup .board_ban_selector{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 6pt;
+}
+
+.ban_post_popup ul{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ban_post_popup ul button{
+  border: 1px solid #000;
+  width: fit-content;
+  height: 1.5em;
+  cursor: pointer;
+}
+
 .detected{
   background: #faf8f8;
   color: #3060a8;

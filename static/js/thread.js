@@ -245,19 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 }
             }
-            
-            // Se não encontrou nenhum intervalo ou é menos de 1 segundo
+        
             if (!relativeTime) {
                 relativeTime = 'agora mesmo';
             }
-            
-            // Armazena a data original como um atributo de dados
+        
             element.dataset.originalDate = dateString;
-            
-            // Atualiza o conteúdo do elemento
+        
             element.textContent = relativeTime;
-            
-            // Adiciona um título com a data original para acessibilidade
+        
             element.setAttribute('title', dateString);
             
             return true;
@@ -278,17 +274,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Observador de mutação para novos elementos adicionados dinamicamente
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
-                // Verifica se o nó é um elemento
                 if (node.nodeType === 1) {
-                    // Verifica se é um span.postDate
                     if (node.matches('span.postDate')) {
                         formatDate(node);
                     }
-                    // Verifica os descendentes
                     if (node.querySelectorAll) {
                         node.querySelectorAll('span.postDate').forEach(formatDate);
                     }
@@ -297,16 +289,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Configura e inicia o observador
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
 
-    // Formata todas as datas inicialmente
     document.querySelectorAll('span.postDate').forEach(formatDate);
 
-    // Atualiza as datas a cada minuto (60000 ms)
     setInterval(updateAllDates, 60000);
 });
 
@@ -321,4 +310,54 @@ const checkboxes = document.querySelectorAll('#togglemodoptions');
           threadModOptions.style.display = checkbox.checked ? 'flex' : 'none';
         }
       });
+});
+
+function closeModal(dialogElement) {
+    if (dialogElement && dialogElement.close) {
+        dialogElement.close();
+    }
+}
+
+document.addEventListener('click', function (event) {
+    const triggerClasses = ['ban', 'delete'];
+
+    const triggerSelector = triggerClasses.map(cls => '.' + cls).join(', ');
+    const clickedTrigger = event.target.closest(triggerSelector);
+
+    if (clickedTrigger) {
+        event.preventDefault();
+
+        let dialogClass = null;
+        for (const cls of triggerClasses) {
+            if (clickedTrigger.classList.contains(cls)) {
+                dialogClass = 'popup-' + cls;
+                break;
+            }
+        }
+
+        if (dialogClass) {
+            let parent = clickedTrigger.parentElement;
+            let dialog = null;
+
+            while (parent) {
+                dialog = parent.querySelector('.' + dialogClass);
+                if (dialog) break;
+                parent = parent.parentElement;
+            }
+
+            if (dialog) {
+                dialog.showModal();
+            } else {
+                console.error('Erro: Dialog com a classe "' + dialogClass + '" não encontrado próximo ao botão.');
+            }
+        }
+    }
+});
+
+document.addEventListener('click', function (event) {
+    document.querySelectorAll('dialog[open]').forEach(dialog => {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
 });

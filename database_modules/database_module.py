@@ -411,6 +411,9 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
     if not validate_captcha(captcha_input, captcha_text):
         return False
     
+    if not board_uri.isalnum():
+        return False
+    
     existing_boards = DB.query('boards', {'board_uri': {'==': board_uri}})
     if existing_boards:
         return False
