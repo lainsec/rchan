@@ -207,7 +207,6 @@
 <body>
     {% include 'utils/navbar.html' %}
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="user-info">
                 <h2>{{ username }}</h2>
@@ -231,12 +230,11 @@
                         <li><a href="#mod-tools">{{ lang["dashboard-moderation-tools"] }}</a></li>
                         <li><a href="#global-settings">{{ lang["dashboard-global-configurations"] }}</a></li>
                     {% endif %}
-                    <li><a href="/logout">Logout</a></li>
+                    <li><a href="/api/logout">Logout</a></li>
                 </ul>
             </nav>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
             <section id="overview" class="mod-section">
                 <h2>{{ lang["dashboard-general-view"] }}</h2>
@@ -259,7 +257,7 @@
 
                                 <div class="action-buttons">
                                     <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                    <form action="/remove_board/{{ board.board_uri }}" method="POST">
+                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST">
                                         <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
                                     </form>
                                 </div>
@@ -274,7 +272,7 @@
 
                                 <div class="action-buttons">
                                     <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                    <form action="/remove_board/{{ board.board_uri }}" method="POST">
+                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST">
                                         <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
                                     </form>
                                 </div>
@@ -307,7 +305,7 @@
                         <h3>{{ lang["dashboard-captcha-config"] }}</h3>
                         <p>{{ lang["dashboard-captcha-config-desc"] }}</p>
 
-                        <form action="/apply_general_captcha" method="POST">
+                        <form action="/api/apply_general_captcha" method="POST">
                             <div class="action-buttons">
                                 <button type="submit" name="generalcaptcha_option" value="enable" class="btn btn-success">{{ lang["dashboard-captcha-config-enable"] }}</button>
                                 <button type="submit" name="generalcaptcha_option" value="disable" class="btn btn-danger">{{ lang["dashboard-captcha-config-disable"] }}</button>
@@ -317,14 +315,14 @@
 
                     <div class="stat-card">
                         <h3>Idioma do Site</h3>
-                        <form action="/change_general_lang" method="POST">
+                        <form action="/api/change_general_lang" method="POST">
                             <select name="lang">
                                 <option value="pt-br">Português (Brasil)</option>
                                 <option value="en-us">English (US)</option>
                                 <option value="es">Español</option>
                                 <option value="jp">日本語</option>
                             </select>
-                            <button type="submit" class="btn btn-primary">Alterar Idioma</button>
+                            <button type="submit" class="btn btn-primary">Change Lang</button>
                         </form>
                     </div>
                 </section>

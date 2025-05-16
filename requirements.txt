@@ -12,6 +12,7 @@ numpy==2.2.0
 opencv-python==4.10.0.84
 pillow==11.0.0
 python-engineio==4.9.1
+python-magic==0.4.27
 python-socketio==5.7.2
 pytz==2024.1
 simple-websocket==1.0.0

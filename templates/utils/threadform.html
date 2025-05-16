@@ -1,7 +1,7 @@
 <div id="togglePostFormLink" bis_skin_checked="1"><a href="#draggableForm">{% if post_mode == 'reply' %}[NEW REPLY]{% else %}[{{ lang["thread-form-button"] }}]{% endif %}</a></div>
 
 <div class="newboard-form" id="draggableForm">
-    <form id="postform" action="/new_post" enctype="multipart/form-data" method="POST">
+    <form id="postform" action="/api/new_post" enctype="multipart/form-data" method="POST">
         <input type="hidden" name="board_id" value="{{ board_id }}">
         <input type="hidden" name="thread_id" value="{{ thread_id }}">
         <input type="hidden" name="post_mode" value="{{ post_mode }}">
@@ -21,7 +21,7 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea
-                    id="text" name="text" rows="5" minlength="0" maxlength="10000"></textarea>
+                    id="text" name="text" rows="5" minlength="0" maxlength="20000"></textarea>
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>

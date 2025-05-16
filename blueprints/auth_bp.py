@@ -1,250 +1,232 @@
 from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
 from database_modules import database_module, language_module, moderation_module
 from flask_socketio import SocketIO, emit
+from PIL import Image
+from functools import wraps
 import os
 
-# Blueprint register
 auth_bp = Blueprint('auth', __name__)
 socketio = SocketIO()
 
-def allowed_file(filename):
+def has_admin_perms(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        username = session.get('username')
+        if not username:
+            flash('You must be logged in.', 'danger')
+            return redirect(request.referrer or '/')
+
+        roles = database_module.get_user_role(username)
+        if not roles or ('owner' not in roles.lower() and 'mod' not in roles.lower()):
+            flash('You don’t have enough permissions.', 'danger')
+            return redirect(request.referrer or '/')
+        return f(*args, **kwargs)
+    return decorated_function
+
+def has_board_owner_or_admin_perms(get_board_uri_from_request):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            username = session.get('username')
+            if not username:
+                flash('You must be logged in.', 'danger')
+                return redirect(request.referrer or '/')
+
+            roles = database_module.get_user_role(username)
+            is_admin = roles and ('owner' in roles.lower() or 'mod' in roles.lower())
+
+            board_uri = get_board_uri_from_request(*args, **kwargs)
+            board_owner = database_module.get_board_info(board_uri).get('board_owner')
+
+            if is_admin or username == board_owner:
+                return f(*args, **kwargs)
+            else:
+                flash('You don’t have permission.', 'danger')
+                return redirect(request.referrer or '/')
+        return decorated_function
+    return decorator
+
+def allowed_file(file_storage):
     ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    filename = file_storage.filename
+    if '.' not in filename:
+        return False
+    ext = filename.rsplit('.', 1)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        return False
+    try:
+        image = Image.open(file_storage.stream)
+        image.verify()
+        return True
+    except Exception:
+        return False
 
 @auth_bp.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
 
-@auth_bp.route('/change_general_lang', methods=['POST'])
+@auth_bp.route('/api/change_general_lang', methods=['POST'])
+@has_admin_perms
 def change_general_lang():
     new_lang = request.form.get('lang')
-    if 'username' in session:
-        roles = database_module.get_user_role(session["username"])
-        if 'owner' in roles.lower():
-            try:
-                if language_module.change_general_language(new_lang):
-                    flash('Language changed!')
-                    return redirect(request.referrer)
-            except Exception as e:
-                print(e)
-        flash('You cant do it!')
+    try:
+        if language_module.change_general_language(new_lang):
+            flash('Language changed!', 'success')
+        else:
+            flash('Failed to change language.', 'danger')
+    except Exception as e:
+        print(e)
+        flash('An error occurred.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/apply_general_captcha', methods=['POST'])
+@has_admin_perms
+def apply_general_captcha():
+    option = request.form['generalcaptcha_option']
+    if database_module.set_all_boards_captcha(option):
+        flash('Captcha function set.')
     else:
-        flash('You cant do it!')
-    return redirect(request.referrer)
+        flash('Something went wrong.', 'danger')
+    return redirect(request.referrer or '/')
 
-@auth_bp.route('/auth_user', methods=['POST'])
+@auth_bp.route('/api/lock_thread/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def lock_thread(post_id):
+    if database_module.lock_thread(int(post_id)):
+        flash('Thread locked.')
+    else:
+        flash('Could not lock the thread.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/remove_board/<board_uri>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda board_uri: board_uri)
+def remove_board(board_uri):
+    name = session["username"]
+    roles = database_module.get_user_role(name)
+    if database_module.remove_board(board_uri, name, roles):
+        flash('Board deleted!')
+    else:
+        flash('You can’t do that.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/pin_post/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def pin_post(post_id):
+    if database_module.pin_post(int(post_id)):
+        flash('Post pinned!')
+    else:
+        flash('Could not pin the post.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/delete_post/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def delete_post(post_id):
+    if database_module.remove_post(int(post_id)):
+        flash('Post deleted!')
+        current_app.extensions['socketio'].emit('delete_post', {
+            'type': 'Delete Post',
+            'post': {'id': post_id}
+        }, broadcast=True)
+    else:
+        flash('Could not delete post.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/delete_reply/<reply_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda reply_id: database_module.get_post_board(reply_id))
+def delete_reply(reply_id):
+    if database_module.remove_reply(int(reply_id)):
+        flash('Reply deleted!')
+        current_app.extensions['socketio'].emit('delete_post', {
+            'type': 'Delete Post',
+            'post': {'id': reply_id}
+        }, broadcast=True)
+    else:
+        flash('Could not delete reply.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/ban_user/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def ban_user(post_id):
+    ban_from = request.form['board']
+    ban_for = request.form['ban_time']
+    board_uri = database_module.get_post_board(post_id)
+
+    if ban_from == 'all':
+        ban_from = None
+    ban_for = None if ban_for == 'Perm' else int(ban_for)
+
+    if database_module.check_post_exist(int(post_id)):
+        post_info = database_module.get_post_info(int(post_id))
+        ban_manager = moderation_module.BanManager()
+        ban_manager.ban_user(post_info["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
+        flash('The user has been banned!')
+        current_app.extensions['socketio'].emit('ban_post', {
+            'type': 'Ban Post',
+            'post': {'id': post_id}
+        }, broadcast=True)
+    else:
+        flash('An error occurred while trying to ban the user.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/auth_user', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        if database_module.login_user(username, password):
-            session['username'] = username
-            session['role'] = database_module.get_user_role(username)
-            return redirect('/conta')
-        flash('Invalid credentials, try again.', 'danger')
+    username = request.form['username']
+    password = request.form['password']
+    if database_module.login_user(username, password):
+        session['username'] = username
+        session['role'] = database_module.get_user_role(username)
+        return redirect('/conta')
+    flash('Invalid credentials, try again.', 'danger')
     return redirect('/conta')
 
-@auth_bp.route('/register_user', methods=['POST'])
+@auth_bp.route('/api/register_user', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        captcha_text = request.form['captcha']
+    username = request.form['username']
+    password = request.form['password']
+    captcha_text = request.form['captcha']
+    if database_module.register_user(username, password, captcha_text, session['captcha_text']):
+        return redirect('/conta')
+    flash('Something went wrong, try again.')
+    return redirect(request.referrer or '/')
 
-        if database_module.register_user(username, password, captcha_text, session['captcha_text']):
-            return redirect('/conta')
-        flash('Something went wrong, try again.')
-    return redirect(request.referrer)
-
-@auth_bp.route('/create_board', methods=['POST'])
+@auth_bp.route('/api/create_board', methods=['POST'])
 def create_board():
-    if request.method == 'POST':
-        uri = request.form['uri']
-        name = request.form['name']
-        captcha_text = request.form['captcha']
-        description = request.form['description']
-
-        if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
-            return redirect(f'/{uri}')
-        flash('Something went wrong, try again.')
-        return redirect(request.referrer)
-    return redirect('/')
-
-@auth_bp.route('/apply_general_captcha', methods=['POST'])
-def apply_general_captcha():
-    if request.method == 'POST' and 'username' in session:
-        option = request.form['generalcaptcha_option']
-        roles = database_module.get_user_role(session["username"])
-        if 'owner' in roles.lower() or 'mod' in roles.lower():
-            if database_module.set_all_boards_captcha(option):
-                flash('Captcha function setted.')
-            else:
-                flash('Something went wrong, try again.')
-        else:
-            flash('Not enough permissions.')
+    uri = request.form['uri']
+    name = request.form['name']
+    captcha_text = request.form['captcha']
+    description = request.form['description']
+    if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
+        return redirect(f'/{uri}')
+    flash('Something went wrong, try again.')
     return redirect(request.referrer or '/')
 
-@auth_bp.route('/lock_thread/<post_id>', methods=['POST'])
-def lock_thread(post_id):
-    if request.method == 'POST' and 'username' in session:
-        board_uri = database_module.get_post_board(post_id)
-        board_owner = database_module.get_board_info(board_uri)["board_owner"]
-        roles = database_module.get_user_role(session["username"])
-        if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
-            if database_module.lock_thread(int(post_id)):
-                flash('Thread locked.')
-            else:
-                flash('You cant do it.')
-        else:
-            flash('You are not the board owner.')
-    return redirect(request.referrer or '/')
-
-@auth_bp.route('/remove_board/<board_uri>', methods=['POST'])
-def remove_board(board_uri):
-    if request.method == 'POST' and 'username' in session:
-        name = session["username"]
-        roles = database_module.get_user_role(session["username"])
-        if database_module.remove_board(board_uri, name, roles):
-            flash('Board deleted!')
-        else:
-            flash('You cant do it!')
-    return redirect(request.referrer or '/')
-
-@auth_bp.route('/upload_banner', methods=['POST'])
+@auth_bp.route('/api/upload_banner', methods=['POST'])
 def upload_banner():
     if 'username' not in session:
         flash('You must be logged in.')
-        return redirect(request.referrer)
-    
+        return redirect(request.referrer or '/')
+
     board_uri = request.form['board_uri']
     board_info = database_module.get_board_info(board_uri)
     if session['username'] != board_info.get('board_owner'):
         flash('You are not the board owner.')
-        return redirect(request.referrer)
-    
-    if 'imageUpload' not in request.files or request.files['imageUpload'].filename == '':
-        return redirect(request.referrer)
-    
-    file = request.files['imageUpload']
-    if file and allowed_file(file.filename):
+        return redirect(request.referrer or '/')
+
+    file = request.files.get('imageUpload')
+    if not file or file.filename == '':
+        flash('No file uploaded.', 'danger')
+        return redirect(request.referrer or '/')
+
+    if allowed_file(file):
         directory = os.path.join(f'./static/imgs/banners/{board_uri}')
         os.makedirs(directory, exist_ok=True)
         file.save(os.path.join(directory, file.filename))
-    return redirect(request.referrer)
-
-@auth_bp.route('/pin_post/<post_id>', methods=['POST'])
-def pin_post(post_id):
-    if 'username' not in session:
-        flash('You must be logged in.')
-        return redirect(request.referrer)
-    
-    board_uri = database_module.get_post_board(post_id)
-    board_owner = database_module.get_board_info(board_uri)["board_owner"]
-    roles = database_module.get_user_role(session["username"])
-    if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
-        if database_module.pin_post(int(post_id)):
-            flash('Post pinned!')
-        else:
-            flash('You are not the board owner.')
-    return redirect(request.referrer)
-
-@auth_bp.route('/delete_post/<post_id>', methods=['POST'])
-def delete_post(post_id):
-    if 'username' not in session:
-        flash('You must be logged in.')
-        return redirect(request.referrer)
-    
-    board_uri = database_module.get_post_board(post_id)
-    board_owner = database_module.get_board_info(board_uri)["board_owner"]
-    roles = database_module.get_user_role(session["username"])
-    if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
-        if database_module.remove_post(int(post_id)):
-            flash('Post deleted!')
-            current_app.extensions['socketio'].emit('delete_post', {
-            'type': 'Delete Post',
-            'post': {
-                'id': post_id,
-            }
-        }, broadcast=True)
-        else:
-            flash('You are not the board owner.')
-    return redirect(request.referrer)
-
-@auth_bp.route('/delete_reply/<reply_id>', methods=['POST'])
-def delete_reply(reply_id):
-    if 'username' not in session:
-        flash('You must be logged in.')
-        return redirect(request.referrer)
-    
-    board_uri = database_module.get_post_board(reply_id)
-    board_owner = database_module.get_board_info(board_uri)["board_owner"]
-    roles = database_module.get_user_role(session["username"])
-    if 'owner' in roles.lower() or 'mod' in roles.lower() or session["username"] == board_owner:
-        if database_module.remove_reply(int(reply_id)):
-            flash('Reply deleted!')
-            current_app.extensions['socketio'].emit('delete_post', {
-            'type': 'Delete Post',
-            'post': {
-                'id': reply_id,
-            }
-        }, broadcast=True)
-        else:
-            flash('You are not the board owner.')
-    return redirect(request.referrer)
-
-@auth_bp.route('/ban_user/<post_id>', methods=['POST'])
-def ban_user(post_id):
-    if 'username' not in session:
-        flash('You must be logged in.')
-        return redirect(request.referrer)
-
-    ban_from = request.form['board']
-    ban_for = request.form['ban_time']
-    board_uri = database_module.get_post_board(post_id)
-    if ban_from == 'all':
-        ban_from = None
-        board_owner = database_module.get_board_info(board_uri)["board_owner"]
-    if ban_for == 'Perm':
-        ban_for = None
+        flash('Banner uploaded!')
     else:
-        ban_for = int(ban_for)
-    roles = database_module.get_user_role(session["username"])
-    if 'owner' in roles.lower() or 'mod' in roles.lower():
-        if database_module.check_post_exist(int(post_id)):
-            ban_manager = moderation_module.BanManager()
-            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
-            flash('The user has been banned!')
-            current_app.extensions['socketio'].emit('ban_post', {
-            'type': 'Ban Post',
-            'post': {
-                'id': post_id,
-            }
-            }, broadcast=True)
-            return redirect(request.referrer)
-        else:
-            flash('An error ocurred while trying to ban the user.')
-    elif session["username"] == board_owner:
-        if ban_form == 'all':
-            flash("You don't have permission to ban from all boards.")
-            return redirect(request.referrer)
-        if database_module.check_post_exist(int(post_id)):
-            ban_manager = moderation_module.BanManager()
-            ban_manager.ban_user(database_module.get_post_info(int(post_id))["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
-            flash('The user has been banned!')
-            current_app.extensions['socketio'].emit('ban_post', {
-            'type': 'Ban Post',
-            'post': {
-                'id': post_id,
-            }
-            }, broadcast=True)
-            return redirect(request.referrer)
-        else:
-            flash('An error ocurred while trying to ban the user.')
-    flash("You don't have permission to ban.")
-    return redirect(request.referrer)
+        flash('Invalid image file.', 'danger')
+    return redirect(request.referrer or '/')
 
-@auth_bp.route('/logout')
+@auth_bp.route('/api/logout')
 def logout():
     if 'username' in session:
         session.pop('username', None)

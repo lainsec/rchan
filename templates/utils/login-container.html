@@ -1,1 +1,23 @@
-<div class="login-container" bis_skin_checked="1"><h1 class="board-title">Login</h1><div class="form-wrapper flex-center mv-10" bis_skin_checked="1"><form class="form-post" action="/auth_user" method="POST"><input type="hidden" name="goto" value="/account.html"><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Username</div><input type="text" name="username" maxlength="50" required=""></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">Password</div><input type="password" name="password" maxlength="100" required=""></div><div class="row" bis_skin_checked="1"><div class="label" bis_skin_checked="1">2FA Code</div><input type="number" name="twofactor" placeholder="if enabled"></div><input type="submit" value="Login"></form></div><div class="text-center mt-10" bis_skin_checked="1"><p><a href="/registrar" bis_skin_checked="1">Register</a></p></div></div>
+<div class="login-container" bis_skin_checked="1">
+    <h1 class="board-title">Login</h1>
+    <div class="form-wrapper flex-center mv-10" bis_skin_checked="1">
+        <form class="form-post" action="/api/auth_user" method="POST"><input type="hidden" name="goto"
+                value="/account.html">
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">Username</div><input type="text" name="username" maxlength="50"
+                    required="">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">Password</div><input type="password" name="password"
+                    maxlength="100" required="">
+            </div>
+            <div class="row" bis_skin_checked="1">
+                <div class="label" bis_skin_checked="1">2FA Code</div><input type="number" name="twofactor"
+                    placeholder="if enabled">
+            </div><input type="submit" value="Login">
+        </form>
+    </div>
+    <div class="text-center mt-10" bis_skin_checked="1">
+        <p><a href="/registrar" bis_skin_checked="1">Register</a></p>
+    </div>
+</div>

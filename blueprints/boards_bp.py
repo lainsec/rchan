@@ -1,7 +1,6 @@
 #imports
 from flask import current_app, Blueprint, render_template, session, redirect, request, url_for
-from database_modules import database_module
-from database_modules import language_module
+from database_modules import database_module, language_module
 #blueprint register.
 boards_bp = Blueprint('boards', __name__)
 #load language.

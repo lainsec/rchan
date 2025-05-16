@@ -5,23 +5,20 @@
   
   {% if is_board_owner or is_moderator %}
     <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em; padding-left: 1em;">
-      <!-- Pin Post -->
-      <form action="/pin_post/{{ post.post_id }}" method="post" class="mod-action-form">
+      <form action="/api/pin_post/{{ post.post_id }}" method="post" class="mod-action-form">
         <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
         <button type="submit" class="mod-action-btn" title="Pin this post">
           <i class="fa-solid fa-thumbtack" style="color: var(--cor-texto);"></i>
         </button>
       </form>
-      
-      <!-- Lock Thread -->
-      <form action="/lock_thread/{{ post.post_id }}" method="post" class="mod-action-form">
+  
+      <form action="/api/lock_thread/{{ post.post_id }}" method="post" class="mod-action-form">
         <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
         <button type="submit" class="mod-action-btn" title="Lock this thread">
           <i class="fa-solid fa-lock" style="color: var(--cor-texto);"></i>
         </button>
       </form>
-      
-      <!-- Delete Post -->
+    
       <button type="submit" class="delete mod-action-btn mod-action-delete" title="Delete this post">
         <i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i>
       </button>

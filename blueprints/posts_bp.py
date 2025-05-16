@@ -3,6 +3,7 @@ from database_modules import database_module, moderation_module, formatting
 from flask_socketio import SocketIO, emit
 from datetime import datetime, timedelta
 from PIL import Image
+import magic
 import cv2
 import re
 import os
@@ -60,34 +61,54 @@ class PostHandler:
         files = request.files.getlist('fileInput')
         saved_files = []
         thumb_paths = []
-        
-        # Determine thumbnail folder based on upload type
+
+        # Allowed MIME types
+        allowed_mime_types = {
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'video/mp4',
+            'video/quicktime',
+            'video/webm'
+        }
+
+        # Thumbs folder
         thumb_folder = './static/post_images/thumbs/' if is_thread else './static/reply_images/thumbs/'
         os.makedirs(thumb_folder, exist_ok=True)
-        
+
         for file in files:
             if file.filename != '' and file.filename.lower().endswith(('.jpeg', '.jpg', '.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
-                # Generate unique filename
+                # Verify the real type of the content
+                file_head = file.stream.read(2048)  # Read the first bytes
+                mime_type = magic.from_buffer(file_head, mime=True)
+                file.stream.seek(0)  # Go to the start to save
+
+                if mime_type not in allowed_mime_types:
+                    flash("Stop trying to hack the website, bruh.")
+                    return [], []
+
+                # Generate new file name
                 filename = file.filename
                 base, ext = os.path.splitext(filename)
                 counter = 1
                 while os.path.exists(os.path.join(upload_folder, filename)):
                     filename = f"{base}_{counter}{ext}"
                     counter += 1
-                
-                # Save file
+
+                # save tge file
                 file_path = os.path.join(upload_folder, filename)
                 file.save(file_path)
                 saved_files.append(filename)
-                
-                # Generate thumbnail for videos
+
+                # Generate the thumbnail, if its a video.
                 if filename.lower().endswith(('.mp4', '.mov', '.webm')):
                     thumb_path = self.capture_frame_from_video(file_path, thumb_folder)
                     if thumb_path:
                         thumb_paths.append(thumb_path)
                     else:
-                        print(f"Failed to generate thumbnail for {filename}")
-        
+                        print(f"Falha ao gerar thumbnail para {filename}")
+
         return saved_files, thumb_paths
     
     def handle_reply(self, reply_to):
@@ -108,7 +129,7 @@ class PostHandler:
         os.makedirs(upload_folder, exist_ok=True)
         
         saved_files, _ = self.process_uploaded_files(upload_folder, is_thread=False)
-        name_parts = self.post_name.split('#', 1)  # Divide no primeiro #
+        name_parts = self.post_name.split('#', 1)
         display_name = name_parts[0]
         tripcode_html = ''
         if len(name_parts) > 1:
@@ -203,7 +224,7 @@ class PostHandler:
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
 
-@posts_bp.route('/new_post', methods=['POST'])
+@posts_bp.route('/api/new_post', methods=['POST'])
 def new_post():
     socketio = current_app.extensions['socketio']
     user_ip = request.remote_addr
