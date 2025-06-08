@@ -257,7 +257,7 @@ def new_post():
         if not handler.handle_reply(reply_to):
             return redirect(request.referrer)
     else:
-        match = re.match(r'^#(\d+)', comment)
+        match = re.match(r'^>>(\d+)', comment)
         if match:
             reply_to = match.group(1)
             if not database_module.check_post_exist(int(reply_to)):
