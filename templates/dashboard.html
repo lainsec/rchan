@@ -21,11 +21,28 @@
             border: 1px solid var(--cor-borda);
             border-radius: 8px;
             padding: 20px;
+            height: fit-content;
         }
 
         .sidebar a {
             text-decoration: none;
             color: var(--cor-secundaria);
+            padding: 8px 12px;
+            display: block;
+            border-radius: var(--border-radius-sm);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--cor-secundaria);
+            color: var(--cor-texto);
+
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .main-content {
@@ -257,6 +274,13 @@
 
                                 <div class="action-buttons">
                                     <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
+                                    <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post">
+                                        {% if board.enable_captcha == 1%}
+                                        <button type="submit" class="btn btn-danger" name="boardcaptcha_option" value="disable">{{ lang["dashboard-captcha-config-disable"] }}</button>
+                                        {% else %}
+                                        <button type="submit" class="btn btn-success" name="boardcaptcha_option" value="enable">{{ lang["dashboard-captcha-config-enable"] }}</button>
+                                        {% endif %}
+                                    </form>
                                     <form action="/api/remove_board/{{ board.board_uri }}" method="POST">
                                         <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
                                     </form>

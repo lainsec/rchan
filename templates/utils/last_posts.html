@@ -2,12 +2,7 @@
     <div class="last-posts">
         {% for post in posts %}
         <div class="last-post">
-            <div class="last_post_info">
-                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}">>>/{{ post.get('board') }}/{{ post.get('post_id') }}</a>
-            </div>
-            <div class="last_post_content">
-                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}">{{ post.get('original_content')[:179] }}...</a>
-            </div>
+                <a href="/{{ post.get('board') }}/thread/{{post.get('post_id')}}"><span class="board">>>/{{ post.get('board') }}/{{post.get('post_id')}}</span>{{ post.get('original_content')[:179] }}...</a>
         </div>
         {% endfor %}
     </div>

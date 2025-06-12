@@ -128,14 +128,26 @@ pre {
   font-style: italic;
   font-weight: 100;
   user-select: none;
-  padding-right: 6px;
 }
 
-.user_name_role{
+.user_name_role {
   font-style: italic;
   font-weight: bolder;
-  padding-right: 6px;
-  color: #06ff00;
+  color: #dc2358;
+  text-shadow: 0 0 3px #dc2358;
+}
+
+.user_name_role::before{
+  font-family: Icons;
+  content: '\e051';
+  color: #dc2358;
+  padding-right: 2px;
+}
+
+.pinIndicator:after {
+  font-family: Icons;
+  content: "\e0a8";
+  color: #c13e5f;
 }
 
 .wikinet-hyper-link {
@@ -585,6 +597,7 @@ footer a {
 .index-chan-presentation{
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   align-items: center;
   background-color: #111;
   border: 1px solid var(--cor-borda);
@@ -622,7 +635,7 @@ fieldset legend {
 
 .banner {
   user-select: none;
-  max-width: 40em;
+  max-width: 32em;
 }
 
 .post_img {
@@ -1002,6 +1015,7 @@ img#post_video_thumbnail {
   left: 0;
   width: 100%;
   font-size: 11pt;
+  gap: 3px;
 }
 
 .reply_image{
@@ -1021,7 +1035,6 @@ img#post_video_thumbnail {
 }
 
 .postLink {
-  margin-left: 4px;
   color: var(--cor-secundaria);
   text-decoration: none;
   cursor: pointer;
@@ -1270,20 +1283,32 @@ img#post_video_thumbnail {
     flex-direction: column;
     background-color: #111;
     border: 1px solid var(--cor-primaria);
-    gap: 10px;
+    gap: 5px;
     width: calc(80% - 2em);
     padding: 1em 1em;
     margin-top: 1em;
 }
 
 .last-post {
-  display: flex;
-    align-items: center;
+    display: flex;
     justify-content: normal;
     padding: 0em 1em;
     width: calc(100% - 2em);
     transition: all 0.3s ease;
     font-size: 12pt;
+}
+
+.last-post a{
+  overflow-wrap: anywhere;
+  color: #dbcfb0;
+  text-decoration: none;
+}
+
+.last-post a .board{
+  color: var(--cor-secundaria);
+  overflow-wrap: unset;
+  height: fit-content;
+  margin-right: 4px;
 }
 
 .last-post:hover {
@@ -1418,6 +1443,7 @@ img#post_video_thumbnail {
     padding: 0.4em 0.5em 0.2em;
     left: 0;
     width: 100%;
+    gap: 3px;
     background-color: var(--cor-borda-claro);
   }
   .post_image{
@@ -1456,10 +1482,11 @@ img#post_video_thumbnail {
     max-width: 100%;
   }
   .board-title {
+    text-align: center;
     font-size: 23pt;
   }
   .board-links{
-    font-size: 8pt;
+    font-size: 9pt;
   }
   .index-fixed-pages li a {
     font-size: 7pt;
@@ -1473,9 +1500,24 @@ img#post_video_thumbnail {
   .catalog-container .catalog-post{
     width: 75%;
   }
+  .index-fixed-pages{
+    width: calc(90% - 2em);
+  }
+  .index-chan-presentation{
+    width: calc(90% - 2em);
+  }
+  .boards-container{
+    width: calc(90% - 2em);
+  }
+  .last-posts{
+    width: calc(90% - 2em);
+  }
+  .nav-boards{
+    display: none;
+  }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 738px) {
   .page-content div:not(.post,.board-options-container){
       max-width: 1200px;
   }

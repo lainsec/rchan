@@ -13,12 +13,13 @@ posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
 
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input):
+    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input):
         self.socketio = socketio
         self.user_ip = user_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
         self.post_name = post_name
+        self.post_subject = post_subject
         self.board_id = board_id
         self.original_content = comment
         self.comment = formatting.format_comment(comment)
@@ -107,7 +108,7 @@ class PostHandler:
                     if thumb_path:
                         thumb_paths.append(thumb_path)
                     else:
-                        print(f"Falha ao gerar thumbnail para {filename}")
+                        print(f"Error generating thumb for: {filename}")
 
         return saved_files, thumb_paths
     
@@ -140,13 +141,14 @@ class PostHandler:
                 'id': database_module.get_max_post_id() + 1,
                 'thread_id': reply_to,
                 'name': f'{display_name}{tripcode_html}',
+                'subject': self.post_subject,
                 'content': self.comment,
                 'files': saved_files,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id
             }
         }, broadcast=True)
-        database_module.add_new_reply(self.user_ip, self.account_name, reply_to, self.post_name, self.comment, self.embed, saved_files)
+        database_module.add_new_reply(self.user_ip, self.account_name, self.post_subject, reply_to, self.post_name, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
 
@@ -202,7 +204,7 @@ class PostHandler:
         if not saved_files:
             flash("You need to upload at least one image/video to start a thread.")
             return False
-        name_parts = self.post_name.split('#', 1)  # Divide no primeiro #
+        name_parts = self.post_name.split('#', 1)
         display_name = name_parts[0]
         tripcode_html = ''
         if len(name_parts) > 1:
@@ -212,14 +214,15 @@ class PostHandler:
             'post': {
                 'id': database_module.get_max_post_id() + 1,
                 'name': f'{display_name}{tripcode_html}',
+                'subject': self.post_subject,
                 'content': self.comment,
                 'files': saved_files,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id,
-                'role': 'user'  # or whatever role system you have
+                'role': 'user'
             }
         }, broadcast=True)
-        database_module.add_new_post(self.user_ip, self.account_name, self.board_id, self.post_name, 
+        database_module.add_new_post(self.user_ip, self.account_name, self.board_id, self.post_subject, self.post_name, 
                                    self.original_content, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
@@ -230,6 +233,7 @@ def new_post():
     user_ip = request.remote_addr
     post_mode = request.form["post_mode"]
     post_name = request.form["name"]
+    post_subject = request.form["subject"]
     board_id = request.form['board_id']
     comment = request.form['text']
     embed = request.form['embed']
@@ -242,7 +246,7 @@ def new_post():
         flash('You cant use HTML tags.')
         return redirect(request.referrer)
 
-    handler = PostHandler(socketio, user_ip, post_mode, post_name, board_id, comment, embed, captcha_input)
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input)
 
     if not handler.check_banned():
         return redirect(request.referrer)

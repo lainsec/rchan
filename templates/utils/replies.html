@@ -5,6 +5,7 @@
         <div class="postInfo">
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
+            {% if post.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a>{% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
@@ -39,6 +40,7 @@
                     <div class="reply-postInfo">
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span> </span>
+                        {% if reply.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
                         <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink" href="#" onclick="quotePostId({{ reply.reply_id }})" class="postNumber">{{ reply.reply_id }}</a>{% include 'utils/reply-moderation-options.html' %}
                     </div>
                     <div class="post_content_container">

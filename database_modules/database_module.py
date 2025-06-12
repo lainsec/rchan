@@ -24,7 +24,8 @@ DB.create_table('boards', {
     'board_name': 'str',
     'board_desc': 'str',
     'board_owner': 'str',
-    'enable_captcha': 'int'
+    'enable_captcha': 'int',
+    'board_isvisible': 'int'
 })
 DB.create_table('accounts', {
     'id': 'int',
@@ -37,6 +38,7 @@ DB.create_table('posts', {
     'user_ip': 'str',
     'post_id': 'int',
     'post_user': 'str',
+    'post_subject': 'str',
     'post_date': 'str',
     'board': 'str',
     'original_content': 'str',
@@ -61,6 +63,7 @@ DB.create_table('replies', {
     'reply_id': 'int',
     'post_id': 'int',
     'post_user': 'str',
+    'post_subject': 'str',
     'post_date': 'str',
     'content': 'str',
     'images': 'list'
@@ -89,13 +92,13 @@ def generate_tripcode(post_name, account_name, board_owner):
         if existing_user:
             if existing_user[0]['role'] == 'mod':
                 user_role = 'General Moderator'
-                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+                post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             elif existing_user[0]['role'] == 'owner':
                 user_role = 'General Owner'
-                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+                post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             elif existing_user[0]['role'] == '' and account_name == board_owner:
                 user_role = 'Board Owner'
-                post_name = post_name.replace('##', f'<span class="user_name_role">## {user_role}</span>')
+                post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             elif existing_user[0]['role'] == '' or account_name == '':
                 post_name = post_name.replace('##', '')
     
@@ -130,8 +133,8 @@ def validate_captcha(captcha_input, captcha_text):
 
 def get_current_datetime():
     """Get current datetime in Brazil timezone."""
-    fuso_horario_brasilia = pytz.timezone('America/Sao_Paulo')
-    return datetime.datetime.now(fuso_horario_brasilia).strftime("%d/%m/%Y %H:%M:%S")
+    current_date_time = pytz.timezone('America/Sao_Paulo') # Change this if your country isn't Brasil.
+    return datetime.datetime.now(current_date_time).strftime("%d/%m/%Y %H:%M:%S")
 
 # Board Operations
 def verify_board_captcha(board_uri):
@@ -147,6 +150,14 @@ def set_all_boards_captcha(option):
     for board in boards:
         board['enable_captcha'] = 1 if option == 'enable' else 0
         DB.update('boards', board['id'], board)
+    return True
+
+def set_board_captcha(board_uri, option):
+    """Enable/disable CAPTCHA for specific board."""
+    boards = DB.query('boards', {'board_uri': {'==': board_uri}})
+    board = boards[0]
+    board['enable_captcha'] = 1 if option == 'enable' else 0
+    DB.update('boards', board['id'], board)
     return True
 
 def get_board_info(board_uri):
@@ -228,6 +239,8 @@ def get_all_boards(include_stats=False):
         if include_stats:
             for board in boards:
                 board_uri = board['board_uri']
+
+                board['board_isvisible'] = board.get('board_isvisible', 1)
                 
                 # Get all posts for this board
                 posts = DB.query('posts', {
@@ -430,7 +443,8 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         'board_uri': board_uri,
         'board_name': board_name,
         'board_desc': board_description,
-        'enable_captcha': 0
+        'enable_captcha': 0,
+        'board_isvisible': 1
     }
     
     DB.insert('boards', new_board)
@@ -553,9 +567,10 @@ def bump_thread(thread_id):
         print(f"Error bumping thread {thread_id}: {e}")
         return False
 
-def add_new_post(user_ip, account_name, board_id, post_name, original_content, comment, embed, files):
-    """Create a new post with multiple files."""
+def add_new_post(user_ip, account_name, board_id, post_subject, post_name, original_content, comment, embed, files):
+    """Create a new post"""
     # First verify if board exists
+    print(board_id)
     board = DB.query('boards', {'board_uri': {'==': board_id}})
     board_owner = board[0]['board_owner']
     if not board:
@@ -573,11 +588,12 @@ def add_new_post(user_ip, account_name, board_id, post_name, original_content, c
         'user_ip': user_ip,
         'post_id': new_post_id,
         'post_user': generate_tripcode(post_name, account_name, board_owner),
+        'post_subject': post_subject,
         'post_date': get_current_datetime(),
         'board': board_id,
         'original_content': original_content,
         'post_content': comment,
-        'post_images': files,  # Now stores a list of files
+        'post_images': files, 
         'locked': 0,
         'visible': 1
     }
@@ -586,7 +602,7 @@ def add_new_post(user_ip, account_name, board_id, post_name, original_content, c
     DB.insert('posts', new_post)
     return new_post_id
 
-def add_new_reply(user_ip, account_name, reply_to, post_name, comment, embed, files):
+def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comment, embed, files):
     """Add a reply to a post with multiple files."""
     existing_post = DB.query('posts', {'post_id': {'==': int(reply_to)}})
     board = DB.query('boards', {'board_uri': {'==': existing_post[0]['board']}})
@@ -602,9 +618,10 @@ def add_new_reply(user_ip, account_name, reply_to, post_name, comment, embed, fi
         'reply_id': new_reply_id,
         'post_id': int(reply_to),
         'post_user': generate_tripcode(post_name, account_name, board_owner),
+        'post_subject': post_subject,
         'post_date': get_current_datetime(),
         'content': comment,
-        'images': files  # Now stores a list of files
+        'images': files 
     }
     
     bump_thread(int(reply_to))

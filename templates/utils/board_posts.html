@@ -7,6 +7,7 @@
         <div class="postInfo">
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
+            {% if post.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>{% include 'utils/thread-moderation-options.html' %}
         </div>
@@ -34,7 +35,7 @@
                 {% endfor %}
             </div>
             <div class="post_content">
-                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">Ver mais.</a>{% else %}{{ post.post_content | safe }}{% endif %}</pre>
+                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...{% else %}{{ post.post_content | safe }}{% endif %}</pre>{% if post.post_content | length >= 500 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">[VIEW ALL CONTENT]</a>{% endif %}
             </div>
             <div class="replies">
                 {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
@@ -46,6 +47,7 @@
                     <div class="reply-postInfo">
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
+                        {% if reply.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
                         <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" >{{ reply.reply_id }}</a>{% include 'utils/reply-moderation-options.html' %}
                     </div>
                     <div class="post_content_container">
@@ -93,4 +95,5 @@
     {% endif %}
     {% endif %}
     {% endfor %}
+    {% include 'utils/board_pagination.html' %}
 </div>

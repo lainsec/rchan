@@ -3,8 +3,12 @@ formatting Module using Regex.
 Handles user reply, preventing XSS failures and text decoration.
 """
 
+import html
 import re
 
+def escape_html(s):
+    # Scape html to remove any XSS.
+    return html.escape(s).replace('&gt;', '>').replace('&lt;', '<')
 def filter_xss(comment):
     # Regular expression to search html tags.
     pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
@@ -16,6 +20,7 @@ def filter_xss(comment):
         return False
 
 def format_comment(comment):
+    comment = escape_html(comment)
 
     parts = comment.split('>>')
     formatted_comment = [parts[0]]

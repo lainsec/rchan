@@ -19,11 +19,10 @@ class Lainconfig:
 
         return Laindb(database_folder)
 
-
 class Laindb:
     def __init__(self, database_folder):
         self.database_folder = database_folder
-        self.cache = {}  # {table_name: {id: record}}
+        self.cache = {}  # {table_name: {id: record}}]
 
     def _load_to_cache(self, table_name):
         if table_name not in self.cache:

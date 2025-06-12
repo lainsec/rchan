@@ -14,7 +14,7 @@
         </div>
     {% endfor %}
     {% if username == board_info.board_owner %}
-    <form id="bannerForm" action="/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
+    <form id="bannerForm" action="/api/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
         <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
         <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
     </form>

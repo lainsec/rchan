@@ -1,15 +1,15 @@
 <dialog class="ban_post_popup popup-delete">
     <div class="header">
-        <h1>Delete Post</h1>
+        <h1>{{ lang["popup-delete-header"] }}</h1>
     </div>
-    <form action="/delete_post/{{ post.post_id }}" method="post">
+    <form action="/api/delete_post/{{ post.post_id }}" method="post">
         <div class="remove_all_ip_posts">
             <input type="checkbox" name="remove_all">
-            <h1>Do you wanna delete all posts from this IP?</h1>
+            <h1>{{ lang["popup-delete-ask"] }}</h1>
         </div>
         <div class="ban_times">
             <ul>
-                <li class="ban_time"><button type="submit">Delete this post</button></li>
+                <li class="ban_time"><button type="submit">{{ lang["popup-delete-submit"] }}</button></li>
             </ul>
         </div>
     </form>

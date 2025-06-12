@@ -1,10 +1,10 @@
 <dialog class="ban_post_popup popup-ban">
     <div class="header">
-        <h1>Ban Post</h1>
+        <h1>{{ lang["popup-ban-header"] }}</h1>
     </div>
-    <form action="/api/ban_user/{{ post.post_id }}" method="post">
+    <form action="/api/ban_user/{{ reply.reply_id }}" method="post">
         <div class="board_ban_selector">
-            <h1>Which board do you wish to ban the user from?</h1>
+            <h1>{{ lang["popup-ban-ask"] }}</h1>
             <select name="board">
                 {% if is_board_owner or is_moderator %}
                     {% for board in boards %}

@@ -89,6 +89,16 @@ def apply_general_captcha():
         flash('Something went wrong.', 'danger')
     return redirect(request.referrer or '/')
 
+@auth_bp.route('/api/apply_captcha_on_board/<board_uri>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda board_uri: board_uri)
+def apply_captcha(board_uri):
+    option = request.form['boardcaptcha_option']
+    if database_module.set_board_captcha(board_uri, option):
+        flash('Captcha function set.')
+    else:
+        flash('Something went wrong.', 'danger')
+    return redirect(request.referrer or '/')
+
 @auth_bp.route('/api/lock_thread/<post_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
 def lock_thread(post_id):

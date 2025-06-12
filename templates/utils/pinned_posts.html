@@ -7,7 +7,8 @@
         <div class="postInfo">
             <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if pinned.post_user == '' or pinned.post_user == 'Anonymous' %}ドワーフ{% else %}{{ pinned.post_user | safe }}{% endif %}</span></span>
-            <span class="postDate">{{ pinned.post_date }}</span><a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postNumber">{{ pinned.post_id }}</a>
+            {% if post.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
+            <span class="postDate">{{ pinned.post_date }}</span> <span class="pinIndicator"></span> <a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postNumber">{{ pinned.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
         </div>
         <div class="post_content_container">
@@ -46,6 +47,7 @@
                     <div class="reply-postInfo">
                         <input type="checkbox" class="deletionCheckBox" name="{{ pinned.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
+                        {% if reply.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
                         <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" >{{ reply.reply_id }}</a>
                     </div>
                     <div class="post_content_container">

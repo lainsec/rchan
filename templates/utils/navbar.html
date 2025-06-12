@@ -15,7 +15,9 @@
             <ul class="board-links nav-boards">
                 <p>[</p>
                 {% for board in boards %}
-                <li class="board-link"><a href="/{{ board.board_uri }}/">{{ board.board_uri }}</a><p>/</p></li>
+                    {% if board.board_isvisible == 1 %}
+                        <li class="board-link"><a href="/{{ board.board_uri }}/">{{ board.board_uri }}</a><p>/</p></li>
+                    {% endif %}
                 {% endfor %}
                 <p>]</p>
             </ul>
