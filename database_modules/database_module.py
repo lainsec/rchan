@@ -755,6 +755,11 @@ def load_db_page(board_id, offset=0, limit=10):
     posts = DB.query('posts', {'board': {'==': board_id}})
     return posts[::-1][offset:offset + limit]
 
+def count_posts_in_board(board_id):
+    """Count total number of posts in a board."""
+    posts = DB.query('posts', {'board': {'==': board_id}})
+    return len(posts)
+
 def get_pinned_posts(board_uri):
     """Get pinned posts for a board."""
     return DB.query('pinned', {'board': {'==': board_uri}})

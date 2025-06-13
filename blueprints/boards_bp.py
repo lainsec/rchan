@@ -84,6 +84,9 @@ def board_page(board_uri):
     pinneds = database_module.get_pinned_posts(board_uri)
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
+
+    total_posts = database_module.count_posts_in_board(board_uri)
+    total_pages = (total_posts + posts_per_page - 1) // posts_per_page
     
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
@@ -106,12 +109,13 @@ def board_page(board_uri):
         roles=roles,
         page=page,
         posts_per_page=posts_per_page,
+        total_pages=total_pages,
         pinneds=pinneds,
         posts=posts,
         replies=replies,
         board_banner=board_banner,
         board_id=board_uri,)
-#board page endpoint
+#board catalog page endpoint
 @boards_bp.route('/<board_uri>/catalog')
 def board_catalog(board_uri):
     # Check if board exists

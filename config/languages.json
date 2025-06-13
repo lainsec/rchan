@@ -87,8 +87,9 @@
             "dashboard-captcha-config-disable": "Disable CAPTCHA",
             "hidden-replies": "hidden post(s)",
             "popup-ban-header": "Ban Post",
-            "popup-ban-ask": "Do you wanna delete all posts from this IP?",
+            "popup-ban-ask": "Which board do you wish to ban the user from?",
             "popup-delete-header": "Delete Post",
+            "popup-delete-ask": "Do you wanna delete all posts from this IP?",
             "popup-delete-submit": "Delete this post"
         }
     ],
@@ -227,8 +228,9 @@
             "dashboard-captcha-config-disable": "Disable CAPTCHA",
             "hidden-replies": "hidden post(s)",
             "popup-ban-header": "Ban Post",
-            "popup-ban-ask": "Do you wanna delete all posts from this IP?",
+            "popup-ban-ask": "Which board do you wish to ban the user from?",
             "popup-delete-header": "Delete Post",
+            "popup-delete-ask": "Do you wanna delete all posts from this IP?",
             "popup-delete-submit": "Delete this post"
         }
     ]

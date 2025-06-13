@@ -772,7 +772,6 @@ input, select, textarea {
   background: var(--cor-fundo-claro);
   color: var(--cor-texto);
   font-family: arial, helvetica, sans-serif;
-  font-size: inherit;
 }
 
 .label, .rlabel {
@@ -867,26 +866,49 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   margin-top: 2em;
 }
 
-.paginate-posts{
+.paginate-posts {
   display: flex;
-  align-items: center;
   justify-content: center;
   background-color: var(--cor-fundo-claro);
   padding: 0em 1em;
-  max-height: 2.3em;
-  border-style: none none none solid;
+  max-height: 2.2em;
   border-color: var(--cor-primaria);
   border-width: 1px;
+  border-style: solid;
   gap: 1em;
+  align-items: center;
 }
 
-.paginate-posts h1{
-  user-select: none;
-  font-size: 14px;
-  color: var(--cor-primaria);;
+.pagination {
+  display: inline-flex;
+  padding-left: 0;
+  list-style: none;
+  border-radius: 0.25rem;
 }
 
-.paginate-posts a{
+.page-link {
+  position: relative;
+  display: block;
+  padding: 0.2rem 0.2rem;
+  margin-left: -1px;
+  line-height: 1;
+  color: #4b4b4b;
+  border: 1px solid;
+  text-decoration: none;
+  font-size: 0.9em;
+  min-width: 38px;
+  text-align: center;
+}
+
+.page-item.active{
+  background-color: var(--cor-borda);
+}
+
+.page-item.active a{
+  color: var(--cor-texto);
+}
+
+.paginate-posts a {
   color: var(--cor-primaria);
 }
 

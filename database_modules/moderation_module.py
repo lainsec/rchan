@@ -37,6 +37,7 @@ class TimeoutManager:
         Returns:
             bool: True if timeout was applied successfully
         """
+        
         with self.lock:
             end_time = (datetime.now() + timedelta(seconds=duration_seconds)).isoformat()
             applied_at = datetime.now().isoformat()
