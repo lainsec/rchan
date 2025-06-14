@@ -491,7 +491,7 @@ def register_user(username, password, captcha_input, captcha_text):
     
     max_account_id = max([account['id'] for account in DB.find_all('accounts')] + [0])
     new_user = {
-        'id': max_account_id,
+        'id': max_account_id + 1,
         'username': username,
         'password': hashed_password,
         'role': role
