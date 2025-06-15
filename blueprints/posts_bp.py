@@ -90,7 +90,7 @@ class PostHandler:
                     return [], []
 
                 # Generate new file name
-                filename = file.filename
+                filename = os.path.basename(file.filename)
                 base, ext = os.path.splitext(filename)
                 counter = 1
                 while os.path.exists(os.path.join(upload_folder, filename)):
