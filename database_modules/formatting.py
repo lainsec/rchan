@@ -9,6 +9,11 @@ import re
 def escape_html(s):
     # Scape html to remove any XSS.
     return html.escape(s).replace('&gt;', '>').replace('&lt;', '<')
+
+def escape_html_post_info(s):
+    # Scape html to remove any XSS from post info.
+    return html.escape(s)
+
 def filter_xss(comment):
     # Regular expression to search html tags.
     pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
