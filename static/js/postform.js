@@ -26,6 +26,23 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
     }
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const closeButtons = document.querySelectorAll('.close.postform-style');
+    const formContainer = document.getElementById('draggableForm');
+
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (formContainer.style.display === 'none') {
+                formContainer.style.display = 'block';
+            } else {
+                formContainer.style.display = 'none';
+            }
+        });
+    });
+});
+
 const draggableForm = document.getElementById('draggableForm');
 const header = document.querySelector('.new-thread-header'); 
 draggableForm.style.position = 'absolute';

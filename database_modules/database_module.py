@@ -570,7 +570,6 @@ def bump_thread(thread_id):
 def add_new_post(user_ip, account_name, board_id, post_subject, post_name, original_content, comment, embed, files):
     """Create a new post"""
     # First verify if board exists
-    print(board_id)
     board = DB.query('boards', {'board_uri': {'==': board_id}})
     board_owner = board[0]['board_owner']
     if not board:
@@ -672,6 +671,17 @@ def remove_post(post_id):
         delete_media_files(reply.get('images', []), './static/reply_images/')
         DB.delete('replies', reply['reply_id'])
     
+    return True
+
+def delete_all_posts_from_user(user_ip, board_uri):
+    """Remove all posts made by an specific IP."""
+    user_posts = DB.query('posts', {'user_ip': {'==': user_ip}})
+    posts_to_delete = []
+    for post in user_posts:
+        if post.get('board') == board_uri:
+            posts_to_delete.append(post)
+    for post in posts_to_delete:
+        DB.delete('posts', post['post_id'])
     return True
 
 def remove_reply(reply_id):

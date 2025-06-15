@@ -247,6 +247,14 @@ def new_post():
         return redirect(request.referrer)
 
     handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input)
+    
+    if len(post_name) > 40:
+        flash("You've reached the limit of characteres in the name parameter")
+        return redirect(request.referrer)
+    
+    if len(post_subject) > 50:
+        flash("You've reached the limit of characteres in the subject parameter")
+        return redirect(request.referrer)
 
     if not handler.check_banned():
         return redirect(request.referrer)

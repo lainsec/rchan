@@ -756,6 +756,7 @@ span.col{
 }
 
 .close {
+  color: var(--cor-texto);
   text-decoration: none;
   justify-content : center;
   font-weight: bolder;
@@ -869,10 +870,6 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 .paginate-posts {
   display: flex;
   justify-content: center;
-  background-color: var(--cor-fundo-claro);
-  padding: 0em 1em;
-  max-height: 2.2em;
-  border-color: var(--cor-primaria);
   border-width: 1px;
   border-style: solid;
   gap: 1em;
@@ -881,6 +878,7 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 
 .pagination {
   display: inline-flex;
+  flex-wrap: wrap;
   padding-left: 0;
   list-style: none;
   border-radius: 0.25rem;

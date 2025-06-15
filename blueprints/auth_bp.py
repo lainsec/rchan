@@ -131,6 +131,18 @@ def pin_post(post_id):
 @auth_bp.route('/api/delete_post/<post_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
 def delete_post(post_id):
+    ban_all = request.form.get('remove_all', None)
+    if ban_all == 'on':
+        post_info = database_module.get_post_info(int(post_id))
+        poster_ip = post_info['user_ip']
+        post_board = database_module.get_post_board(post_id)
+        if database_module.delete_all_posts_from_user(poster_ip, post_board):
+            flash('All posts deleted!')
+            current_app.extensions['socketio'].emit('delete_post', {
+                'type': 'Delete Post',
+                'post': {'id': post_id}
+            }, broadcast=True)
+            return redirect(request.referrer or '/')
     if database_module.remove_post(int(post_id)):
         flash('Post deleted!')
         current_app.extensions['socketio'].emit('delete_post', {
@@ -144,6 +156,18 @@ def delete_post(post_id):
 @auth_bp.route('/api/delete_reply/<reply_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda reply_id: database_module.get_post_board(reply_id))
 def delete_reply(reply_id):
+    ban_all = request.form.get('remove_all', None)
+    if ban_all == 'on':
+        post_info = database_module.get_post_info(int(reply_id))
+        poster_ip = post_info['user_ip']
+        post_board = database_module.get_post_board(reply_id)
+        if database_module.delete_all_posts_from_user(poster_ip, post_board):
+            flash('All posts deleted!')
+            current_app.extensions['socketio'].emit('delete_post', {
+                'type': 'Delete Post',
+                'post': {'id': reply_id}
+            }, broadcast=True)
+            return redirect(request.referrer or '/')
     if database_module.remove_reply(int(reply_id)):
         flash('Reply deleted!')
         current_app.extensions['socketio'].emit('delete_post', {
