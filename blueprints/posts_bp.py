@@ -18,8 +18,8 @@ class PostHandler:
         self.user_ip = user_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
-        self.post_name = post_name
-        self.post_subject = post_subject
+        self.post_name = formatting.escape_html_post_info(post_name)
+        self.post_subject = formatting.escape_html_post_info(post_subject)
         self.board_id = board_id
         self.original_content = comment
         self.comment = formatting.format_comment(comment)
