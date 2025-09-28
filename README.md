@@ -15,7 +15,7 @@ python3 app.py
 ```
 
 # Live instances (Unofficial)
-- 🇷🇺 [pejchan](https://pejchan.mooo.com)
+- 🇷🇺 [pejchan](https://pejchan.mooo.com) (off-line)
 
 # Features
 - [x] Free creation of boards for all users.
