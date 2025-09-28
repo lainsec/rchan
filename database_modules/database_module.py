@@ -24,6 +24,7 @@ DB.create_table('boards', {
     'board_name': 'str',
     'board_desc': 'str',
     'board_owner': 'str',
+    'board_staffs': 'list',
     'enable_captcha': 'int',
     'board_isvisible': 'int'
 })
@@ -84,12 +85,15 @@ def generate_captcha():
     image_base64 = base64.b64encode(image_io.getvalue()).decode('utf-8')
     return captcha_text, f"data:image/png;base64,{image_base64}"
 
-def generate_tripcode(post_name, account_name, board_owner):
+def generate_tripcode(post_name, account_name, board_owner, board_staffs):
     """Generate a tripcode from post name and handle board owner tags."""
     # Handle board owner tag (##) first
     if '##' in post_name:
         existing_user = DB.query('accounts', {'username': {'==': account_name}})
         if existing_user:
+            if account_name in board_staffs:
+                user_role = 'Board Staff'
+                post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             if existing_user[0]['role'] == 'mod':
                 user_role = 'General Moderator'
                 post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
@@ -440,6 +444,7 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
     new_board = {
         'id': new_board_id,
         'board_owner': username,
+        'board_staffs': [],
         'board_uri': board_uri,
         'board_name': board_name,
         'board_desc': board_description,
@@ -572,6 +577,7 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
     # First verify if board exists
     board = DB.query('boards', {'board_uri': {'==': board_id}})
     board_owner = board[0]['board_owner']
+    board_staffs = board[0]['board_staffs']
     if not board:
         raise ValueError(f"Board '{board_id}' does not exist")
     
@@ -586,7 +592,7 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
         'id': new_post_id,
         'user_ip': user_ip,
         'post_id': new_post_id,
-        'post_user': generate_tripcode(post_name, account_name, board_owner),
+        'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
         'post_subject': post_subject,
         'post_date': get_current_datetime(),
         'board': board_id,
@@ -606,6 +612,7 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
     existing_post = DB.query('posts', {'post_id': {'==': int(reply_to)}})
     board = DB.query('boards', {'board_uri': {'==': existing_post[0]['board']}})
     board_owner = board[0]['board_owner']
+    board_staffs = board[0]['board_staffs']
 
     max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
     max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
@@ -616,7 +623,7 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
         'user_ip': user_ip,
         'reply_id': new_reply_id,
         'post_id': int(reply_to),
-        'post_user': generate_tripcode(post_name, account_name, board_owner),
+        'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
         'post_subject': post_subject,
         'post_date': get_current_datetime(),
         'content': comment,
@@ -627,6 +634,34 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
     DB.insert('replies', new_reply)
     
     return new_reply_id
+
+def move_thread(thread_id, new_board_uri: str):
+    # Buscar thread
+    thread = DB.query('posts', {'post_id': {'==': int(thread_id)}})
+    if not thread:
+        raise ValueError(f"Thread {thread_id} não encontrado.")
+
+    # Verificar se o board de destino existe
+    new_board = DB.query('boards', {'board_uri': {'==': new_board_uri}})
+    if not new_board:
+        raise ValueError(f"Board de destino {new_board_uri} não existe.")
+
+    # Atualizar board da thread
+    DB.update('posts', thread[0]['id'], {'board': new_board_uri})
+
+    # Atualizar replies vinculadas a essa thread (caso precise mover também)
+    replies = DB.query('posts', {'thread_id': {'==': int(thread_id)}})
+    for reply in replies:
+        DB.update('posts', reply['id'], {'board': new_board_uri})
+
+    # Atualizar pinned se existir
+    pinned = DB.query('pinned', {'post_id': {'==': int(thread_id)}})
+    if pinned:
+        for pin in pinned:
+            DB.update('pinned', pin['id'], {'board': new_board_uri})
+
+    return True
+
 
 def remove_post(post_id):
     """Remove a post, its replies, and all associated media files."""

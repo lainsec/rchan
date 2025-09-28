@@ -130,6 +130,10 @@ pre {
   user-select: none;
 }
 
+.post_subject{
+  color: var(--cor-texto-claro);
+}
+
 .user_name_role {
   font-style: italic;
   font-weight: bolder;
@@ -1435,6 +1439,9 @@ img#post_video_thumbnail {
 }
 
 @media (max-width: 600px) {
+  .post_subject{
+    display: none;
+  }
   .waring-container {
     width: 20em;
   }

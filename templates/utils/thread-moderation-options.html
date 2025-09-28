@@ -2,8 +2,9 @@
   {% set user_roles = roles|lower %}
   {% set is_moderator = 'mod' in user_roles or 'owner' in user_roles %}
   {% set is_board_owner = session["username"] == board_info.board_owner %}
+  {% set is_board_staff = session["username"] in board_info.board_staffs %}
   
-  {% if is_board_owner or is_moderator %}
+  {% if is_board_owner or is_moderator or is_board_staff %}
     <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em; padding-left: 1em;">
       <form action="/api/pin_post/{{ post.post_id }}" method="post" class="mod-action-form">
         <input type="hidden" name="board_owner" value="{{ board_info.board_owner }}">
@@ -26,8 +27,14 @@
       <button class="ban mod-action-btn mod-action-ban" title="Ban this user">
         <i class="fa-solid fa-ban" style="color: var(--cor-texto);"></i>
       </button>
+
+      <button class="move mod-action-btn mod-action-move" title="Move this post">
+        <i class="fa-solid fa-arrows-turn-right" style="color: var(--cor-texto);"></i>
+      </button>
+
     </div>
     {% include 'popups/moderation/mod_ban_post_popup.html' %}
     {% include 'popups/moderation/mod_delete_post_popup.html' %}
+    {% include 'popups/moderation/mod_move_post_popup.html' %}
   {% endif %}
 {% endif %}

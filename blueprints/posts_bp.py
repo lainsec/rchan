@@ -286,7 +286,10 @@ def new_post():
             if not handler.handle_post():
                 return redirect(request.referrer)
     
-    return redirect(request.referrer)
+    if post_mode == "reply":
+        return redirect(request.referrer)
+
+    return redirect(f'/{board_id}/thread/{database_module.get_max_post_id()}')
 
 @posts_bp.route('/socket.io/')
 def socket_io():

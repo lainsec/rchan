@@ -202,6 +202,20 @@ def ban_user(post_id):
         flash('An error occurred while trying to ban the user.', 'danger')
     return redirect(request.referrer or '/')
 
+@auth_bp.route('/api/move_post/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def move_post(post_id):
+    new_board = request.form['new_board']
+    if database_module.move_thread(int(post_id), new_board):
+        flash(f'Post moved to /{new_board}/!')
+        current_app.extensions['socketio'].emit('move_post', {
+            'type': 'Move Post',
+            'post': {'id': post_id, 'new_board': new_board}
+        }, broadcast=True)
+    else:
+        flash('Could not move the post.', 'danger')
+    return redirect(request.referrer or '/')
+
 @auth_bp.route('/api/auth_user', methods=['POST'])
 def login():
     username = request.form['username']

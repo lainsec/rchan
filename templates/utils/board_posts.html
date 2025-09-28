@@ -8,6 +8,7 @@
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
             {% if post.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
+            <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>{% include 'utils/thread-moderation-options.html' %}
         </div>

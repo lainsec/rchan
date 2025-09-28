@@ -319,7 +319,7 @@ function closeModal(dialogElement) {
 }
 
 document.addEventListener('click', function (event) {
-    const triggerClasses = ['ban', 'delete'];
+    const triggerClasses = ['ban', 'delete', 'move'];
 
     const triggerSelector = triggerClasses.map(cls => '.' + cls).join(', ');
     const clickedTrigger = event.target.closest(triggerSelector);

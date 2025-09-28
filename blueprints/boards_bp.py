@@ -154,14 +154,16 @@ def board_catalog(board_uri):
 #board banners page route.
 @boards_bp.route('/<board_uri>/banners')
 def board_banners(board_uri):
+    roles = 'none'
     if "username" in session:
         username = session['username']
+        roles = database_module.get_user_role(session["username"])
     else:
         username = 'anon'
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
     banners = database_module.get_all_banners(board_uri)
-    return render_template('board_banners.html',username=username,board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info)
+    return render_template('board_banners.html',username=username,board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info, roles=roles)
 #thread page route.
 @boards_bp.route('/<board_name>/thread/<thread_id>')
 def replies(board_name, thread_id):

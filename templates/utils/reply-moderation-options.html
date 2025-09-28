@@ -2,8 +2,9 @@
   {% set user_roles = roles|lower %}
   {% set is_moderator = 'mod' in user_roles or 'owner' in user_roles %}
   {% set is_board_owner = session["username"] == board_info.board_owner %}
+  {% set is_board_staff = session["username"] in board_info.board_staffs %}
   
-  {% if is_board_owner or is_moderator %}
+  {% if is_board_owner or is_moderator or is_board_staff %}
     <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;">
       <button type="submit" class="delete mod-action-btn" title="Delete this reply">
         <i class="fa-solid fa-trash" style="color: var(--cor-texto);"></i>

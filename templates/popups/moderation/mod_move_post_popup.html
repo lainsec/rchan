@@ -1,0 +1,28 @@
+<dialog class="ban_post_popup popup-move">
+    <div class="header">
+        <h1>{{ lang["popup-move-header"] }}</h1>
+    </div>
+    <form action="/api/move_post/{{ post.post_id }}" method="post">
+        <div class="board_ban_selector">
+            <h1>{{ lang["popup-move-ask"] }}</h1>
+            <select name="new_board">
+                {% if is_moderator %}
+                    {% for board in boards %}
+                     <option value="{{ board.board_uri }}">{{ board.board_uri }} - {{ board.board_name }}</option>
+                    {% endfor %}
+                    {% else %}
+                        {% for board in boards %}
+                            {% if board.board_owner == session.username %}
+                                <option value="{{ board.board_uri }}">{{ board.board_uri }} - {{ board.board_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+        <div class="ban_times">
+            <ul>
+                <li class="ban_time"><button type="submit">{{ lang["popup-move-submit"] }}</button></li>
+            </ul>
+        </div>
+    </form>
+</dialog>

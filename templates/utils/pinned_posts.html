@@ -8,6 +8,7 @@
             <input type="checkbox" class="deletionCheckBox" name="65004" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if pinned.post_user == '' or pinned.post_user == 'Anonymous' %}ドワーフ{% else %}{{ pinned.post_user | safe }}{% endif %}</span></span>
             {% if pinned.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
+            <span class="post_subject">{% if pinned.post_subject %}{{ pinned.post_subject }}{% endif %}</span>
             <span class="postDate">{{ pinned.post_date }}</span> <span class="pinIndicator"></span> <a href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}" class="postNumber">{{ pinned.post_id }}</a>
                 <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
         </div>
