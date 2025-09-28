@@ -36,7 +36,6 @@
         .sidebar a:hover {
             background-color: var(--cor-secundaria);
             color: var(--cor-texto);
-
         }
 
         .sidebar nav ul {
@@ -156,6 +155,45 @@
             color: white;
         }
 
+        /* Modal de Staff */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--cor-fundo-claro);
+            padding: 20px;
+            border-radius: 8px;
+            width: 480px;
+            max-width: 95%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .modal .close {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .modal .staff-list {
+            max-height: 200px;
+            overflow: auto;
+            margin-bottom: 12px;
+            border: 1px solid var(--cor-borda);
+            padding: 8px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.02);
+        }
+        .modal .staff-list li {
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         /* Responsividade */
         @media (max-width: 992px) {
             .dashboard-container {
@@ -213,10 +251,9 @@
             }
         }
 
-        /* Melhorias para mobile */
         @media (hover: none) {
             .btn {
-                padding: 10px 12px; /* Maior área de toque */
+                padding: 10px 12px;
             }
         }
     </style>
@@ -274,15 +311,55 @@
 
                                 <div class="action-buttons">
                                     <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                    <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post">
-                                        {% if board.enable_captcha == 1%}
-                                        <button type="submit" class="btn btn-danger" name="boardcaptcha_option" value="disable">{{ lang["dashboard-captcha-config-disable"] }}</button>
+                                    <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post" style="display:inline;">
+                                        {% if board.enable_captcha == 1 %}
+                                            <button type="submit" class="btn btn-danger" name="boardcaptcha_option" value="disable">{{ lang["dashboard-captcha-config-disable"] }}</button>
                                         {% else %}
-                                        <button type="submit" class="btn btn-success" name="boardcaptcha_option" value="enable">{{ lang["dashboard-captcha-config-enable"] }}</button>
+                                            <button type="submit" class="btn btn-success" name="boardcaptcha_option" value="enable">{{ lang["dashboard-captcha-config-enable"] }}</button>
                                         {% endif %}
                                     </form>
-                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST">
+
+                                    {# Show Manage Staff only to global owner/mod OR board owner #}
+                                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() or username == board.board_owner %}
+                                        <button type="button" class="btn btn-warning" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='flex'">Manage Staff</button>
+                                    {% endif %}
+
+                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline;">
                                         <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Modal exclusivo da board -->
+                            <div id="staffModal-{{ board.board_uri }}" class="modal" aria-hidden="true">
+                                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title-{{ board.board_uri }}">
+                                    <span class="close" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='none'">&times;</span>
+                                    <h2 id="modal-title-{{ board.board_uri }}">Manage Staff - /{{ board.board_uri }}/</h2>
+
+                                    <div>
+                                        <h4>Current Staff:</h4>
+                                        <ul class="staff-list">
+                                            {% if board.board_staffs and board.board_staffs|length > 0 %}
+                                                {% for staff in board.board_staffs %}
+                                                    <li>
+                                                        {{ staff }}
+                                                        {# Só permitir remover se não for o próprio dono da board #}
+                                                        {% if username != staff %}
+                                                            <form method="POST" action="/api/remove_board_staff/{{ board.board_uri }}" style="display:inline;">
+                                                                <input type="hidden" name="username" value="{{ staff }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            {% else %}
+                                                <li>No staff yet</li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    <form method="POST" action="/api/add_board_staff/{{ board.board_uri }}">
+                                        <input type="text" name="username" placeholder="Username" required>
+                                        <button type="submit" class="btn btn-success">Add Staff</button>
                                     </form>
                                 </div>
                             </div>
@@ -296,8 +373,45 @@
 
                                 <div class="action-buttons">
                                     <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST">
+
+                                    {# Show Manage Staff only if the current user is the board owner or global admin/mod #}
+                                    {% if username == board.board_owner or 'owner' in roles.lower() or 'mod' in roles.lower()  %}
+                                        <button type="button" class="btn btn-warning" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='flex'">Manage Staff</button>
+                                    {% endif %}
+
+                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline;">
                                         <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Modal exclusivo da board (user_boards) -->
+                            <div id="staffModal-{{ board.board_uri }}" class="modal" aria-hidden="true">
+                                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title-{{ board.board_uri }}">
+                                    <span class="close" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='none'">&times;</span>
+                                    <h2 id="modal-title-{{ board.board_uri }}">Manage Staff - /{{ board.board_uri }}/</h2>
+
+                                    <div>
+                                        <h4>Current Staff:</h4>
+                                        <ul class="staff-list">
+                                            {% if board.board_staffs and board.board_staffs|length > 0 %}
+                                                {% for staff in board.board_staffs %}
+                                                    <li>
+                                                            <form method="POST" action="/api/remove_board_staff/{{ board.board_uri }}" style="display:inline;">
+                                                                <input type="hidden" name="username" value="{{ staff }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                                            </form>
+                                                    </li>
+                                                {% endfor %}
+                                            {% else %}
+                                                <li>No staff yet</li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+
+                                    <form method="POST" action="/api/add_board_staff/{{ board.board_uri }}">
+                                        <input type="text" name="username" placeholder="Username" required>
+                                        <button type="submit" class="btn btn-success">Add Staff</button>
                                     </form>
                                 </div>
                             </div>
@@ -355,5 +469,22 @@
     </div>
     {% include 'utils/footer.html' %}
     <script src="/static/js/socket.js"></script>
+    <script>
+    // fecha modal ao clicar fora
+    window.onclick = function(event) {
+        document.querySelectorAll('.modal').forEach(function(m) {
+            if (event.target === m) {
+                m.style.display = "none";
+            }
+        });
+    };
+
+    // esc key fecha modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal').forEach(function(m) { m.style.display = "none"; });
+        }
+    });
+    </script>
 </body>
 </html>

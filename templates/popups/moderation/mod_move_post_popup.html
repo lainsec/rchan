@@ -12,7 +12,7 @@
                     {% endfor %}
                     {% else %}
                         {% for board in boards %}
-                            {% if board.board_owner == session.username %}
+                            {% if board.board_owner == session.username or session.username in board.board_staffs %}
                                 <option value="{{ board.board_uri }}">{{ board.board_uri }} - {{ board.board_name }}</option>
                             {% endif %}
                         {% endfor %}

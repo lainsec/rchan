@@ -37,8 +37,9 @@ def has_board_owner_or_admin_perms(get_board_uri_from_request):
 
             board_uri = get_board_uri_from_request(*args, **kwargs)
             board_owner = database_module.get_board_info(board_uri).get('board_owner')
+            board_staffs = database_module.get_board_info(board_uri).get('board_staffs')
 
-            if is_admin or username == board_owner:
+            if is_admin or username == board_owner or username in board_staffs:
                 return f(*args, **kwargs)
             else:
                 flash('You don’t have permission.', 'danger')
@@ -214,6 +215,52 @@ def move_post(post_id):
         }, broadcast=True)
     else:
         flash('Could not move the post.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/add_board_staff/<board_uri>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda board_uri: board_uri)
+def add_board_staff_route(board_uri):
+    """
+    API route to add a new staff member to a board.
+    Only the global owner, global moderator, or the board owner
+    is allowed to perform this action.
+    """
+    staff_username = request.form.get('username')
+    if not staff_username:
+        flash('No username provided.', 'danger')
+        return redirect(request.referrer or '/')
+
+    try:
+        if database_module.add_board_staff(board_uri, staff_username):
+            flash(f"User '{staff_username}' has been added as staff for /{board_uri}/!", 'success')
+        else:
+            flash('Failed to add staff member.', 'danger')
+    except ValueError as e:
+        flash(str(e), 'danger')
+    except Exception as e:
+        print(e)
+        flash('An unexpected error occurred.', 'danger')
+
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/remove_board_staff/<board_uri>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda board_uri: board_uri)
+def remove_board_staff_route(board_uri):
+    staff_username = request.form.get('username')
+    if not staff_username:
+        flash('No username provided.', 'danger')
+        return redirect(request.referrer or '/')
+
+    try:
+        if database_module.remove_board_staff(board_uri, staff_username):
+            flash(f"User '{staff_username}' has been removed from staff for /{board_uri}/!", 'success')
+        else:
+            flash('Failed to remove staff member.', 'danger')
+    except ValueError as e:
+        flash(str(e), 'danger')
+    except Exception as e:
+        flash('An unexpected error occurred.', 'danger')
+
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/auth_user', methods=['POST'])

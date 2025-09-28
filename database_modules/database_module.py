@@ -474,6 +474,77 @@ def remove_board(board_uri, username, role):
     DB.delete('boards', board_info['id'])
     return True
 
+def add_board_staff(board_uri, username):
+    """
+    Add a new staff member to the board_staffs list of a board.
+    Validates that the user and the board exist, and that the user
+    is not already a staff member of the board.
+    """
+
+    # Check if the user exists
+    users = DB.query("accounts", {"username": {"==": username}})
+    if not users:
+        raise ValueError(f"User '{username}' not found.")
+
+    # Check if the board exists
+    boards = DB.query("boards", {"board_uri": {"==": board_uri}})
+    if not boards:
+        raise ValueError(f"Board '{board_uri}' not found.")
+
+    board = boards[0]
+
+    # Ensure board_staffs exists and is a list
+    if "board_staffs" not in board or not isinstance(board["board_staffs"], list):
+        board["board_staffs"] = []
+
+    # Check if the user is already staff for this board
+    if username in board["board_staffs"]:
+        raise ValueError(f"User '{username}' is already staff for board '{board_uri}'.")
+
+    # Add the user to the board_staffs list
+    board["board_staffs"].append(username)
+
+    # Update in the database
+    DB.update("boards", board["id"], board)
+
+    return True
+
+def remove_board_staff(board_uri, username):
+    """
+    Remove a staff member from the board_staffs list of a board.
+    Validates that the user and the board exist, and that the user
+    is currently a staff member of the board.
+    """
+
+    # Check if the user exists
+    users = DB.query("accounts", {"username": {"==": username}})
+    if not users:
+        raise ValueError(f"User '{username}' not found.")
+
+    # Check if the board exists
+    boards = DB.query("boards", {"board_uri": {"==": board_uri}})
+    if not boards:
+        raise ValueError(f"Board '{board_uri}' not found.")
+
+    board = boards[0]
+
+    # Ensure board_staffs exists and is a list
+    if "board_staffs" not in board or not isinstance(board["board_staffs"], list):
+        board["board_staffs"] = []
+
+    # Check if the user is actually a staff for this board
+    if username not in board["board_staffs"]:
+        raise ValueError(f"User '{username}' is not staff for board '{board_uri}'.")
+
+    # Remove the user from the staff list
+    board["board_staffs"].remove(username)
+
+    # Update in the database
+    DB.update("boards", board["id"], board)
+
+    return True
+
+
 # User Operations
 def login_user(username, password):
     """Authenticate a user."""
