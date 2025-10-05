@@ -2,6 +2,7 @@ from flask import current_app, Blueprint, render_template, session, request, red
 from database_modules import database_module, language_module, moderation_module
 from flask_socketio import SocketIO, emit
 from PIL import Image
+from io import BytesIO
 from functools import wraps
 import os
 
@@ -50,13 +51,19 @@ def has_board_owner_or_admin_perms(get_board_uri_from_request):
 def allowed_file(file_storage):
     ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
     filename = file_storage.filename
+
     if '.' not in filename:
         return False
+
     ext = filename.rsplit('.', 1)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         return False
+
     try:
-        image = Image.open(file_storage.stream)
+        data = file_storage.read()
+        file_storage.stream.seek(0)
+
+        image = Image.open(BytesIO(data))
         image.verify()
         return True
     except Exception:
@@ -296,18 +303,11 @@ def create_board():
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/upload_banner', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda: request.form.get('board_uri'))
 def upload_banner():
-    if 'username' not in session:
-        flash('You must be logged in.')
-        return redirect(request.referrer or '/')
-
     board_uri = request.form['board_uri']
-    board_info = database_module.get_board_info(board_uri)
-    if session['username'] != board_info.get('board_owner'):
-        flash('You are not the board owner.')
-        return redirect(request.referrer or '/')
-
     file = request.files.get('imageUpload')
+
     if not file or file.filename == '':
         flash('No file uploaded.', 'danger')
         return redirect(request.referrer or '/')
