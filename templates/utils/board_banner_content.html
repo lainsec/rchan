@@ -17,6 +17,7 @@
         {% set user_roles = roles|lower %}
         {% set is_moderator = 'mod' in user_roles or 'owner' in user_roles %}
         {% set is_board_staff = session["username"] in board_info.board_staffs %}
+        {% set is_board_owner = session["username"] == board_info.board_owner %}
   
         {% if is_board_owner or is_moderator or is_board_staff %}
             <form id="bannerForm" action="/api/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
