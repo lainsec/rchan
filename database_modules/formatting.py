@@ -1,32 +1,30 @@
-"""
-formatting Module using Regex.
-Handles user reply, preventing XSS failures and text decoration.
-"""
-
 import html
 import re
 
 def escape_html(s):
-    # Scape html to remove any XSS.
     return html.escape(s).replace('&gt;', '>').replace('&lt;', '<')
 
 def escape_html_post_info(s):
-    # Scape html to remove any XSS from post info.
     return html.escape(s)
 
 def filter_xss(comment):
-    # Regular expression to search html tags.
     pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
-
-    # Verify if any tags were found
-    if pattern.search(comment):
-        return True
-    else:
-        return False
+    return bool(pattern.search(comment))
 
 def format_comment(comment):
+    
+    code_blocks = []
+
+    def save_code_block(match):
+        code = match.group(1)
+        code_blocks.append(code)
+        return f"__CODE_BLOCK_{len(code_blocks) - 1}__"
+
+    comment = re.sub(r'\[code\](.*?)\[/code\]', save_code_block, comment, flags=re.DOTALL | re.IGNORECASE)
+
     comment = escape_html(comment)
 
+    # >> quote
     parts = comment.split('>>')
     formatted_comment = [parts[0]]
     for part in parts[1:]:
@@ -39,15 +37,13 @@ def format_comment(comment):
             formatted_comment.append(f'&gt;&gt;{part}')
     comment = ''.join(formatted_comment)
 
-    # Now handle greentext (>)
+    # greentext > e redtext <
     formatted_comment = []
     inside_verde = False
     inside_vermelho = False
     buffer = []
-
     i = 0
     while i < len(comment):
-        # Skip if we're inside a quote-reply span
         if comment.startswith('<span class="quote-reply"', i):
             if buffer:
                 formatted_comment.append(''.join(buffer))
@@ -94,7 +90,6 @@ def format_comment(comment):
 
     if buffer:
         formatted_comment.append(''.join(buffer))
-
     if inside_verde:
         formatted_comment.append('</span>')
     if inside_vermelho:
@@ -102,7 +97,7 @@ def format_comment(comment):
 
     comment = ''.join(formatted_comment)
 
-    # Manipulação de citações (>>)
+    # citações novamente
     parts = comment.split('&gt;&gt;')
     formatted_comment = [parts[0]]
     for part in parts[1:]:
@@ -115,10 +110,14 @@ def format_comment(comment):
             formatted_comment.append(f'&gt;&gt;{part}')
     comment = ''.join(formatted_comment)
 
-    # Substituir links
-    comment = re.sub(r'\[([^\]]+)\]\((https?://[^\s]+(?:\S)*)\)', r'<a class="hyper-link" href="\2">\1</a>', comment)
+    # links [texto](url)
+    comment = re.sub(
+        r'\[([^\]]+)\]\((https?://[^\s]+(?:\S)*)\)',
+        r'<a class="hyper-link" href="\2">\1</a>',
+        comment
+    )
 
-    # Manipulação de '((('
+    # (((
     parts = comment.split('(((')
     for index in range(1, len(parts)):
         match = re.match(r'^[^()]*\)\)\)', parts[index])
@@ -128,31 +127,39 @@ def format_comment(comment):
             parts[index] = f'((({parts[index]}'
     comment = ''.join(parts)
 
-    # Manipulação de '=='
+    # ==texto==
     parts = comment.split('==')
     for index in range(1, len(parts), 2):
         parts[index] = f'<span class="red-text">{parts[index]}</span>'
     comment = ''.join(parts)
 
-    # Manipulação de '||'
+    # ||spoiler||
     parts = comment.split('||')
     for index in range(1, len(parts), 2):
         parts[index] = f'<span class="spoiler">{parts[index]}</span>'
     comment = ''.join(parts)
 
-    # Manipulação de [spoiler]
+    # [spoiler] tags
     comment = comment.replace('[spoiler]', '<span class="spoiler">').replace('[/spoiler]', '</span>')
 
-    # Manipulação de [r]
+    # [r] arco-íris
     comment = comment.replace('[r]', '<span class="rainbowtext">').replace('[/r]', '</span>')
 
+    # [wikinet] links
     comment = re.sub(
         r'\[wikinet\]([^\[]+)\[/wikinet\]',
         r'<a class="wikinet-hyper-link" href="https://wikinet.pro/wiki/\1" target="_blank"><span>\1</span></a>',
         comment
     )
 
+    for idx, code in enumerate(code_blocks):
+        escaped = html.escape(code.strip())
+        lines = escaped.split('\n')
+        list_items = ''.join(f'<li>{line}</li>' for line in lines)
+        formatted_code = f'<span class="command-block"><ol>{list_items}</ol></span>'
+        comment = comment.replace(f"__CODE_BLOCK_{idx}__", formatted_code)
+
     return comment
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("This module should not be run directly.")

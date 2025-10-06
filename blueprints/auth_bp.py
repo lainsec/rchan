@@ -227,11 +227,6 @@ def move_post(post_id):
 @auth_bp.route('/api/add_board_staff/<board_uri>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda board_uri: board_uri)
 def add_board_staff_route(board_uri):
-    """
-    API route to add a new staff member to a board.
-    Only the global owner, global moderator, or the board owner
-    is allowed to perform this action.
-    """
     staff_username = request.form.get('username')
     if not staff_username:
         flash('No username provided.', 'danger')

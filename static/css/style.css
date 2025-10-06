@@ -124,6 +124,28 @@ pre {
   cursor: pointer;
 }
 
+.command-block{
+    display: flex;
+    overflow: scroll;
+    background: #110f0fa6;
+    border: 1px solid #4f4e4e;
+}
+
+.command-block ol{
+    padding-left: 1.5em;
+    color: #929292;
+    width: 100%;
+}
+
+.command-block li:hover{
+    background-color: #616060;
+    color: #fff;
+}
+
+.command-block ol li::marker{
+    color: #ffffff;
+}
+
 .tripcode{
   font-style: italic;
   font-weight: 100;
@@ -132,6 +154,14 @@ pre {
 
 .post_subject{
   color: var(--cor-texto-claro);
+}
+
+.you-post{
+  font-style: italic;
+}
+
+.postDate{
+  margin-right: 5px;
 }
 
 .user_name_role {

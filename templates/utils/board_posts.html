@@ -80,7 +80,7 @@
                             </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{{ reply.content | safe }}</pre>
+                            <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">[VIEW ALL CONTENT]</a>{% endif %}
                         </div>
                     </div>
                 </div>

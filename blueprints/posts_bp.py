@@ -11,7 +11,7 @@ import os
 # Blueprint register
 posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
-
+# Post handling class
 class PostHandler:
     def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input):
         self.socketio = socketio
@@ -25,30 +25,31 @@ class PostHandler:
         self.comment = formatting.format_comment(comment)
         self.embed = embed
         self.captcha_input = captcha_input
-        
+    # Init the managers    
     timeout_manager = moderation_module.TimeoutManager()
     ban_manager = moderation_module.BanManager()
-    
+    # Check if the user is banned
     def check_banned(self):
         banned_status = self.ban_manager.is_banned(self.user_ip)
+        print(banned_status)
         if not banned_status.get('is_banned', False):
             return True
         boards = banned_status.get('boards')
-        if boards is None or boards == []:
+        if boards is None or boards == [] or None in boards:
             flash(f"You are banned from this board, reason: {banned_status.get('reason')}")
             return False
         if self.board_id in boards:
             flash(f"You are banned from this board, reason: {banned_status.get('reason')}")
             return False
         return True
-
+    # Check if the user is in timeout
     def check_timeout(self):
         timeout_status = self.timeout_manager.check_timeout(self.user_ip)
         if timeout_status.get('is_timeout', False):
             flash('Wait a few seconds to post again.')
             return False
         return True
-    
+    # Validate the comment length and content
     def validate_comment(self):
         if len(self.comment) >= 20000:
             flash('You reached the limit.')
@@ -57,7 +58,7 @@ class PostHandler:
             flash('You have to type something, you bastard.')
             return False
         return True
-    
+    # Process uploaded files
     def process_uploaded_files(self, upload_folder, is_thread=False):
         files = request.files.getlist('fileInput')
         saved_files = []
@@ -111,16 +112,16 @@ class PostHandler:
                         print(f"Error generating thumb for: {filename}")
 
         return saved_files, thumb_paths
-    
+    # Handle reply posts
     def handle_reply(self, reply_to):
         if not database_module.check_replyto_exist(int(reply_to)):
             flash("This thread don't even exist, dumb!")
             return False
-
+        # Check if the thread is locked
         if database_module.verify_locked_thread(int(reply_to)):
             flash("This thread is locked.")
             return False
-            
+        # check if the captcha is correct
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
                 flash("Invalid captcha.")
@@ -151,7 +152,7 @@ class PostHandler:
         database_module.add_new_reply(self.user_ip, self.account_name, self.post_subject, reply_to, self.post_name, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
-
+    # Capture a frame from the video to use as thumbnail
     def capture_frame_from_video(self, video_path, thumb_folder=None):
         try:
             cap = cv2.VideoCapture(video_path)
@@ -189,7 +190,7 @@ class PostHandler:
         except Exception as e:
             print(f"Error processing video: {e}")
             return None
-
+    # Handle new thread posts
     def handle_post(self):
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
@@ -226,7 +227,7 @@ class PostHandler:
                                    self.original_content, self.comment, self.embed, saved_files)
         self.timeout_manager.apply_timeout(self.user_ip, duration_seconds=35, reason="Automatic timeout.")
         return True
-
+# Route to handle new posts
 @posts_bp.route('/api/new_post', methods=['POST'])
 def new_post():
     socketio = current_app.extensions['socketio']
