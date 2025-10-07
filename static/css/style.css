@@ -129,9 +129,12 @@ pre {
     overflow: scroll;
     background: #110f0fa6;
     border: 1px solid #4f4e4e;
+    min-width: 15em;
+    max-width: 35em;
 }
 
 .command-block ol{
+    text-wrap-mode: nowrap;
     padding-left: 1.5em;
     color: #929292;
     width: 100%;
