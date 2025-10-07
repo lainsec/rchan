@@ -1,5 +1,41 @@
-function adicionarEventosQuoteReply() {
+function manipularConteudo() {
+    var postContents = document.querySelectorAll('pre');
 
+    postContents.forEach(function(postContent) {
+        var content = postContent.innerHTML;
+
+        // [wikinet]link[/wikinet]
+        content = content.replace(/\[wikinet\](.*?)\[\/wikinet\]/g,
+            '<a class="wikinet-hyper-link" href="https://wikinet.pro/wiki/$1" target="_blank"><span>$1</span></a>');
+
+        // [texto](https://link)
+        content = content.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+(?:\S)*)\)/g,
+            '<a class="hyper-link" href="$2">$1</a>');
+
+        // >>123
+        content = content.split('&gt;&gt;').map((part, index) => {
+            if (index === 0) return part;
+            const number = part.match(/^\d+/);
+            if (number) {
+                const quotedId = number[0];
+                const quotedDiv = document.querySelector(`div[id="${quotedId}"]`);
+                const isOperator = quotedDiv && quotedDiv.getAttribute('post-role') === 'operator';
+
+                const quoteSpan = `<span class="quote-reply" data-id="${quotedId}">&gt;&gt;${quotedId}</span>`;
+                const operatorSpan = isOperator ? `<span class="operator-quote">(OP)</span>` : '';
+                return `${quoteSpan}${operatorSpan}${part.slice(quotedId.length)}`;
+            }
+            return `&gt;&gt;${part}`;
+        }).join('');
+
+        postContent.innerHTML = content;
+    });
+
+    adicionarEventosQuoteReply();
+}
+
+
+function adicionarEventosQuoteReply() {
     const quoteReplies = document.querySelectorAll('.quote-reply');
 
     quoteReplies.forEach(span => {
@@ -41,13 +77,11 @@ function adicionarEventosQuoteReply() {
                 const preview = targetElement.cloneNode(true);
                 const replies = preview.querySelectorAll('div.replies');
                 replies.forEach(reply => reply.remove());
-                if (!preview.style.backgroundColor) {
-                    preview.style.backgroundColor = 'var(--cor-fundo-claro)';
-                }
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
                 preview.style.border = '1px solid var(--cor-borda)';
                 preview.style.display = 'block';
+                preview.style.backgroundColor = 'var(--cor-fundo-claro)';
 
                 document.body.appendChild(preview);
 
@@ -68,6 +102,7 @@ function adicionarEventosQuoteReply() {
         });
     });
 }
+
 
 function quotePostId(postId) {
     const textarea = document.getElementById('text');
@@ -95,6 +130,7 @@ function quotePostId(postId) {
     draggableForm.style.left = `${newLeft}px`;
     draggableForm.style.top = `${newTop}px`;
 }
+
 
 document.addEventListener("DOMContentLoaded", function() {
     manipularConteudo();
@@ -143,24 +179,20 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Função principal que formata a data
     function formatDate(element) {
         const dateString = element.textContent.trim();
-        
+
         try {
-            // Converte a string para um objeto Date (formato dd/mm/aaaa HH:MM:SS)
             const [datePart, timePart] = dateString.split(' ');
             const [day, month, year] = datePart.split('/').map(Number);
             const [hours, minutes, seconds] = timePart.split(':').map(Number);
-            
+
             const date = new Date(year, month - 1, day, hours, minutes, seconds);
-            
-            // Calcula a diferença em relação ao agora
             const now = new Date();
             const diffInSeconds = Math.floor((now - date) / 1000);
-            
-            // Define os intervalos de tempo
+
             const intervals = {
                 ano: 31536000,
                 mês: 2592000,
@@ -170,29 +202,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 minuto: 60,
                 segundo: 1
             };
-            
-            // Calcula o tempo relativo
+
             let relativeTime = '';
             for (const [unit, secondsInUnit] of Object.entries(intervals)) {
                 const interval = Math.floor(diffInSeconds / secondsInUnit);
                 if (interval >= 1) {
-                    relativeTime = interval === 1 ? 
-                        `há 1 ${unit}` : 
+                    relativeTime = interval === 1 ?
+                        `há 1 ${unit}` :
                         `há ${interval} ${unit}${unit !== 'mês' ? 's' : 'es'}`;
                     break;
                 }
             }
-        
+
             if (!relativeTime) {
                 relativeTime = 'agora mesmo';
             }
-        
+
             element.dataset.originalDate = dateString;
-        
             element.textContent = relativeTime;
-        
             element.setAttribute('title', dateString);
-            
+
             return true;
         } catch (e) {
             console.error('Erro ao formatar data no elemento:', element, 'Erro:', e);
@@ -200,10 +229,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Função para atualizar todas as datas periodicamente
     function updateAllDates() {
         document.querySelectorAll('span.postDate').forEach(element => {
-            // Restaura a data original antes de formatar novamente
             if (element.dataset.originalDate) {
                 element.textContent = element.dataset.originalDate;
             }
@@ -236,18 +263,19 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateAllDates, 60000);
 });
 
+
 const checkboxes = document.querySelectorAll('#togglemodoptions');
 
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
+checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
         const parentDiv = checkbox.closest('div');
         const threadModOptions = parentDiv.querySelector('#threadmodoptions');
-
         if (threadModOptions) {
-          threadModOptions.style.display = checkbox.checked ? 'flex' : 'none';
+            threadModOptions.style.display = checkbox.checked ? 'flex' : 'none';
         }
-      });
+    });
 });
+
 
 function closeModal(dialogElement) {
     if (dialogElement && dialogElement.close) {
@@ -255,16 +283,16 @@ function closeModal(dialogElement) {
     }
 }
 
-document.addEventListener('click', function (event) {
-    const triggerClasses = ['ban', 'delete', 'move'];
 
+document.addEventListener('click', function(event) {
+    const triggerClasses = ['ban', 'delete'];
     const triggerSelector = triggerClasses.map(cls => '.' + cls).join(', ');
     const clickedTrigger = event.target.closest(triggerSelector);
 
     if (clickedTrigger) {
         event.preventDefault();
-
         let dialogClass = null;
+
         for (const cls of triggerClasses) {
             if (clickedTrigger.classList.contains(cls)) {
                 dialogClass = 'popup-' + cls;
@@ -291,7 +319,8 @@ document.addEventListener('click', function (event) {
     }
 });
 
-document.addEventListener('click', function (event) {
+
+document.addEventListener('click', function(event) {
     document.querySelectorAll('dialog[open]').forEach(dialog => {
         if (event.target === dialog) {
             dialog.close();
