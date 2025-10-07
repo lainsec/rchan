@@ -1,3 +1,8 @@
+"""
+formatting Module using Regex.
+Handles user reply, preventing XSS failures and text decoration.
+"""
+
 import html
 import re
 
