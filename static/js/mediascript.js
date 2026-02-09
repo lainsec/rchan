@@ -7,6 +7,11 @@ document.addEventListener('click', function(event) {
         return;
     }
 
+    // Previne o comportamento padrão do link (abrir em nova aba)
+    if (img.closest('a')) {
+        event.preventDefault();
+    }
+
     // Esconde a imagem original
     img.style.display = 'none';
 

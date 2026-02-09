@@ -13,7 +13,12 @@ import json
 import os
 import io
 import re
+from threading import Lock
 from PIL import Image, ImageDraw, ImageFont
+
+# Initialize Lock for post ID generation
+POST_LOCK = Lock()
+
 from database_modules.sqlite_handler import SQLiteConfig
 
 # Initialize SQLite databases
@@ -96,15 +101,20 @@ def generate_captcha():
                 fill_color = 'white'
             draw.rectangle([x, y, x + box_size, y + box_size], fill=fill_color)
             
-    # 4. Load Font (Comic Sans Cursive/Italic)
-    font_path = "C:/Windows/Fonts/comici.ttf" # Comic Sans Italic
-    if not os.path.exists(font_path):
-        font_path = "C:/Windows/Fonts/comic.ttf" # Comic Sans Regular
+    # 4. Load Font (Comic Sans from static/css/fonts)
+    # Construct path relative to this file
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    font_path = os.path.join(base_dir, 'static', 'css', 'fonts', 'comic.ttf')
     
     try:
         font = ImageFont.truetype(font_path, 42)
     except IOError:
-        font = ImageFont.load_default()
+        # Fallback to system font if local font fails
+        font_path = "/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf"
+        try:
+             font = ImageFont.truetype(font_path, 42)
+        except IOError:
+             font = ImageFont.load_default()
 
     # 5. Draw Text (Centered)
     # Using anchor='mm' (middle-middle) to center text bounding box relative to image center
@@ -125,18 +135,18 @@ def generate_captcha():
     step = 5
     for x in range(step, width + step, step):
         # Random vertical jitter
-        y_jitter = random.randint(-2, 2)
+        y_jitter = random.randint(-1, 1)
         curr_y = cy + y_jitter
         
         # Draw segment
         draw.line((prev_x, prev_y, x, curr_y), fill='black', width=line_thickness)
         
         # Randomly add "glitch" blocks
-        if random.random() < 0.15: # 15% chance
-            glitch_w = random.randint(3, 8)
-            glitch_h = random.randint(3, 8)
+        if random.random() < 0.05: # 5% chance
+            glitch_w = random.randint(2, 6)
+            glitch_h = random.randint(2, 6)
             g_x = x - random.randint(0, step)
-            g_y = curr_y + random.randint(-8, 8)
+            g_y = curr_y + random.randint(-4, 4)
             draw.rectangle([g_x, g_y, g_x + glitch_w, g_y + glitch_h], fill='black')
             
         prev_x = x
@@ -718,30 +728,31 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
     if not board:
         raise ValueError(f"Board '{board_id}' does not exist")
     
-    # Get the next post ID
-    max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
-    max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
-    max_id = max(max_post_id, max_reply_id)
-    new_post_id = max_id + 1
+    with POST_LOCK:
+        # Get the next post ID
+        max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
+        max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
+        max_id = max(max_post_id, max_reply_id)
+        new_post_id = max_id + 1
 
-    # Create the new post
-    new_post = {
-        # 'id': new_post_id, # Let SQLite handle the ID
-        'user_ip': user_ip,
-        'post_id': new_post_id,
-        'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
-        'post_subject': post_subject,
-        'post_date': get_current_datetime(),
-        'board': board_id,
-        'original_content': original_content,
-        'post_content': comment,
-        'post_images': files, 
-        'locked': 0,
-        'visible': 1
-    }
-    
-    # Insert into database
-    DB.insert('posts', new_post)
+        # Create the new post
+        new_post = {
+            # 'id': new_post_id, # Let SQLite handle the ID
+            'user_ip': user_ip,
+            'post_id': new_post_id,
+            'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
+            'post_subject': post_subject,
+            'post_date': get_current_datetime(),
+            'board': board_id,
+            'original_content': original_content,
+            'post_content': comment,
+            'post_images': files, 
+            'locked': 0,
+            'visible': 1
+        }
+        
+        # Insert into database
+        DB.insert('posts', new_post)
     return new_post_id
 
 def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comment, embed, files):
@@ -751,24 +762,25 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
     board_owner = board[0]['board_owner']
     board_staffs = board[0]['board_staffs']
 
-    max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
-    max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
-    max_id = max(max_post_id, max_reply_id)
-    new_reply_id = max_id + 1
-    new_reply = {
-        'id': new_reply_id,
-        'user_ip': user_ip,
-        'reply_id': new_reply_id,
-        'post_id': int(reply_to),
-        'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
-        'post_subject': post_subject,
-        'post_date': get_current_datetime(),
-        'content': comment,
-        'images': files 
-    }
-    if not 'sage' in post_subject.lower():
-        bump_thread(int(reply_to))
-    DB.insert('replies', new_reply)
+    with POST_LOCK:
+        max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
+        max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
+        max_id = max(max_post_id, max_reply_id)
+        new_reply_id = max_id + 1
+        new_reply = {
+            'id': new_reply_id,
+            'user_ip': user_ip,
+            'reply_id': new_reply_id,
+            'post_id': int(reply_to),
+            'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
+            'post_subject': post_subject,
+            'post_date': get_current_datetime(),
+            'content': comment,
+            'images': files 
+        }
+        if not 'sage' in post_subject.lower():
+            bump_thread(int(reply_to))
+        DB.insert('replies', new_reply)
     
     return new_reply_id
 

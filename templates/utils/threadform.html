@@ -58,3 +58,12 @@
         </div>
     </form>
 </div>
+<script>
+    document.getElementById('postform').addEventListener('submit', function() {
+        var btn = document.getElementById('submitpost');
+        if (btn) {
+            btn.disabled = true;
+            btn.value = 'Posting...';
+        }
+    });
+</script>

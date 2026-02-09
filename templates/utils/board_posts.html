@@ -29,20 +29,32 @@
                                  style="cursor: pointer;">
                         {% else %}
                             <div class="post_image_info">
-                                <a class="image_url" href="/static/post_images/{{ image }}">
+                                <a class="image_url" href="/static/post_images/{{ image }}" target="_blank">
                                     {{ image[:17] ~ '...' ~ image.split('.')[-1] if image|length > 17 else image }}
                                 </a>
                             </div>
                             {% if image.split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
+                            <noscript>
+                                <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
+                            </noscript>
                             <img class="post_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
                                 src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
+                            <noscript>
+                                </a>
+                            </noscript>    
                                 <video controls class="post_video"
                                        src="{{ url_for('static', filename='post_images/' ~ image) }}" 
                                        style="display: none;"></video>
                             {% else %}
-                                <img draggable="false" class="post_img" 
-                                     src="{{ url_for('static', filename='post_images/' ~ image) }}" 
-                                     alt="">
+                                <noscript>
+                                    <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
+                                </noscript>
+                                    <img draggable="false" class="post_img" 
+                                         src="{{ url_for('static', filename='post_images/' ~ image) }}" 
+                                         alt="">
+                                <noscript>
+                                    </a>
+                                </noscript>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -84,7 +96,7 @@
                                                          style="cursor: pointer;">
                                                 {% else %}
                                                     <div class="reply_image_info">
-                                                        <a class="image_url" href="/static/reply_images/{{ image }}">
+                                                        <a class="image_url" href="/static/reply_images/{{ image }}" target="_blank">
                                                             {{ image[:17] ~ '...' ~ image.split('.')[-1] if image|length > 17 else image }}
                                                         </a>
                                                     </div>

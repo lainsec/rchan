@@ -79,6 +79,7 @@ function adicionarEventosQuoteReply() {
                 replies.forEach(reply => reply.remove());
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
+                preview.style.minWidth = '40em';
                 preview.style.border = '1px solid var(--cor-borda)';
                 preview.style.display = 'block';
                 preview.style.backgroundColor = 'var(--cor-fundo-claro)';

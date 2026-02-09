@@ -43,8 +43,8 @@ def login():
         roles = database_module.get_user_role(username)
         
         # Extended data for dashboard
-        popular_boards = database_module.get_popular_boards(limit=5)
-        recent_posts = database_module.get_all_posts(sort_by_date=True)[:10]
+        popular_boards = database_module.get_popular_boards(limit=4)
+        recent_posts = database_module.get_all_posts(sort_by_date=True)[:4]
         
         # Moderation data
         timeout_manager = TimeoutManager()

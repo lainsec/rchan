@@ -217,6 +217,7 @@ function generateFilesHTML(files, type) {
     files.forEach(file => {
         const isImage = /\.(jpeg|jpg|gif|png|webp)$/i.test(file);
         const isVideo = /\.(mp4|mov|webm)$/i.test(file);
+        const isYoutube = file.startsWith('youtube:');
         const folder = type === 'post' ? 'post_images' : 'reply_images';
         const thumbFolder = folder + '/thumbs';
         const baseName = file.split('.').slice(0, -1).join('.');
@@ -227,7 +228,38 @@ function generateFilesHTML(files, type) {
             ? `${baseName.substring(0, 17)}...${extension}`
             : `${baseName}.${extension}`;
 
-        if (isImage) {
+        if (isYoutube) {
+            const videoId = file.split(':')[1];
+            if (type === 'post') {
+                html += `
+                    <div class="post_image" bis_skin_checked="1">
+                        <div class="post_image_info" bis_skin_checked="1">
+                            <a class="image_url" href="https://youtu.be/${videoId}" target="_blank">
+                                YouTube Embed
+                            </a>
+                        </div>
+                        <img class="post_img post_video_thumbnail" 
+                             src="https://img.youtube.com/vi/${videoId}/0.jpg"
+                             onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/${videoId}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                             style="cursor: pointer;">
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="reply_image" bis_skin_checked="1">
+                        <div class="reply_image_info" bis_skin_checked="1">
+                             <a class="image_url" href="https://youtu.be/${videoId}" target="_blank">
+                                YouTube Embed
+                            </a>
+                        </div>
+                        <img class="reply_img post_video_thumbnail" 
+                             src="https://img.youtube.com/vi/${videoId}/0.jpg"
+                             onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/${videoId}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                             style="cursor: pointer;">
+                    </div>
+                `;
+            }
+        } else if (isImage) {
             html += `
                 <div class="${type === 'post' ? 'post_image' : 'reply_image'}" bis_skin_checked="1">
                     <div class="post_image_info" bis_skin_checked="1">
