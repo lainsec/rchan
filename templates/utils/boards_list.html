@@ -2,7 +2,7 @@
     <div class="tabuas">
         {% for board in boards[:23] %}
             {% if board.board_isvisible == 1 %}
-                <a href="/{{ board.board_uri }}/">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
+                <a href="/{{ board.board_uri }}/" title="{{ board.board_desc }}">/{{ board.board_uri }}/ - {{ board.board_name }}</a>
             {% endif %}
         {% endfor %}
     </div>

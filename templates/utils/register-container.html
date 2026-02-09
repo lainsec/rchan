@@ -6,15 +6,20 @@
                 <form class="form-post" action="/api/register_user" method="POST" data-captcha-preload="true">
                     <div class="row" bis_skin_checked="1">
                         <div class="label" bis_skin_checked="1">Username</div><input type="text" name="username"
-                            maxlength="50" pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only">
+                            maxlength="50" pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only" value="{{ form_data.username if form_data else '' }}">
                     </div>
                     <div class="row" bis_skin_checked="1">
                         <div class="label" bis_skin_checked="1">Password</div><input type="password" name="password"
-                            maxlength="100" required="">
+                            maxlength="100" required="" value="{{ form_data.password if form_data else '' }}">
                     </div>
                     <div class="row" bis_skin_checked="1">
                         <div class="label" bis_skin_checked="1">captcha</div>
-                        <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                        <div class="captcha-container">
+                            <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                            <button type="button" class="captcha-refresh-btn" onclick="refreshCaptcha(this)">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="row" bis_skin_checked="1">
                         <div class="label" bis_skin_checked="1">captcha</div>

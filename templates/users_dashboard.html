@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Dashboard - {{ username }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Copied styles from dashboard.html */
+        :root {
+            --dashboard-bg: var(--cor-fundo-claro);
+            --dashboard-card-bg: rgba(255, 255, 255, 0.03);
+            --dashboard-border: var(--cor-borda);
+            --dashboard-text: var(--cor-texto);
+            --dashboard-secondary: var(--cor-secundaria);
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 80px auto 40px;
+            padding: 0 20px;
+            color: var(--dashboard-text);
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            border-radius: 8px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .user-profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--dashboard-border);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--dashboard-secondary);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .user-name {
+            font-size: 1.4em;
+            margin: 0 0 5px;
+            color: var(--dashboard-text);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-owner { background-color: #ff4444; color: white; }
+        .role-mod { background-color: #4285F4; color: white; }
+        .role-user { background-color: #00C851; color: white; }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--dashboard-text);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 1.1em;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--dashboard-secondary);
+            color: #fff;
+        }
+
+        .sidebar-nav a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--dashboard-border);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--dashboard-border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--dashboard-text);
+        }
+
+        .search-form button {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            background: var(--dashboard-secondary);
+            color: white;
+            cursor: pointer;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--dashboard-secondary);
+        }
+
+        /* Tables */
+        .data-table-container {
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 4px 4px 0px #d2738a2e;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .data-table th {
+            background-color: rgba(255,255,255,0.05);
+            font-weight: bold;
+            color: var(--dashboard-secondary);
+        }
+
+        .data-table tr:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .pagination a {
+            padding: 8px 12px;
+            background: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            color: var(--dashboard-text);
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        .pagination a.active {
+            background: var(--dashboard-secondary);
+            color: white;
+            border-color: var(--dashboard-secondary);
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.8em;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+        
+        .btn-promote {
+            background-color: #4285F4;
+        }
+        
+        .btn-demote {
+            background-color: #ffbb33;
+            color: black;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-container {
+                margin-top: 60px;
+                padding: 0 15px;
+                gap: 20px;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .section-header h2 {
+                font-size: 1.5em;
+            }
+
+            .data-table th, .data-table td {
+                padding: 10px;
+                font-size: 0.85em;
+            }
+            
+            .role-badge {
+                padding: 3px 8px;
+                font-size: 0.75em;
+            }
+
+            .btn-sm {
+                padding: 3px 6px;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    {% include 'utils/navbar.html' %}
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    {{ username[0] }}
+                </div>
+                <h2 class="user-name">{{ username }}</h2>
+                <span class="role-badge {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
+                    {% if roles == '' %}User{% else %}{{ roles }}{% endif %}
+                </span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/conta"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
+                    <li><a href="/conta/users" class="active"><i class="fas fa-users"></i> Users Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section id="users">
+                <div class="section-header">
+                    <h2>Users Management</h2>
+                    <form action="" method="GET" class="search-form">
+                        <input type="text" name="search" placeholder="Search users..." value="{{ search_query }}">
+                        <button type="submit"><i class="fas fa-search"></i></button>
+                    </form>
+                    <div>Page {{ page }} of {{ total_pages }}</div>
+                </div>
+                
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                {% if 'owner' in roles.lower() %}
+                                <th>Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>
+                                    {% if user.role == 'owner' %}
+                                        <span class="role-badge role-owner">Owner</span>
+                                    {% elif user.role == 'mod' %}
+                                        <span class="role-badge role-mod">Mod</span>
+                                    {% else %}
+                                        <span class="role-badge role-user">User</span>
+                                    {% endif %}
+                                </td>
+                                {% if 'owner' in roles.lower() %}
+                                <td>
+                                    {% if user.username != username %}
+                                        <form action="/api/change_user_role" method="POST" style="display:inline;">
+                                            <input type="hidden" name="username" value="{{ user.username }}">
+                                            {% if user.role == 'mod' %}
+                                                <input type="hidden" name="role" value="user">
+                                                <button type="submit" class="btn-sm btn-demote" title="Demote to User">
+                                                    <i class="fas fa-arrow-down"></i> Demote
+                                                </button>
+                                            {% elif user.role != 'owner' %}
+                                                <input type="hidden" name="role" value="mod">
+                                                <button type="submit" class="btn-sm btn-promote" title="Promote to Mod">
+                                                    <i class="fas fa-arrow-up"></i> Make Mod
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="?page={{ page - 1 }}&search={{ search_query }}">&laquo; Prev</a>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        <a href="?page={{ p }}&search={{ search_query }}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                        <a href="?page={{ page + 1 }}&search={{ search_query }}">Next &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+    {% include 'utils/footer.html' %}
+</body>
+</html>

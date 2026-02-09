@@ -10,6 +10,7 @@
     <title>レインｃｈａｎｎｅｌ - /{{post.board}}/</title>
     {% endfor %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/captcha.css') }}">
 </head>
 <body>
     {% include 'utils/navbar.html' %}
@@ -21,6 +22,7 @@
     </div>
     <div id="reinrun"></div>
     {% include 'utils/footer.html' %}
+    <script src="/static/js/captcha.js"></script>
     <script src="/static/js/postform.js"></script>
     <script src="/static/js/thumb.js"></script>
     <script src="/static/js/boardstyle.js"></script>

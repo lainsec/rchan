@@ -6,485 +6,773 @@
     <title>Dashboard - {{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        :root {
+            --dashboard-bg: var(--cor-fundo-claro);
+            --dashboard-card-bg: rgba(255, 255, 255, 0.03);
+            --dashboard-border: var(--cor-borda);
+            --dashboard-text: var(--cor-texto);
+            --dashboard-secondary: var(--cor-secundaria);
+        }
+
         .dashboard-container {
             display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #fff;
+            grid-template-columns: 260px 1fr;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 80px auto 40px;
+            padding: 0 20px;
+            color: var(--dashboard-text);
+            box-sizing: border-box;
+            width: 100%;
         }
 
+        /* Sidebar Styling */
         .sidebar {
-            background-color: var(--cor-fundo-claro);
-            border: 1px solid var(--cor-borda);
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
             height: fit-content;
+            position: sticky;
+            top: 80px;
         }
 
-        .sidebar a {
-            text-decoration: none;
-            color: var(--cor-secundaria);
-            padding: 8px 12px;
-            display: block;
-            border-radius: var(--border-radius-sm);
-            transition: background-color 0.2s ease, color 0.2s ease;
+        .user-profile {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--dashboard-border);
         }
 
-        .sidebar a:hover {
-            background-color: var(--cor-secundaria);
-            color: var(--cor-texto);
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background-color: var(--dashboard-secondary);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #fff;
+            text-transform: uppercase;
         }
 
-        .sidebar nav ul {
+        .user-name {
+            font-size: 1.4em;
+            margin: 0 0 5px;
+            color: var(--dashboard-text);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .role-owner { background-color: #ff4444; color: white; }
+        .role-mod { background-color: #4285F4; color: white; }
+        .role-user { background-color: #00C851; color: white; }
+
+        .sidebar-nav ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
 
-        .main-content {
-            background-color: var(--cor-fundo-claro);
-            border: 1px solid var(--cor-borda);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .sidebar-nav li {
+            margin-bottom: 8px;
         }
 
-        .mod-section {
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--cor-borda);
-            padding-bottom: 20px;
-        }
-
-        .mod-section:last-child {
-            border-bottom: none;
-        }
-
-        .board-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-
-        .board-card {
-            border-radius: 5px;
-            padding: 15px;
-            background-color: var(--cor-fundo-claro);
-            border: 1px solid var(--cor-borda);
-            box-shadow: 4px 4px 0px #d2738a2e;
-        }
-
-        .board-card h3 a {
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--dashboard-text);
             text-decoration: none;
-            color: var(--cor-secundaria);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 1.1em;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--dashboard-secondary);
+            color: #fff;
+        }
+
+        .sidebar-nav a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--dashboard-border);
+            padding-bottom: 10px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--dashboard-secondary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .stat-card {
-            background-color: var(--cor-fundo-claro);
-            border: 1px solid var(--cor-borda);
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s;
             box-shadow: 4px 4px 0px #d2738a2e;
-            padding: 15px;
-            border-radius: 5px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--dashboard-secondary);
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--cor-texto-claro);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Boards List */
+        .boards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .board-card {
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 4px 4px 0px #d2738a2e;
+        }
+
+        .board-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 15px;
         }
 
-        .action-buttons {
+        .board-title h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+
+        .board-title h3 a {
+            color: var(--dashboard-secondary);
+            text-decoration: none;
+        }
+
+        .board-meta {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .board-stats {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9em;
+        }
+
+        .board-actions {
+            display: flex;
             flex-wrap: wrap;
+            gap: 8px;
+            margin-top: auto;
         }
 
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        .btn-danger {
-            background-color: #ff4444;
-            color: white;
-        }
-
-        .btn-warning {
-            background-color: #ffbb33;
-            color: black;
-        }
-
-        .btn-success {
-            background-color: #00C851;
-            color: white;
-        }
-
-        .btn-primary {
-            background-color: #4285F4;
-            color: white;
-        }
-
-        .user-info {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--cor-borda);
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .owner {
-            background-color: #ff4444;
-            color: white;
-        }
-
-        .mod {
-            background-color: #4285F4;
-            color: white;
-        }
-
-        .user {
-            background-color: #00C851;
-            color: white;
-        }
-
-        /* Modal de Staff */
-        .modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center; justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: var(--cor-fundo-claro);
-            padding: 20px;
+        /* Tables */
+        .data-table-container {
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
             border-radius: 8px;
-            width: 480px;
-            max-width: 95%;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            overflow-x: auto;
+            box-shadow: 4px 4px 0px #d2738a2e;
         }
-        .modal .close {
-            float: right;
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .data-table th {
+            background-color: rgba(255,255,255,0.05);
+            font-weight: bold;
+            color: var(--dashboard-secondary);
+        }
+
+        .data-table tr:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 0.85em;
+            text-decoration: none;
+            transition: opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
-        .modal .staff-list {
+        
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background-color: #4285F4; color: white; }
+        .btn-success { background-color: #00C851; color: white; }
+        .btn-warning { background-color: #ffbb33; color: black; }
+        .btn-danger { background-color: #ff4444; color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 0.8em; }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--dashboard-bg);
+            border: 1px solid var(--dashboard-border);
+            border-radius: 8px;
+            padding: 25px;
+            width: 500px;
+            max-width: 90%;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        .close:hover { color: #fff; }
+
+        .staff-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
             max-height: 200px;
-            overflow: auto;
-            margin-bottom: 12px;
-            border: 1px solid var(--cor-borda);
-            padding: 8px;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.02);
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
         }
-        .modal .staff-list li {
-            margin: 6px 0;
+
+        .staff-list li {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* Responsividade */
-        @media (max-width: 992px) {
+        /* Responsive */
+        @media (max-width: 900px) {
             .dashboard-container {
                 grid-template-columns: 1fr;
             }
-            
             .sidebar {
-                order: 1;
-            }
-            
-            .main-content {
-                order: 2;
-            }
-            
-            .board-list {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                position: static;
+                margin-bottom: 20px;
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 600px) {
             .dashboard-container {
-                padding: 10px;
-                gap: 15px;
+                margin-top: 60px;
+                padding: 0 15px;
+                gap: 20px;
             }
-            
-            .sidebar, .main-content {
+
+            .boards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 2em;
+            }
+
+            .section-header h2 {
+                font-size: 1.5em;
+            }
+
+            .board-card {
                 padding: 15px;
             }
-            
-            .action-buttons {
-                flex-direction: column;
-                gap: 8px;
-            }
-        }
 
-        @media (max-width: 480px) {
-            .board-list {
-                grid-template-columns: 1fr;
+            .user-profile {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
             }
-            
-            .board-card {
-                padding: 12px;
-            }
-            
-            .user-info h2 {
-                font-size: 1.5rem;
-            }
-            
-            .sidebar nav ul {
-                padding-left: 15px;
-            }
-            
-            .sidebar nav li {
-                margin-bottom: 10px;
-            }
-        }
 
-        @media (hover: none) {
-            .btn {
-                padding: 10px 12px;
+            .sidebar {
+                padding: 20px;
             }
         }
     </style>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     {% include 'utils/navbar.html' %}
+
     <div class="dashboard-container">
-        <div class="sidebar">
-            <div class="user-info">
-                <h2>{{ username }}</h2>
-                <span class="role-badge
-                    {% if 'owner' in roles.lower() %}owner
-                    {% elif 'mod' in roles.lower() %}mod
-                    {% else %}user{% endif %}">
-                    {% if roles == '' %}
-                    Anon
-                    {% else %}
-                    {{ roles }}
-                    {% endif %}
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    {{ username[0] }}
+                </div>
+                <h2 class="user-name">{{ username }}</h2>
+                <span class="role-badge {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
+                    {% if roles == '' %}User{% else %}{{ roles }}{% endif %}
                 </span>
             </div>
 
-            <nav>
+            <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="#overview">{{ lang["dashboard-general-view"] }}</a></li>
-                    <li><a href="#boards">{{ lang["dashboard-my-boards"] }}</a></li>
+                    <li><a href="#overview"><i class="fas fa-chart-line"></i> {{ lang["dashboard-general-view"] }}</a></li>
+                    <li><a href="#my-boards"><i class="fas fa-layer-group"></i> {{ lang["dashboard-my-boards"] }}</a></li>
                     {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                        <li><a href="#mod-tools">{{ lang["dashboard-moderation-tools"] }}</a></li>
-                        <li><a href="#global-settings">{{ lang["dashboard-global-configurations"] }}</a></li>
+                    <li><a href="#moderation"><i class="fas fa-gavel"></i> {{ lang["dashboard-moderation-tools"] }}</a></li>
+                    <li><a href="/conta/users"><i class="fas fa-users"></i> Users Management</a></li>
                     {% endif %}
-                    <li><a href="/api/logout">Logout</a></li>
+
+                    <li><a href="/create"><i class="fas fa-plus-circle"></i> Create Board</a></li>
+                    <li><a href="/api/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             </nav>
-        </div>
+        </aside>
 
-        <div class="main-content">
-            <section id="overview" class="mod-section">
-                <h2>{{ lang["dashboard-general-view"] }}</h2>
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Quick Stats Row -->
+            <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>{{ lang["dashboard-ib-statistics"] }}</h3>
-                    <p><strong>{{ lang["dashboard-total-boards"] }}:</strong> {{ all_boards|length }}</p>
-                    <p><strong>{{ lang["dashboard-total-posts"] }}:</strong> {{ database_module.get_all_posts()|length }}</p>
+                    <div class="stat-value">{{ all_boards|length }}</div>
+                    <div class="stat-label">{{ lang["dashboard-total-boards"] }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ database_module.get_all_posts()|length }}</div>
+                    <div class="stat-label">{{ lang["dashboard-total-posts"] }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">
+                        {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
+                            {{ boards|length }}
+                        {% else %}
+                            {{ user_boards|length }}
+                        {% endif %}
+                    </div>
+                    <div class="stat-label">My Boards</div>
+                </div>
+            </div>
+
+            <!-- Overview Section -->
+            <section id="overview">
+                <div class="section-header">
+                    <h2>{{ lang["dashboard-general-view"] }}</h2>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                    <!-- Popular Boards -->
+                    <div class="data-table-container">
+                        <h3 style="padding: 15px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fas fa-fire" style="color: #ffbb33;"></i> Popular Boards
+                        </h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Board</th>
+                                    <th>Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for board in popular_boards %}
+                                <tr>
+                                    <td>
+                                        <a href="/{{ board.board_uri }}" style="font-weight: bold; color: var(--dashboard-secondary); text-decoration: none;">
+                                            /{{ board.board_uri }}/ - {{ board.board_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ board.last_activity }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="2">No activity yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Recent Global Posts -->
+                    <div class="data-table-container">
+                        <h3 style="padding: 15px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fas fa-clock" style="color: var(--dashboard-secondary);"></i> Recent Posts
+                        </h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Board</th>
+                                    <th>Subject/Teaser</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for post in recent_posts %}
+                                <tr>
+                                    <td><a href="/{{ post.board }}" style="color: #888; text-decoration: none;">/{{ post.board }}/</a></td>
+                                    <td>
+                                        <a href="/{{ post.board }}/thread/{{ post.post_id }}" style="color: var(--dashboard-text); text-decoration: none;">
+                                            {% if post.post_subject %}
+                                                {{ post.post_subject[:30] }}...
+                                            {% else %}
+                                                {{ post.post_content[:30] }}...
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    <td style="font-size: 0.8em; color: #aaa;">{{ post.post_date }}</td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="3">No posts yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <section id="boards" class="mod-section">
-                <h2>{{ lang["dashboard-my-boards"] }}</h2>
-                <div class="board-list">
-                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                        {% for board in boards %}
-                            <div class="board-card">
-                                <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
-                                <p>{{ board.board_desc }}</p>
-                                <p><small>/{{ board.board_uri }}/</small></p>
-
-                                <div class="action-buttons">
-                                    <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-                                    <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post" style="display:inline;">
-                                        {% if board.enable_captcha == 1 %}
-                                            <button type="submit" class="btn btn-danger" name="boardcaptcha_option" value="disable">{{ lang["dashboard-captcha-config-disable"] }}</button>
-                                        {% else %}
-                                            <button type="submit" class="btn btn-success" name="boardcaptcha_option" value="enable">{{ lang["dashboard-captcha-config-enable"] }}</button>
-                                        {% endif %}
-                                    </form>
-
-                                    {# Show Manage Staff only to global owner/mod OR board owner #}
-                                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() or username == board.board_owner %}
-                                        <button type="button" class="btn btn-warning" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='flex'">Manage Staff</button>
-                                    {% endif %}
-
-                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Modal exclusivo da board -->
-                            <div id="staffModal-{{ board.board_uri }}" class="modal" aria-hidden="true">
-                                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title-{{ board.board_uri }}">
-                                    <span class="close" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='none'">&times;</span>
-                                    <h2 id="modal-title-{{ board.board_uri }}">Manage Staff - /{{ board.board_uri }}/</h2>
-
-                                    <div>
-                                        <h4>Current Staff:</h4>
-                                        <ul class="staff-list">
-                                            {% if board.board_staffs and board.board_staffs|length > 0 %}
-                                                {% for staff in board.board_staffs %}
-                                                    <li>
-                                                        {{ staff }}
-                                                        {# Só permitir remover se não for o próprio dono da board #}
-                                                        {% if username != staff %}
-                                                            <form method="POST" action="/api/remove_board_staff/{{ board.board_uri }}" style="display:inline;">
-                                                                <input type="hidden" name="username" value="{{ staff }}">
-                                                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                                            </form>
-                                                        {% endif %}
-                                                    </li>
-                                                {% endfor %}
-                                            {% else %}
-                                                <li>No staff yet</li>
-                                            {% endif %}
-                                        </ul>
-                                    </div>
-                                    <form method="POST" action="/api/add_board_staff/{{ board.board_uri }}">
-                                        <input type="text" name="username" placeholder="Username" required>
-                                        <button type="submit" class="btn btn-success">Add Staff</button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        {% for board in user_boards %}
-                            <div class="board-card">
-                                <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
-                                <p>{{ board.board_desc }}</p>
-                                <p><small>/{{ board.board_uri }}/</small></p>
-
-                                <div class="action-buttons">
-                                    <a href="/{{ board.board_uri }}/banners" class="btn btn-primary">{{ lang["dashboard-my-boards-manage"] }}</a>
-
-                                    {# Show Manage Staff only if the current user is the board owner or global admin/mod #}
-                                    {% if username == board.board_owner or 'owner' in roles.lower() or 'mod' in roles.lower()  %}
-                                        <button type="button" class="btn btn-warning" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='flex'">Manage Staff</button>
-                                    {% endif %}
-
-                                    <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger">{{ lang["dashboard-my-boards-remove"] }}</button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Modal exclusivo da board (user_boards) -->
-                            <div id="staffModal-{{ board.board_uri }}" class="modal" aria-hidden="true">
-                                <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title-{{ board.board_uri }}">
-                                    <span class="close" onclick="document.getElementById('staffModal-{{ board.board_uri }}').style.display='none'">&times;</span>
-                                    <h2 id="modal-title-{{ board.board_uri }}">Manage Staff - /{{ board.board_uri }}/</h2>
-
-                                    <div>
-                                        <h4>Current Staff:</h4>
-                                        <ul class="staff-list">
-                                            {% if board.board_staffs and board.board_staffs|length > 0 %}
-                                                {% for staff in board.board_staffs %}
-                                                    <li>
-                                                            <form method="POST" action="/api/remove_board_staff/{{ board.board_uri }}" style="display:inline;">
-                                                                <input type="hidden" name="username" value="{{ staff }}">
-                                                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                                            </form>
-                                                    </li>
-                                                {% endfor %}
-                                            {% else %}
-                                                <li>No staff yet</li>
-                                            {% endif %}
-                                        </ul>
-                                    </div>
-
-                                    <form method="POST" action="/api/add_board_staff/{{ board.board_uri }}">
-                                        <input type="text" name="username" placeholder="Username" required>
-                                        <button type="submit" class="btn btn-success">Add Staff</button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    <p>You should create a new board! <a href="/create">Create Board</a></p>
+            <!-- My Boards Section -->
+            <section id="my-boards">
+                <div class="section-header">
+                    <h2>{{ lang["dashboard-my-boards"] }}</h2>
+                    <a href="/create" class="btn btn-primary"><i class="fas fa-plus"></i> New Board</a>
                 </div>
-            </section>
 
-            {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                <section id="mod-tools" class="mod-section">
-                    <h2>{{ lang["dashboard-moderation-tools"] }}</h2>
+                <div class="boards-grid">
+                    {% set display_boards = boards if ('owner' in roles.lower() or 'mod' in roles.lower()) else user_boards %}
+                    
+                    {% for board in display_boards %}
+                    <div class="board-card">
+                        <div>
+                            <div class="board-header">
+                                <div class="board-title">
+                                    <h3><a href="/{{ board.board_uri }}">{{ board.board_name }}</a></h3>
+                                    <div class="board-meta">/{{ board.board_uri }}/</div>
+                                </div>
+                                <a href="/{{ board.board_uri }}" class="btn btn-sm" style="background: rgba(255,255,255,0.1);">Visit</a>
+                            </div>
+                            <p style="font-size: 0.9em; color: #ccc; margin-bottom: 15px;">
+                                {{ board.board_desc[:100] }}{% if board.board_desc|length > 100 %}...{% endif %}
+                            </p>
+                            
+                            <div class="board-stats">
+                                <span><i class="fas fa-comments"></i> 
+                                    {{ board.get('total_posts', 'N/A') }} Posts
+                                </span>
+                                <span><i class="fas fa-users"></i> Staff: {{ (board.board_staffs|length) + 1 }}</span>
+                            </div>
+                        </div>
 
-                    <div class="stat-card">
-                        <h3>{{ lang["dashboard-content-moderation"] }}</h3>
-                        <p>Use this tools to moderate the anexed content of the imageboard.</p>
+                        <div class="board-actions">
+                            <a href="/{{ board.board_uri }}/banners" class="btn btn-primary btn-sm">
+                                <i class="fas fa-images"></i> Banners
+                            </a>
+                            
+                            <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post" style="display:inline;">
+                                {% if board.enable_captcha == 1 %}
+                                    <button type="submit" class="btn btn-danger btn-sm" name="boardcaptcha_option" value="disable" title="Disable Captcha">
+                                        <i class="fas fa-lock-open"></i> No Captcha
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-success btn-sm" name="boardcaptcha_option" value="enable" title="Enable Captcha">
+                                        <i class="fas fa-lock"></i> Captcha
+                                    </button>
+                                {% endif %}
+                            </form>
 
-                        <div class="action-buttons">
-                            <a href="#recent-posts" class="btn btn-primary">{{ lang["dashboard-recent-posts"] }}</a>
-                            <a href="#reported-content" class="btn btn-warning">{{ lang["dashboard-content-moderation-reported"] }}</a>
+                            {% if 'owner' in roles.lower() or 'mod' in roles.lower() or username == board.board_owner %}
+                                <button type="button" class="btn btn-warning btn-sm" onclick="openStaffModal('{{ board.board_uri }}')">
+                                    <i class="fas fa-user-shield"></i> Staff
+                                </button>
+                            {% endif %}
+
+                            <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete /{{ board.board_uri }}/?');">
+                                <button type="submit" class="btn btn-danger btn-sm" title="Delete Board">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
-                </section>
+                    {% else %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: var(--dashboard-bg); border-radius: 8px;">
+                        <h3>You haven't created any boards yet.</h3>
+                        <p>Start your own community today!</p>
+                        <br>
+                        <a href="/create" class="btn btn-primary">Create Your First Board</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
 
-                <section id="global-settings" class="mod-section">
-                    <h2>{{ lang["dashboard-global-configurations"] }}</h2>
+            <!-- Moderation Section -->
+            {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
+            <section id="moderation">
+                <div class="section-header">
+                    <h2>{{ lang["dashboard-moderation-tools"] }}</h2>
+                </div>
 
-                    <div class="stat-card">
-                        <h3>{{ lang["dashboard-captcha-config"] }}</h3>
-                        <p>{{ lang["dashboard-captcha-config-desc"] }}</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                    <!-- Active Timeouts -->
+                    <div class="data-table-container">
+                        <h3 style="padding: 15px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-hourglass-half"></i> Active Timeouts</span>
+                            <span style="font-size: 0.8em; opacity: 0.7;">{{ active_timeouts|length }} active</span>
+                        </h3>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP</th>
+                                        <th>Reason</th>
+                                        <th>Ends At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ip, info in active_timeouts.items() %}
+                                    <tr>
+                                        <td>{{ ip }}</td>
+                                        <td>{{ info.reason }}</td>
+                                        <td>{{ info.end_time }}</td>
+                                        <td>
+                                            <form action="/api/remove_timeout/{{ info.timeout_id }}" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Remove Timeout"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4" style="text-align: center; padding: 20px;">No active timeouts.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
+                    <!-- Active Bans -->
+                    <div class="data-table-container">
+                        <h3 style="padding: 15px; margin: 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-ban"></i> Active Bans</span>
+                            <span style="font-size: 0.8em; opacity: 0.7;">{{ active_bans|length }} active</span>
+                        </h3>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP</th>
+                                        <th>Boards</th>
+                                        <th>Expires</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ip, info in active_bans.items() %}
+                                    <tr>
+                                        <td>{{ ip }}</td>
+                                        <td>
+                                            {% if not info.boards %}
+                                                <span style="color: red;">Global</span>
+                                            {% else %}
+                                                {{ info.boards|join(', ') }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if info.is_permanent %}
+                                                <span style="color: red;">NEVER</span>
+                                            {% else %}
+                                                {{ info.end_time }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form action="/api/remove_ban/{{ info.ban_id }}" method="POST" style="display:inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Remove Ban"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="4" style="text-align: center; padding: 20px;">No active bans.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Settings -->
+                <div class="section-header">
+                    <h3><i class="fas fa-cogs"></i> {{ lang["dashboard-global-configurations"] }}</h3>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top: 0;">{{ lang["dashboard-captcha-config"] }}</h4>
+                        <p style="font-size: 0.9em; color: #aaa; margin-bottom: 15px;">{{ lang["dashboard-captcha-config-desc"] }}</p>
                         <form action="/api/apply_general_captcha" method="POST">
                             <div class="action-buttons">
-                                <button type="submit" name="generalcaptcha_option" value="enable" class="btn btn-success">{{ lang["dashboard-captcha-config-enable"] }}</button>
-                                <button type="submit" name="generalcaptcha_option" value="disable" class="btn btn-danger">{{ lang["dashboard-captcha-config-disable"] }}</button>
+                                <button type="submit" name="generalcaptcha_option" value="enable" class="btn btn-success">Enable Global Captcha</button>
+                                <button type="submit" name="generalcaptcha_option" value="disable" class="btn btn-danger">Disable Global Captcha</button>
                             </div>
                         </form>
                     </div>
 
-                    <div class="stat-card">
-                        <h3>Idioma do Site</h3>
-                        <form action="/api/change_general_lang" method="POST">
-                            <select name="lang">
+                    <div class="stat-card" style="text-align: left;">
+                        <h4 style="margin-top: 0;">System Language</h4>
+                        <p style="font-size: 0.9em; color: #aaa; margin-bottom: 15px;">Change the default language for the site.</p>
+                        <form action="/api/change_general_lang" method="POST" style="display: flex; gap: 10px;">
+                            <select name="lang" style="padding: 5px; border-radius: 4px; background: #333; color: white; border: 1px solid #555;">
                                 <option value="pt-br">Português (Brasil)</option>
                                 <option value="en-us">English (US)</option>
                                 <option value="es">Español</option>
                                 <option value="jp">日本語</option>
                             </select>
-                            <button type="submit" class="btn btn-primary">Change Lang</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
                         </form>
                     </div>
-                </section>
+                </div>
+            </section>
             {% endif %}
-        </div>
+
+        </main>
     </div>
+
     {% include 'utils/footer.html' %}
+
+    <!-- Staff Management Modals Container -->
+    <div id="modalContainer">
+        {% for board in (boards if ('owner' in roles.lower() or 'mod' in roles.lower()) else user_boards) %}
+        <div id="staffModal-{{ board.board_uri }}" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('{{ board.board_uri }}')">&times;</span>
+                <h2>Manage Staff - /{{ board.board_uri }}/</h2>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Current Staff</h4>
+                    <ul class="staff-list">
+                        {% if board.board_staffs and board.board_staffs|length > 0 %}
+                            {% for staff in board.board_staffs %}
+                                <li>
+                                    <span>{{ staff }}</span>
+                                    {% if username != staff %}
+                                        <form method="POST" action="/api/remove_board_staff/{{ board.board_uri }}" style="display:inline;">
+                                            <input type="hidden" name="username" value="{{ staff }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li style="justify-content: center; color: #888;">No staff members yet</li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <form method="POST" action="/api/add_board_staff/{{ board.board_uri }}" style="display: flex; gap: 10px;">
+                    <input type="text" name="username" placeholder="Username to add" required style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #555; background: #333; color: white;">
+                    <button type="submit" class="btn btn-success">Add Staff</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
     <script src="/static/js/socket.js"></script>
     <script>
-    // fecha modal ao clicar fora
-    window.onclick = function(event) {
-        document.querySelectorAll('.modal').forEach(function(m) {
-            if (event.target === m) {
-                m.style.display = "none";
+        function openStaffModal(boardUri) {
+            document.getElementById('staffModal-' + boardUri).style.display = 'flex';
+        }
+
+        function closeModal(boardUri) {
+            document.getElementById('staffModal-' + boardUri).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        };
+
+        // Esc key close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(m => m.style.display = "none");
             }
         });
-    };
-
-    // esc key fecha modal
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.modal').forEach(function(m) { m.style.display = "none"; });
-        }
-    });
     </script>
 </body>
 </html>

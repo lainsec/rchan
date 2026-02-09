@@ -354,6 +354,22 @@ dialog::backdrop {
   cursor: pointer;
 }
 
+.ban_post_popup .ban_reason{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+}
+
+.ban_post_popup .ban_reason input{
+    width: 30%;
+    height: 1.5em;
+    padding: 0 0.5em;
+    border: 1px solid #000;
+}
+
+
+
 .detected{
   background: #faf8f8;
   color: #3060a8;
@@ -582,7 +598,7 @@ footer a {
   border: 1px solid var(--cor-borda);
   background: #111;
   display: flex;
-  gap: 1em;
+  gap: 2em;
   align-items: center;
   justify-content: center;
   margin-bottom: 1em;

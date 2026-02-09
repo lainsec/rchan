@@ -5,13 +5,13 @@ Handles user timeouts with thread-safe operations.
 
 import threading
 from datetime import datetime, timedelta
-from laindb.laindb import Lainconfig
+from database_modules.sqlite_handler import SQLiteConfig
 
 
 class TimeoutManager:
     def __init__(self):
-        # Initialize LainDB for timeout management
-        self.db = Lainconfig.load_db('moderation')
+        # Initialize SQLite for timeout management
+        self.db = SQLiteConfig.load_db('moderation')
         self.db.create_table('timeouts', {
             'user_ip': 'str',
             'user_role': 'str',
@@ -179,8 +179,8 @@ class TimeoutManager:
 
 class BanManager:
     def __init__(self):
-        # Initialize LainDB for ban management
-        self.db = Lainconfig.load_db('moderation')
+        # Initialize SQLite for ban management
+        self.db = SQLiteConfig.load_db('moderation')
         self.db.create_table('bans', {
             'user_ip': 'str',
             'end_time': 'str',
@@ -251,7 +251,7 @@ class BanManager:
                 ban_id = existing[0]['id']
                 self.db.update('bans', ban_id, {
                     'end_time': end_time,
-                    'reason': reason,
+                    'reason': reason if reason != "" else "No reason.",
                     'moderator': moderator,
                     'applied_at': applied_at,
                     'boards': boards,

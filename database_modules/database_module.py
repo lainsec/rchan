@@ -13,11 +13,11 @@ import json
 import os
 import io
 import re
-from captcha.image import ImageCaptcha
-from laindb.laindb import Lainconfig
+from PIL import Image, ImageDraw, ImageFont
+from database_modules.sqlite_handler import SQLiteConfig
 
-# Initialize LainDB databases
-DB = Lainconfig.load_db('imageboard')
+# Initialize SQLite databases
+DB = SQLiteConfig.load_db('imageboard')
 DB.create_table('boards', {
     'id': 'int',
     'board_uri': 'str',
@@ -77,12 +77,76 @@ DB.create_table('users', {
 
 # Utility Functions
 def generate_captcha():
-    """Generate a CAPTCHA challenge."""
-    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    image = ImageCaptcha()
-    image_data = image.generate(captcha_text)
-    image_io = io.BytesIO(image_data.read())
+    """Generate a custom CAPTCHA challenge."""
+    # 1. Generate text (lowercase + digits)
+    captcha_text = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    
+    # 2. Setup Image
+    width, height = 200, 80
+    image = Image.new('RGB', (width, height), 'white')
+    draw = ImageDraw.Draw(image)
+    
+    # 3. Draw Mosaic Background (White and Gray)
+    box_size = 10
+    for x in range(0, width, box_size):
+        for y in range(0, height, box_size):
+            if random.random() > 0.5:
+                fill_color = '#e0e0e0' # Light Gray
+            else:
+                fill_color = 'white'
+            draw.rectangle([x, y, x + box_size, y + box_size], fill=fill_color)
+            
+    # 4. Load Font (Comic Sans Cursive/Italic)
+    font_path = "C:/Windows/Fonts/comici.ttf" # Comic Sans Italic
+    if not os.path.exists(font_path):
+        font_path = "C:/Windows/Fonts/comic.ttf" # Comic Sans Regular
+    
+    try:
+        font = ImageFont.truetype(font_path, 42)
+    except IOError:
+        font = ImageFont.load_default()
+
+    # 5. Draw Text (Centered)
+    # Using anchor='mm' (middle-middle) to center text bounding box relative to image center
+    # This requires Pillow >= 8.0.0 (Project uses 11.0.0)
+    
+    cx = width / 2
+    cy = height / 2
+    
+    draw.text((cx, cy), captcha_text, font=font, fill='black', anchor='mm')
+    
+    # 6. Draw Horizontal Line Cutting Through Middle of Text with Glitch Effect
+    # Base line Y is cy
+    line_thickness = 4
+    
+    prev_x = 0
+    prev_y = cy
+    
+    step = 5
+    for x in range(step, width + step, step):
+        # Random vertical jitter
+        y_jitter = random.randint(-2, 2)
+        curr_y = cy + y_jitter
+        
+        # Draw segment
+        draw.line((prev_x, prev_y, x, curr_y), fill='black', width=line_thickness)
+        
+        # Randomly add "glitch" blocks
+        if random.random() < 0.15: # 15% chance
+            glitch_w = random.randint(3, 8)
+            glitch_h = random.randint(3, 8)
+            g_x = x - random.randint(0, step)
+            g_y = curr_y + random.randint(-8, 8)
+            draw.rectangle([g_x, g_y, g_x + glitch_w, g_y + glitch_h], fill='black')
+            
+        prev_x = x
+        prev_y = curr_y
+    
+    # 7. Save to Buffer
+    image_io = io.BytesIO()
+    image.save(image_io, format='PNG')
     image_base64 = base64.b64encode(image_io.getvalue()).decode('utf-8')
+    
     return captcha_text, f"data:image/png;base64,{image_base64}"
 
 def generate_tripcode(post_name, account_name, board_owner, board_staffs):
@@ -632,9 +696,11 @@ def bump_thread(thread_id):
             return False
         
         thread = thread[0]
-        DB.delete('posts', thread_id)
+        DB.delete('posts', thread['id'])
         
         # Finally insert again.
+        if 'id' in thread:
+            del thread['id']
         DB.insert('posts', thread)
         
         return True
@@ -660,7 +726,7 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
 
     # Create the new post
     new_post = {
-        'id': new_post_id,
+        # 'id': new_post_id, # Let SQLite handle the ID
         'user_ip': user_ip,
         'post_id': new_post_id,
         'post_user': generate_tripcode(post_name, account_name, board_owner, board_staffs),
@@ -700,11 +766,55 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
         'content': comment,
         'images': files 
     }
-    
-    bump_thread(int(reply_to))
+    if not 'sage' in post_subject.lower():
+        bump_thread(int(reply_to))
     DB.insert('replies', new_reply)
     
     return new_reply_id
+
+def get_all_registered_users(offset=0, limit=20, search_query=None):
+    """Get all registered users with pagination and optional search."""
+    try:
+        all_users = DB.find_all('accounts')
+        
+        if search_query:
+            search_query = search_query.lower()
+            all_users = [u for u in all_users if search_query in u.get('username', '').lower()]
+            
+        # Sort by id
+        all_users.sort(key=lambda x: x.get('id', 0)) 
+        return all_users[offset:offset+limit]
+    except Exception as e:
+        print(f"Error getting users: {e}")
+        return []
+
+def count_all_registered_users(search_query=None):
+    """Count all registered users with optional search."""
+    try:
+        all_users = DB.find_all('accounts')
+        
+        if search_query:
+            search_query = search_query.lower()
+            all_users = [u for u in all_users if search_query in u.get('username', '').lower()]
+            
+        return len(all_users)
+    except Exception as e:
+        print(f"Error counting users: {e}")
+        return 0
+
+def update_user_role(username, new_role):
+    """Update a user's role."""
+    try:
+        users = DB.query('accounts', {'username': {'==': username}})
+        if not users:
+            return False
+        user = users[0]
+        DB.update('accounts', user['id'], {'role': new_role})
+        return True
+    except Exception as e:
+        print(f"Error updating user role: {e}")
+        return False
+
 
 def move_thread(thread_id, new_board_uri: str):
     # Buscar thread
@@ -734,48 +844,51 @@ def move_thread(thread_id, new_board_uri: str):
     return True
 
 
+def delete_media_files(file_list, base_path, is_video=False):
+    """Helper function to delete multiple media files"""
+    if not file_list:
+        return
+    
+    for filename in file_list:
+        if not filename:  # Skip empty entries
+            continue
+            
+        try:
+            # Delete main file
+            file_path = os.path.join(base_path, filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            # Delete thumbnail if it's a video
+            if is_video and filename.lower().endswith(('.mp4', '.mov', '.webm')):
+                thumb_name = f"thumbnail_{os.path.splitext(filename)[0]}.jpg"
+                thumb_path = os.path.join(base_path, 'thumbs', thumb_name)
+                if os.path.exists(thumb_path):
+                    os.remove(thumb_path)
+        except Exception as e:
+            print(f"Error deleting file {filename}: {e}")
+
+
 def remove_post(post_id):
     """Remove a post, its replies, and all associated media files."""
-    def delete_media_files(file_list, base_path, is_video=False):
-        """Helper function to delete multiple media files"""
-        if not file_list:
-            return
-        
-        for filename in file_list:
-            if not filename:  # Skip empty entries
-                continue
-                
-            try:
-                # Delete main file
-                file_path = os.path.join(base_path, filename)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                
-                # Delete thumbnail if it's a video
-                if is_video and filename.lower().endswith(('.mp4', '.mov', '.webm')):
-                    thumb_name = f"thumbnail_{os.path.splitext(filename)[0]}.jpg"
-                    thumb_path = os.path.join(base_path, 'thumbs', thumb_name)
-                    if os.path.exists(thumb_path):
-                        os.remove(thumb_path)
-            except Exception as e:
-                print(f"Error deleting file {filename}: {e}")
-
     # Remove main post and its media
     post = DB.query('posts', {'post_id': {'==': post_id}})
     if post:
         post = post[0]
         # Delete all associated media files
         delete_media_files(post.get('post_images', []), './static/post_images/', is_video=True)
-        DB.delete('posts', post_id)
+        DB.delete('posts', post['id'])
     
     # Remove from pinned posts
-    DB.delete('pinned', post_id)
+    pinned_posts = DB.query('pinned', {'post_id': {'==': post_id}})
+    for pinned in pinned_posts:
+        DB.delete('pinned', pinned['id'])
     
     # Remove all replies and their media
     replies = DB.query('replies', {'post_id': {'==': post_id}})
     for reply in replies:
         delete_media_files(reply.get('images', []), './static/reply_images/')
-        DB.delete('replies', reply['reply_id'])
+        DB.delete('replies', reply['id'])
     
     return True
 
@@ -787,23 +900,21 @@ def delete_all_posts_from_user(user_ip, board_uri):
         if post.get('board') == board_uri:
             posts_to_delete.append(post)
     for post in posts_to_delete:
-        DB.delete('posts', post['post_id'])
+        DB.delete('posts', post['id'])
     return True
 
 def remove_reply(reply_id):
     """Remove a reply."""
     reply = DB.query('replies', {'reply_id': {'==': reply_id}})
     if reply:
+        reply = reply[0]
         # Check if post has an associated image
-        if reply[0].get('image'):
-            image_path = os.path.join('./static/reply_images/', reply[0]['image'])
-            try:
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-            except Exception as e:
-                print(f"Error deleting image: {e}")
+        if reply.get('images'):
+            delete_media_files(reply.get('images', []), './static/reply_images/')
+        elif reply.get('image'): # Legacy check
+             delete_media_files([reply.get('image')], './static/reply_images/')
 
-        DB.delete('replies', reply_id)
+        DB.delete('replies', reply['id'])
 
         return True
 
@@ -837,13 +948,13 @@ def pin_post(post_id):
         post['visible'] = 1
         pinned = DB.query('pinned', {'post_id': {'==': post_id}})
         if pinned:
-            DB.delete('pinned', post_id)
-        DB.update('posts', post_id, post)
+            DB.delete('pinned', pinned[0]['id'])
+        DB.update('posts', post['id'], post)
         return True
     
     # Se chegou aqui, vamos pinar o post
     post['visible'] = 0  # Marcamos como invisível na lista normal
-    DB.update('posts', post_id, post)
+    DB.update('posts', post['id'], post)
     
     # Preparamos os dados para a tabela pinned
     new_pinned = {
@@ -915,7 +1026,26 @@ def get_all_banners(board_uri):
         print("Error listing banners")
         return []
     
-    return [os.path.join('/static/imgs/banners', board_uri, banner) for banner in banners]
+    return [f'/static/imgs/banners/{board_uri}/{banner}' for banner in banners]
+
+def delete_board_banner(board_uri, banner_filename):
+    """Delete a specific banner from a board."""
+    banner_folder = os.path.join('./static/imgs/banners', board_uri)
+    file_path = os.path.join(banner_folder, banner_filename)
+    
+    # Security check to prevent directory traversal
+    if '..' in banner_filename or '/' in banner_filename or '\\' in banner_filename:
+        print(f"Security check failed for banner filename: {banner_filename}")
+        return False
+        
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            return True
+        except Exception as e:
+            print(f"Error deleting banner: {e}")
+            return False
+    return False
 
 if __name__ == '__main__':
     print('This module should not be run directly.')

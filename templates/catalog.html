@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/captcha.css') }}">
     <title>/{{ board_id }}/ - {{ lang["board-options-catalog"] }}</title>
 </head>
 <body>
@@ -33,7 +34,10 @@
                 </div>
                 <div class="catalog-post-file">
                     <a href="/{{ board_info.board_uri }}/thread/{{ post.post_id }}">
-                    {% if post.post_images[0].split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
+                    {% if post.post_images[0].startswith('youtube:') %}
+                        {% set video_id = post.post_images[0].split(':')[1] %}
+                        <img src="https://img.youtube.com/vi/{{ video_id }}/0.jpg">
+                    {% elif post.post_images[0].split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
                     <img src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ post.post_images[0]|replace('.' ~ post.post_images[0].split('.')[-1], '') ~ '.jpg') }}">
                     {% else %}
                     <img src="/static/post_images/{{ post.post_images[0] }}">
@@ -50,6 +54,7 @@
     </div>
     <div id="reinrun"></div>
     {% include 'utils/footer.html' %}
+    <script src="/static/js/captcha.js"></script>
     <script src="/static/js/postform.js"></script>
     <script src="/static/js/thumb.js"></script>
     <script src="/static/js/boardstyle.js"></script>

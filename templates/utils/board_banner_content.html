@@ -5,26 +5,39 @@
 {% include 'utils/board-options-container.html' %}
 <div class="divisoria"></div>
 <div class="board_banners_container">
-    {% if banners | length == 0 %}
-        <p>Tábua sem banners</p>
-    {% endif %}
-    {% for banner in banners %}
-        <div class="chan_banner">
-            <img src="{{ banner }}" class="board_banner all_banners">
-        </div>
-    {% endfor %}
     {% if 'username' in session %}
         {% set user_roles = roles|lower %}
         {% set is_moderator = 'mod' in user_roles or 'owner' in user_roles %}
         {% set is_board_staff = session["username"] in board_info.board_staffs %}
         {% set is_board_owner = session["username"] == board_info.board_owner %}
-  
-        {% if is_board_owner or is_moderator or is_board_staff %}
-            <form id="bannerForm" action="/api/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
+        {% set can_manage = is_board_owner or is_moderator or is_board_staff %}
+    {% else %}
+        {% set can_manage = false %}
+    {% endif %}
+
+    {% if banners | length == 0 %}
+        <p>Tábua sem banners</p>
+    {% endif %}
+    {% for banner in banners %}
+        <div class="chan_banner" style="position: relative; display: inline-block; margin: 5px;">
+            <img src="{{ banner }}" class="board_banner all_banners">
+            {% if can_manage %}
+            <form action="/api/delete_banner" method="POST" style="position: absolute; top: 5px; right: 5px;">
                 <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
-                <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
+                <input type="hidden" name="banner_filename" value="{{ banner.split('/')[-1] }}">
+                <button type="submit" style="background: rgba(255, 0, 0, 0.7); color: white; border: none; cursor: pointer; padding: 2px 6px; border-radius: 3px; font-weight: bold;">
+                    X
+                </button>
             </form>
-        {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+    
+    {% if can_manage %}
+        <form id="bannerForm" action="/api/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
+            <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
+            <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
+        </form>
     {% endif %}
 </div>
 <div class="divisoria"></div>

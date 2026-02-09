@@ -12,16 +12,16 @@
             </div>
             <section class="row">
                 <div class="label" bis_skin_checked="1">Name</div><input class="mr-1" type="text" name="name"
-                    placeholder="Anon" maxlength="40"><a class="close postform-style" href="#!"
+                    placeholder="Anon" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
                     bis_skin_checked="1">×</a>
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject"
-                    autocomplete="off" maxlength="50">
+                    autocomplete="off" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea
-                    id="text" name="text" rows="5" minlength="0" maxlength="20000"></textarea>
+                    id="text" name="text" rows="5" minlength="0" maxlength="20000">{{ form_data.text if form_data else '' }}</textarea>
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>
@@ -35,13 +35,18 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed"
-                    autocomplete="off" maxlength="100">
+                    autocomplete="off" maxlength="100" value="{{ form_data.embed if form_data else '' }}">
             </section>
             {% if board_info.enable_captcha %}
             {% if board_info.enable_captcha == 1%}
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">captcha</div>
-                <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                <div class="captcha-container">
+                    <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                    <button type="button" class="captcha-refresh-btn" onclick="refreshCaptcha(this)">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">captcha</div>

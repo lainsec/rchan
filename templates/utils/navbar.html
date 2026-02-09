@@ -16,7 +16,7 @@
                 <p>[</p>
                 {% for board in boards %}
                     {% if board.board_isvisible == 1 %}
-                        <li class="board-link"><a href="/{{ board.board_uri }}/">{{ board.board_uri }}</a><p>/</p></li>
+                        <li class="board-link"><a href="/{{ board.board_uri }}/" title="{{ board.board_desc }}">{{ board.board_uri }}</a><p>/</p></li>
                     {% endif %}
                 {% endfor %}
                 <p>]</p>

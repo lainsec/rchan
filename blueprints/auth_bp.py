@@ -5,6 +5,8 @@ from PIL import Image
 from io import BytesIO
 from functools import wraps
 import os
+import uuid
+import re
 
 auth_bp = Blueprint('auth', __name__)
 socketio = SocketIO()
@@ -23,6 +25,22 @@ def has_admin_perms(f):
             return redirect(request.referrer or '/')
         return f(*args, **kwargs)
     return decorated_function
+
+def has_owner_perms(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        username = session.get('username')
+        if not username:
+            flash('You must be logged in.', 'danger')
+            return redirect(request.referrer or '/')
+
+        roles = database_module.get_user_role(username)
+        if not roles or 'owner' not in roles.lower():
+            flash('You don’t have enough permissions.', 'danger')
+            return redirect(request.referrer or '/')
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def has_board_owner_or_admin_perms(get_board_uri_from_request):
     def decorator(f):
@@ -68,6 +86,12 @@ def allowed_file(file_storage):
         return True
     except Exception:
         return False
+
+@auth_bp.route('/api/refresh_captcha', methods=['GET'])
+def refresh_captcha():
+    text, image = database_module.generate_captcha()
+    session['captcha_text'] = text
+    return {'captcha_image': image}
 
 @auth_bp.route('/favicon.ico')
 def favicon():
@@ -189,6 +213,7 @@ def delete_reply(reply_id):
 @auth_bp.route('/api/ban_user/<post_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
 def ban_user(post_id):
+    ban_reason = request.form['ban_reason']
     ban_from = request.form['board']
     ban_for = request.form['ban_time']
     board_uri = database_module.get_post_board(post_id)
@@ -200,7 +225,7 @@ def ban_user(post_id):
     if database_module.check_post_exist(int(post_id)):
         post_info = database_module.get_post_info(int(post_id))
         ban_manager = moderation_module.BanManager()
-        ban_manager.ban_user(post_info["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason="No reason.", moderator=session["username"])
+        ban_manager.ban_user(post_info["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason=ban_reason, moderator=session["username"])
         flash('The user has been banned!')
         current_app.extensions['socketio'].emit('ban_post', {
             'type': 'Ban Post',
@@ -265,6 +290,22 @@ def remove_board_staff_route(board_uri):
 
     return redirect(request.referrer or '/')
 
+@auth_bp.route('/api/remove_timeout/<int:timeout_id>', methods=['POST'])
+@has_admin_perms
+def remove_timeout(timeout_id):
+    timeout_manager = moderation_module.TimeoutManager()
+    timeout_manager.remove_timeout(timeout_id)
+    flash('Timeout removed!', 'success')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/remove_ban/<int:ban_id>', methods=['POST'])
+@has_admin_perms
+def remove_ban(ban_id):
+    ban_manager = moderation_module.BanManager()
+    ban_manager.unban_user_by_id(ban_id)
+    flash('Ban removed!', 'success')
+    return redirect(request.referrer or '/')
+
 @auth_bp.route('/api/auth_user', methods=['POST'])
 def login():
     username = request.form['username']
@@ -284,6 +325,7 @@ def register():
     if database_module.register_user(username, password, captcha_text, session['captcha_text']):
         return redirect('/conta')
     flash('Something went wrong, try again.')
+    session['form_data'] = request.form.to_dict()
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/create_board', methods=['POST'])
@@ -295,6 +337,7 @@ def create_board():
     if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
         return redirect(f'/{uri}')
     flash('Something went wrong, try again.')
+    session['form_data'] = request.form.to_dict()
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/upload_banner', methods=['POST'])
@@ -306,15 +349,59 @@ def upload_banner():
     if not file or file.filename == '':
         flash('No file uploaded.', 'danger')
         return redirect(request.referrer or '/')
+        
+    # Sanitize board_uri to prevent LFI
+    if not re.match(r'^[a-zA-Z0-9_]+$', board_uri):
+        flash('Invalid board URI.', 'danger')
+        return redirect(request.referrer or '/')
 
     if allowed_file(file):
         directory = os.path.join(f'./static/imgs/banners/{board_uri}')
         os.makedirs(directory, exist_ok=True)
-        file.save(os.path.join(directory, file.filename))
+        
+        # Generate random filename
+        ext = os.path.splitext(file.filename)[1].lower()
+        new_filename = f"{uuid.uuid4().hex}{ext}"
+        
+        file.save(os.path.join(directory, new_filename))
         flash('Banner uploaded!')
     else:
         flash('Invalid image file.', 'danger')
     return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/delete_banner', methods=['POST'])
+def delete_banner():
+    if 'username' not in session:
+        return redirect(url_for('boards.main_page'))
+    
+    username = session['username']
+    board_uri = request.form.get('board_uri')
+    banner_filename = request.form.get('banner_filename')
+    
+    if not board_uri or not banner_filename:
+        flash('Invalid request')
+        return redirect(request.referrer)
+        
+    board_info = database_module.get_board_info(board_uri)
+    if not board_info:
+        return redirect(request.referrer)
+        
+    roles = database_module.get_user_role(username)
+    user_roles = roles.lower() if roles else ''
+    
+    is_moderator = 'mod' in user_roles or 'owner' in user_roles
+    is_board_staff = username in board_info.get('board_staffs', [])
+    is_board_owner = username == board_info.get('board_owner')
+    
+    if is_board_owner or is_moderator or is_board_staff:
+        if database_module.delete_board_banner(board_uri, banner_filename):
+            flash('Banner deleted successfully')
+        else:
+            flash('Error deleting banner')
+    else:
+        flash('You do not have permission to delete banners')
+        
+    return redirect(request.referrer)
 
 @auth_bp.route('/api/logout')
 def logout():
@@ -322,3 +409,25 @@ def logout():
         session.pop('username', None)
         flash('You has been disconnected.', 'info')
     return redirect('/')
+
+@auth_bp.route('/api/change_user_role', methods=['POST'])
+@has_owner_perms
+def change_user_role():
+    target_username = request.form.get('username')
+    new_role = request.form.get('role')
+    
+    if not target_username or new_role not in ['mod', 'user', 'owner']: # Basic validation
+         flash('Invalid request parameters.', 'danger')
+         return redirect(request.referrer or '/conta/users')
+         
+    # Adjust role string for DB
+    if new_role == 'user':
+        new_role = ''
+        
+    if database_module.update_user_role(target_username, new_role):
+        flash(f"User {target_username} role updated to {new_role if new_role else 'User'}.", 'success')
+    else:
+        flash('Failed to update user role.', 'danger')
+        
+    return redirect(request.referrer or '/conta/users')
+

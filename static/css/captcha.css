@@ -1,0 +1,25 @@
+.captcha-container {
+    position: relative;
+    width: 100%;
+}
+
+.captcha-refresh-btn {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: transparent;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1.5em;
+    z-index: 10;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.captcha-refresh-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    color: #000;
+}

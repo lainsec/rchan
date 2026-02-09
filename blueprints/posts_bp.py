@@ -2,7 +2,7 @@ from flask import current_app, Blueprint, render_template, redirect, request, fl
 from database_modules import database_module, moderation_module, formatting
 from flask_socketio import SocketIO, emit
 from datetime import datetime, timedelta
-from PIL import Image
+from PIL import Image, ImageOps
 import magic
 import cv2
 import re
@@ -98,9 +98,57 @@ class PostHandler:
                     filename = f"{base}_{counter}{ext}"
                     counter += 1
 
-                # save tge file
+                # save the file with metadata stripping for images
                 file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
+                
+                if mime_type.startswith('image/'):
+                    try:
+                        img = Image.open(file.stream)
+                        
+                        # Check for animated GIF BEFORE any processing
+                        if img.format == 'GIF' and getattr(img, "is_animated", False):
+                            # Fallback to saving original stream for animated GIFs to preserve animation
+                            file.stream.seek(0)
+                            file.save(file_path)
+                            saved_files.append(filename)
+                            continue
+
+                        # Apply EXIF rotation correction
+                        img = ImageOps.exif_transpose(img)
+                        
+                        # Strip metadata by creating a new image or saving without exif
+                        # ImageOps.exif_transpose returns a copy with rotation applied and orientation tag removed
+                        # We just need to clear the info dictionary to be sure
+                        img.info = {}
+                        
+                        # Handle formats
+                        format = img.format
+                        if not format:
+                            ext_lower = os.path.splitext(filename)[1].lower()
+                            if ext_lower in ['.jpg', '.jpeg']:
+                                format = 'JPEG'
+                            elif ext_lower == '.png':
+                                format = 'PNG'
+                            elif ext_lower == '.webp':
+                                format = 'WEBP'
+                            elif ext_lower == '.gif':
+                                format = 'GIF'
+                        
+                        # Convert RGBA to RGB for JPEG
+                        if format == 'JPEG' and img.mode in ('RGBA', 'P'):
+                            img = img.convert('RGB')
+                            
+                        img.save(file_path, format=format, quality=95, optimize=True)
+                            
+                    except Exception as e:
+                        print(f"Error stripping metadata for {filename}: {e}")
+                        # Fallback to original save
+                        file.stream.seek(0)
+                        file.save(file_path)
+                else:
+                    # Videos and others
+                    file.save(file_path)
+                    
                 saved_files.append(filename)
 
                 # Generate the thumbnail, if its a video.
@@ -112,6 +160,18 @@ class PostHandler:
                         print(f"Error generating thumb for: {filename}")
 
         return saved_files, thumb_paths
+    # Process embed links (YouTube)
+    def process_embed(self):
+        if not self.embed:
+            return None
+        
+        # Regex for YouTube
+        youtube_regex = r'(?:https?://)?(?:www\.|m\.)?(?:youtube\.com/(?:watch\?v=|embed/)|youtu\.be/)([\w-]+)'
+        match = re.search(youtube_regex, self.embed)
+        if match:
+            return f"youtube:{match.group(1)}"
+        return None
+
     # Handle reply posts
     def handle_reply(self, reply_to):
         if not database_module.check_replyto_exist(int(reply_to)):
@@ -131,6 +191,12 @@ class PostHandler:
         os.makedirs(upload_folder, exist_ok=True)
         
         saved_files, _ = self.process_uploaded_files(upload_folder, is_thread=False)
+        
+        # Process embed
+        embed_file = self.process_embed()
+        if embed_file:
+            saved_files.append(embed_file)
+
         name_parts = self.post_name.split('#', 1)
         display_name = name_parts[0]
         tripcode_html = ''
@@ -202,6 +268,11 @@ class PostHandler:
         
         saved_files, thumb_paths = self.process_uploaded_files(upload_folder, is_thread=True)
         
+        # Process embed
+        embed_file = self.process_embed()
+        if embed_file:
+            saved_files.append(embed_file)
+        
         if not saved_files:
             flash("You need to upload at least one image/video to start a thread.")
             return False
@@ -245,29 +316,36 @@ def new_post():
     
     if formatting.filter_xss(comment) or formatting.filter_xss(post_name):
         flash('You cant use HTML tags.')
+        session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
     handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input)
     
     if len(post_name) > 40:
         flash("You've reached the limit of characteres in the name parameter")
+        session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
     
     if len(post_subject) > 50:
         flash("You've reached the limit of characteres in the subject parameter")
+        session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
     if not handler.check_banned():
+        session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
     if not handler.check_timeout():
+        session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
     if post_mode == "reply":
         reply_to = request.form['thread_id']
         if not handler.validate_comment():
+            session['form_data'] = request.form.to_dict()
             return redirect(request.referrer)
         if not handler.handle_reply(reply_to):
+            session['form_data'] = request.form.to_dict()
             return redirect(request.referrer)
     else:
         match = re.match(r'^>>(\d+)', comment)
@@ -277,14 +355,18 @@ def new_post():
                 reply_to = request.form.get('thread_id', '')
                 if not reply_to:
                     flash("Invalid thread reference.")
+                    session['form_data'] = request.form.to_dict()
                     return redirect(request.referrer)
             
             if not handler.handle_reply(reply_to):
+                session['form_data'] = request.form.to_dict()
                 return redirect(request.referrer)
         else:
             if not handler.validate_comment():
+                session['form_data'] = request.form.to_dict()
                 return redirect(request.referrer)
             if not handler.handle_post():
+                session['form_data'] = request.form.to_dict()
                 return redirect(request.referrer)
     
     if post_mode == "reply":

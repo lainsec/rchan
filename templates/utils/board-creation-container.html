@@ -4,23 +4,28 @@
         <form class="form-post" action="/api/create_board" method="POST" data-captcha-preload="true">
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">URI e.g. /uri/</div><input type="text" name="uri" maxlength="50"
-                    pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only">
+                    pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only" value="{{ form_data.uri if form_data else '' }}">
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">Name</div><input type="text" name="name" maxlength="50"
-                    required="">
+                    required="" value="{{ form_data.name if form_data else '' }}">
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">Description</div><input type="text" name="description"
-                    maxlength="100">
+                    maxlength="100" value="{{ form_data.description if form_data else '' }}">
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">Tags</div><textarea name="tags"
-                    placeholder="Newline separated, max 10"></textarea>
+                    placeholder="Newline separated, max 10">{{ form_data.tags if form_data else '' }}</textarea>
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">captcha</div>
-                <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                <div class="captcha-container">
+                    <img style="width: 100%;" src="{{ captcha_image }}" alt="">
+                    <button type="button" class="captcha-refresh-btn" onclick="refreshCaptcha(this)">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
             </div>
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">captcha</div>
