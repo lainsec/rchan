@@ -151,6 +151,76 @@ def remove_board(board_uri):
         flash('You can’t do that.', 'danger')
     return redirect(request.referrer or '/')
 
+@auth_bp.route('/api/hide_board/<board_uri>', methods=['POST'])
+@has_admin_perms
+def hide_board(board_uri):
+    if database_module.hide_board(board_uri):
+        flash('Board hidden.')
+    else:
+        flash('Could not hide the board.', 'danger')
+    return redirect(request.referrer or '/')
+        
+@auth_bp.route('/api/unhide_board/<board_uri>', methods=['POST'])
+@has_admin_perms
+def unhide_board(board_uri):
+    if database_module.unhide_board(board_uri):
+        flash('Board unhidden.')
+    else:
+        flash('Could not unhide the board.', 'danger')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/report_post/<post_id>', methods=['POST'])
+def report_post(post_id):
+    report_manager = moderation_module.ReportManager()
+    reason = request.form.get('reason')
+    
+    if not reason:
+        flash('Please provide a reason.', 'danger')
+        return redirect(request.referrer or '/')
+
+    board_uri = database_module.get_post_board(post_id)
+    if not board_uri:
+        flash('Post not found.', 'danger')
+        return redirect(request.referrer or '/')
+        
+    report_manager.add_report(reason, int(post_id), board_uri)
+    flash('Report submitted!', 'success')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/resolve_report/<report_id>', methods=['POST'])
+@has_admin_perms
+def resolve_report(report_id):
+    username = session.get('username')
+    if not username:
+        flash('You must be logged in.', 'danger')
+        return redirect(request.referrer or '/')
+    
+    report_manager = moderation_module.ReportManager()
+    report = report_manager.get_report(report_id)
+    
+    if not report:
+        flash('Report not found.', 'danger')
+        return redirect(request.referrer or '/')
+        
+    board_uri = report['board']
+    
+    # Check permissions
+    roles = database_module.get_user_role(username)
+    is_admin = roles and ('owner' in roles.lower() or 'mod' in roles.lower())
+    
+    board = database_module.get_board_info(board_uri)
+    
+    board_owner = board.get('board_owner') if board else None
+    board_staffs = board.get('board_staffs', []) if board else []
+    
+    if is_admin or username == board_owner or username in board_staffs:
+        report_manager.resolve_report(int(report_id))
+        flash('Report resolved!', 'success')
+    else:
+        flash('You don’t have permission.', 'danger')
+        
+    return redirect(request.referrer or '/')
+
 @auth_bp.route('/api/pin_post/<post_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
 def pin_post(post_id):

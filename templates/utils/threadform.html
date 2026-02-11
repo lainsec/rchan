@@ -17,7 +17,7 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject"
-                    autocomplete="off" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
+                    autocomplete="off" placeholder="Subject or Sage" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea
@@ -35,7 +35,7 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed"
-                    autocomplete="off" maxlength="100" value="{{ form_data.embed if form_data else '' }}">
+                    autocomplete="off" maxlength="100" placeholder="Youtube URL" value="{{ form_data.embed if form_data else '' }}">
             </section>
             {% if board_info.enable_captcha %}
             {% if board_info.enable_captcha == 1%}
@@ -58,12 +58,3 @@
         </div>
     </form>
 </div>
-<script>
-    document.getElementById('postform').addEventListener('submit', function() {
-        var btn = document.getElementById('submitpost');
-        if (btn) {
-            btn.disabled = true;
-            btn.value = 'Posting...';
-        }
-    });
-</script>

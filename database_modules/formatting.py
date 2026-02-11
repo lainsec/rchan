@@ -36,7 +36,7 @@ def format_comment(comment):
         number = re.match(r'^\d+', part)
         if number:
             quoted_id = number.group(0)
-            quote_span = f'<span class="quote-reply" data-id="{quoted_id}">&gt;&gt;{quoted_id}</span>'
+            quote_span = f'<span class="quote-reply" data-id="{quoted_id}" href="#{quoted_id}">&gt;&gt;{quoted_id}</span>'
             formatted_comment.append(f'{quote_span}{part[len(quoted_id):]}')
         else:
             formatted_comment.append(f'&gt;&gt;{part}')

@@ -1,7 +1,7 @@
 #imports
 from flask import current_app, Blueprint, render_template, session, redirect, request, url_for, flash
 from database_modules import database_module, language_module
-from database_modules.moderation_module import TimeoutManager, BanManager
+from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager
 #blueprint register.
 boards_bp = Blueprint('boards', __name__)
 #load language.
@@ -52,6 +52,24 @@ def login():
         active_timeouts = timeout_manager.get_active_timeouts()
         active_bans = ban_manager.get_active_bans()
         
+        # Reports
+        report_manager = ReportManager()
+        reports = []
+        if 'owner' in roles.lower() or 'mod' in roles.lower():
+            reports = report_manager.get_all_reports()
+            for report in reports:
+                if database_module.check_post_exist(report['post_id']):
+                    post_info = database_module.get_post_info(report['post_id'])
+                    if 'reply_id' in post_info:
+                        report['is_reply'] = True
+                        report['thread_id'] = post_info['post_id']
+                    else:
+                        report['is_reply'] = False
+                        report['thread_id'] = report['post_id']
+                else:
+                    report['is_reply'] = False
+                    report['thread_id'] = report['post_id']
+
         return render_template('dashboard.html',
                              database_module=database_module, 
                              username=username,
@@ -61,7 +79,8 @@ def login():
                              popular_boards=popular_boards,
                              recent_posts=recent_posts,
                              active_timeouts=active_timeouts,
-                             active_bans=active_bans)
+                             active_bans=active_bans,
+                             reports=reports)
     return render_template('login.html')
 
 @boards_bp.route('/conta/users')

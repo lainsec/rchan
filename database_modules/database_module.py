@@ -530,6 +530,24 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
     create_banner_folder(board_uri)
     return True
 
+def hide_board(board_uri):
+    """Hide a board."""
+    board_info = get_board_info(board_uri)
+    if not board_info:
+        return False
+    
+    DB.update('boards', board_info['id'], {'board_isvisible': 0})
+    return True
+
+def unhide_board(board_uri):
+    """Unhide a board."""
+    board_info = get_board_info(board_uri)
+    if not board_info:
+        return False
+    
+    DB.update('boards', board_info['id'], {'board_isvisible': 1})
+    return True
+
 def remove_board(board_uri, username, role):
     """Remove a board."""
     board_info = get_board_info(board_uri)

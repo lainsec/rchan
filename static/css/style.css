@@ -38,6 +38,10 @@
   font-family: 'PixelOperator';
 }
 
+html{
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--cor-fundo);
   background: url(/static/imgs/backgrounds/background.gif), #0d0d0d none repeat scroll 0 0;
@@ -1170,6 +1174,10 @@ img#post_video_thumbnail {
   box-shadow: 4px 4px 0px #d2738a2e;
 }
 
+.reply:target {
+    animation: blinkBorder 0.8s ease-in-out infinite;
+}
+
 .reply_content {
   flex: 1;
   margin-bottom: 1.3em;
@@ -1597,4 +1605,10 @@ img#post_video_thumbnail {
   .page-content div:not(.post,.board-options-container){
       max-width: 1200px;
   }
+}
+
+@keyframes blinkBorder {
+    0%   { border-style: dashed; border-color: var(--cor-primaria); }
+    50%  { border-style: dashed; border-color: transparent; }
+    100% { border-style: dashed; border-color: var(--cor-primaria); }
 }

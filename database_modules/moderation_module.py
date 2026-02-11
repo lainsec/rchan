@@ -372,5 +372,88 @@ class BanManager:
                 if now >= end_time:
                     self.unban_user_by_id(ban['id'])
 
+
+class ReportManager:
+    def __init__(self):
+        # Initialize SQLite for report management
+        self.db = SQLiteConfig.load_db('moderation')
+        self.db.create_table('reports', {
+            'id': 'int',
+            'motivo': 'str',
+            'post_id': 'int',
+            'board': 'str',
+            'solved': 'int'
+        })
+
+    def add_report(self, motivo, post_id, board, solved=False):
+        """
+        Add a new report.
+        
+        Args:
+            motivo (str): Reason for the report
+            post_id (int): ID of the reported post
+            board (str): Board URI
+            solved (bool): Whether the report is solved
+            
+        Returns:
+            bool: True if report was added successfully
+        """
+        max_id = max([r['id'] for r in self.db.find_all('reports')] + [0])
+        report_id = max_id + 1
+        
+        self.db.insert('reports', {
+            'id': report_id,
+            'motivo': motivo,
+            'post_id': post_id,
+            'board': board,
+            'solved': 1 if solved else 0
+        })
+        return True
+
+    def get_all_reports(self):
+        """
+        Get all reports.
+        
+        Returns:
+            list: List of all reports
+        """
+        return self.db.find_all('reports')
+
+    def get_board_reports(self, board_uri):
+        """
+        Get reports for a specific board.
+        
+        Args:
+            board_uri (str): Board URI
+            
+        Returns:
+            list: List of reports for the board
+        """
+        return self.db.query('reports', {'board': {'==': board_uri}})
+
+    def get_report(self, report_id):
+        """
+        Get a report by ID.
+        
+        Args:
+            report_id (int): Report ID
+            
+        Returns:
+            dict: Report data or None
+        """
+        reports = self.db.query('reports', {'id': {'==': int(report_id)}})
+        return reports[0] if reports else None
+
+    def resolve_report(self, report_id):
+        """
+        Mark a report as solved.
+        
+        Args:
+            report_id (int): Report ID
+        """
+        self.db.update('reports', report_id, {'solved': 1})
+
+
+
 if __name__ == '__main__':
     print("This module should not be run directly.")

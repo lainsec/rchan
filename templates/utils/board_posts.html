@@ -10,7 +10,7 @@
             {% if post.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
-                <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>{% include 'utils/thread-moderation-options.html' %}
+                <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a> <button type="submit" class="report mod-action-btn" title="Report this post"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
             <div class="post_files {% if post.post_images|length > 1 %}multiple_files{% endif %}">
@@ -74,7 +74,7 @@
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
                         {% if reply.user_ip == request.remote_addr %}<span class="you-post">(You)</span>{% endif %}
-                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" >{{ reply.reply_id }}</a>{% include 'utils/reply-moderation-options.html' %}
+                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %}
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}

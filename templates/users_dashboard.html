@@ -3,384 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users Dashboard - {{ username }}</title>
+    <title>{{ lang['dashboard-page-title-users'] }}{{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Copied styles from dashboard.html */
+        /* Reusing Dashboard Styles for consistency */
         :root {
-            --dashboard-bg: var(--cor-fundo-claro);
-            --dashboard-card-bg: rgba(255, 255, 255, 0.03);
-            --dashboard-border: var(--cor-borda);
-            --dashboard-text: var(--cor-texto);
-            --dashboard-secondary: var(--cor-secundaria);
+            --dash-sidebar-width: 280px;
+            --dash-header-height: 60px;
+            --dash-card-bg: #1e1e1e;
+            --dash-card-border: 1px solid rgba(210, 115, 138, 0.3);
+            --dash-hover-bg: rgba(210, 115, 138, 0.1);
         }
 
-        .dashboard-container {
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-wrapper {
             display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 25px;
-            max-width: 1400px;
-            margin: 80px auto 40px;
-            padding: 0 20px;
-            color: var(--dashboard-text);
-            box-sizing: border-box;
-            width: 100%;
+            grid-template-columns: var(--dash-sidebar-width) 1fr;
+            min-height: calc(100vh - 25px);
+            margin-top: 25px;
         }
 
-        /* Sidebar Styling */
-        .sidebar {
-            background-color: var(--dashboard-bg);
-            border: 1px solid var(--dashboard-border);
-            border-radius: 8px;
-            padding: 25px;
-            height: fit-content;
+        /* Sidebar */
+        .dash-sidebar {
+            background: rgba(20, 20, 20, 0.95);
+            border-right: 1px solid var(--cor-borda);
+            padding: 2rem 1.5rem;
             position: sticky;
-            top: 80px;
+            top: 25px;
+            height: calc(100vh - 25px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
 
-        .user-profile {
+        .user-card {
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--dashboard-border);
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .user-avatar {
             width: 80px;
             height: 80px;
-            background-color: var(--dashboard-secondary);
+            background: var(--cor-secundaria);
             border-radius: 50%;
-            margin: 0 auto 15px;
+            margin: 0 auto 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            color: #fff;
-            text-transform: uppercase;
+            font-size: 2.5rem;
+            color: white;
+            border: 2px solid var(--cor-primaria);
+            box-shadow: 0 0 10px rgba(210, 115, 138, 0.3);
         }
 
-        .user-name {
-            font-size: 1.4em;
-            margin: 0 0 5px;
-            color: var(--dashboard-text);
+        .user-info h3 {
+            margin: 0;
+            color: var(--cor-texto);
+            font-size: 1.4rem;
         }
 
-        .role-badge {
+        .role-tag {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85em;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
             font-weight: bold;
             text-transform: uppercase;
         }
+        .role-owner { background: #ff4444; color: white; }
+        .role-mod { background: #4285F4; color: white; }
+        .role-user { background: #00C851; color: white; }
 
-        .role-owner { background-color: #ff4444; color: white; }
-        .role-mod { background-color: #4285F4; color: white; }
-        .role-user { background-color: #00C851; color: white; }
-
-        .sidebar-nav ul {
+        .dash-nav ul {
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .sidebar-nav li {
-            margin-bottom: 8px;
-        }
-
-        .sidebar-nav a {
+        .dash-nav a {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            color: var(--dashboard-text);
+            gap: 1rem;
+            padding: 0.8rem 1rem;
+            color: #aaa;
             text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            font-size: 1.1em;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
         }
 
-        .sidebar-nav a:hover, .sidebar-nav a.active {
-            background-color: var(--dashboard-secondary);
-            color: #fff;
+        .dash-nav a:hover, .dash-nav a.active {
+            background: var(--dash-hover-bg);
+            color: var(--cor-primaria);
+            border-left: 3px solid var(--cor-primaria);
         }
 
-        .sidebar-nav a i {
-            margin-right: 10px;
-            width: 20px;
+        .dash-nav i {
+            width: 24px;
             text-align: center;
         }
 
-        /* Main Content Styling */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
+        /* Main Content */
+        .dash-content {
+            padding: 2rem 3rem;
+            overflow-x: hidden;
         }
 
-        .section-header {
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--cor-secundaria);
+            margin-bottom: 1.5rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--dashboard-border);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 10px;
-        }
-
-        .search-form input {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid var(--dashboard-border);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--dashboard-text);
-        }
-
-        .search-form button {
-            padding: 8px 15px;
-            border-radius: 4px;
-            border: none;
-            background: var(--dashboard-secondary);
-            color: white;
-            cursor: pointer;
-        }
-
-        .section-header h2 {
-            margin: 0;
-            font-size: 1.8em;
-            color: var(--dashboard-secondary);
+            gap: 1rem;
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.5rem;
         }
 
         /* Tables */
-        .data-table-container {
-            background-color: var(--dashboard-bg);
-            border: 1px solid var(--dashboard-border);
-            border-radius: 8px;
+        .table-responsive {
             overflow-x: auto;
-            box-shadow: 4px 4px 0px #d2738a2e;
+            background: var(--dash-card-bg);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .data-table {
+        .dash-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95em;
         }
 
-        .data-table th, .data-table td {
-            padding: 12px 15px;
+        .dash-table th, .dash-table td {
+            padding: 1rem 1.5rem;
             text-align: left;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .data-table th {
-            background-color: rgba(255,255,255,0.05);
-            font-weight: bold;
-            color: var(--dashboard-secondary);
+        .dash-table td {
+            color: #ddd;
         }
 
-        .data-table tr:hover {
-            background-color: rgba(255,255,255,0.02);
+        .dash-table th {
+            background: rgba(0,0,0,0.2);
+            color: var(--cor-secundaria);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
         }
-        
+
+        .dash-table tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* Search Form Specifics */
+        .search-container {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--dash-card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--cor-secundaria);
+        }
+
+        .pagination-info {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .pagination a {
-            padding: 8px 12px;
-            background: var(--dashboard-bg);
-            border: 1px solid var(--dashboard-border);
-            color: var(--dashboard-text);
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        
-        .pagination a.active {
-            background: var(--dashboard-secondary);
-            color: white;
-            border-color: var(--dashboard-secondary);
+            gap: 0.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
         }
 
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 0.8em;
-            border-radius: 4px;
+        .page-link {
+            padding: 0.5rem 1rem;
+            background: var(--dash-card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover, .page-link.active {
+            background: var(--cor-secundaria);
+            color: white;
+            border-color: var(--cor-secundaria);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: opacity 0.2s;
             color: white;
         }
         
-        .btn-promote {
-            background-color: #4285F4;
-        }
-        
-        .btn-demote {
-            background-color: #ffbb33;
-            color: black;
-        }
-        
+        .btn:hover { opacity: 0.8; }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .btn-primary { background: var(--cor-secundaria); }
+        .btn-demote { background: #ffbb33; color: black; }
+        .btn-promote { background: #4285F4; }
+
+        /* Mobile Responsive */
         @media (max-width: 900px) {
-            .dashboard-container {
+            .dashboard-wrapper {
                 grid-template-columns: 1fr;
             }
-            .sidebar {
-                position: static;
-                margin-bottom: 20px;
+
+            .dash-sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            }
+
+            .dash-sidebar.active {
+                left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: var(--cor-primaria);
+                color: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                z-index: 1001;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                border: none;
+                cursor: pointer;
+            }
+
+            .dash-content {
+                padding: 1.5rem;
+            }
+            
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-form {
+                max-width: none;
             }
         }
 
-        @media (max-width: 600px) {
-            .dashboard-container {
-                margin-top: 60px;
-                padding: 0 15px;
-                gap: 20px;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            .section-header h2 {
-                font-size: 1.5em;
-            }
-
-            .data-table th, .data-table td {
-                padding: 10px;
-                font-size: 0.85em;
-            }
-            
-            .role-badge {
-                padding: 3px 8px;
-                font-size: 0.75em;
-            }
-
-            .btn-sm {
-                padding: 3px 6px;
-            }
-
-            .pagination {
-                flex-wrap: wrap;
+        @media (min-width: 901px) {
+            .mobile-menu-toggle {
+                display: none;
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     {% include 'utils/navbar.html' %}
 
-    <div class="dashboard-container">
+    <div class="dashboard-wrapper">
+        <!-- Mobile Toggle -->
+        <button class="mobile-menu-toggle" onclick="document.querySelector('.dash-sidebar').classList.toggle('active')">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="user-profile">
+        <aside class="dash-sidebar">
+            <div class="user-card">
                 <div class="user-avatar">
                     {{ username[0] }}
                 </div>
-                <h2 class="user-name">{{ username }}</h2>
-                <span class="role-badge {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
-                    {% if roles == '' %}User{% else %}{{ roles }}{% endif %}
-                </span>
+                <div class="user-info">
+                    <h3>{{ username }}</h3>
+                    <span class="role-tag {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
+                        {{ roles if roles else 'User' }}
+                    </span>
+                </div>
             </div>
 
-            <nav class="sidebar-nav">
+            <nav class="dash-nav">
                 <ul>
-                    <li><a href="/conta"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></li>
-                    <li><a href="/conta/users" class="active"><i class="fas fa-users"></i> Users Management</a></li>
+                    <li><a href="/conta"><i class="fas fa-arrow-left"></i> {{ lang['dashboard-back-to-dashboard'] }}</a></li>
+                    <li><a href="/conta/users" class="active"><i class="fas fa-users-cog"></i> {{ lang['dashboard-users-management'] }}</a></li>
+                    <li><a href="/api/logout" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> {{ lang['dashboard-logout'] }}</a></li>
                 </ul>
             </nav>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <section id="users">
-                <div class="section-header">
-                    <h2>Users Management</h2>
-                    <form action="" method="GET" class="search-form">
-                        <input type="text" name="search" placeholder="Search users..." value="{{ search_query }}">
-                        <button type="submit"><i class="fas fa-search"></i></button>
-                    </form>
-                    <div>Page {{ page }} of {{ total_pages }}</div>
+        <main class="dash-content">
+            <h2 class="section-title"><i class="fas fa-users"></i> {{ lang['dashboard-users-management'] }}</h2>
+
+            <!-- Search and Filter -->
+            <div class="search-container">
+                <form action="" method="GET" class="search-form">
+                    <input type="text" name="search" class="search-input" placeholder="{{ lang['dashboard-search-placeholder'] }}" value="{{ search_query }}">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> {{ lang['dashboard-search-btn'] }}</button>
+                </form>
+                <div class="pagination-info">
+                    {{ lang['dashboard-page'] }} {{ page }} {{ lang['dashboard-of'] }} {{ total_pages }}
                 </div>
-                
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Username</th>
-                                <th>Role</th>
-                                {% if 'owner' in roles.lower() %}
-                                <th>Actions</th>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="table-responsive">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>{{ lang['dashboard-table-id'] }}</th>
+                            <th>{{ lang['dashboard-table-username'] }}</th>
+                            <th>{{ lang['dashboard-table-role'] }}</th>
+                            {% if 'owner' in roles.lower() %}
+                            <th>{{ lang['dashboard-table-action'] }}</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>#{{ user.id }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 30px; height: 30px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">{{ user.username[0] }}</div>
+                                    {{ user.username }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if user.role == 'owner' %}
+                                    <span class="role-tag role-owner">{{ lang['dashboard-role-owner'] }}</span>
+                                {% elif user.role == 'mod' %}
+                                    <span class="role-tag role-mod">{{ lang['dashboard-role-mod'] }}</span>
+                                {% else %}
+                                    <span class="role-tag role-user">{{ lang['dashboard-role-user'] }}</span>
                                 {% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td>{{ user.id }}</td>
-                                <td>{{ user.username }}</td>
-                                <td>
-                                    {% if user.role == 'owner' %}
-                                        <span class="role-badge role-owner">Owner</span>
-                                    {% elif user.role == 'mod' %}
-                                        <span class="role-badge role-mod">Mod</span>
-                                    {% else %}
-                                        <span class="role-badge role-user">User</span>
-                                    {% endif %}
-                                </td>
-                                {% if 'owner' in roles.lower() %}
-                                <td>
-                                    {% if user.username != username %}
-                                        <form action="/api/change_user_role" method="POST" style="display:inline;">
-                                            <input type="hidden" name="username" value="{{ user.username }}">
-                                            {% if user.role == 'mod' %}
-                                                <input type="hidden" name="role" value="user">
-                                                <button type="submit" class="btn-sm btn-demote" title="Demote to User">
-                                                    <i class="fas fa-arrow-down"></i> Demote
-                                                </button>
-                                            {% elif user.role != 'owner' %}
-                                                <input type="hidden" name="role" value="mod">
-                                                <button type="submit" class="btn-sm btn-promote" title="Promote to Mod">
-                                                    <i class="fas fa-arrow-up"></i> Make Mod
-                                                </button>
-                                            {% endif %}
-                                        </form>
-                                    {% endif %}
-                                </td>
+                            </td>
+                            {% if 'owner' in roles.lower() %}
+                            <td>
+                                {% if user.username != username %}
+                                    <form action="/api/change_user_role" method="POST" style="display:inline;">
+                                        <input type="hidden" name="username" value="{{ user.username }}">
+                                        {% if user.role == 'mod' %}
+                                            <input type="hidden" name="role" value="user">
+                                            <button type="submit" class="btn btn-sm btn-demote" title="{{ lang['dashboard-action-demote'] }}">
+                                                <i class="fas fa-arrow-down"></i> {{ lang['dashboard-action-demote'] }}
+                                            </button>
+                                        {% elif user.role != 'owner' %}
+                                            <input type="hidden" name="role" value="mod">
+                                            <button type="submit" class="btn btn-sm btn-promote" title="{{ lang['dashboard-action-promote'] }}">
+                                                <i class="fas fa-arrow-up"></i> {{ lang['dashboard-action-promote'] }}
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                {% else %}
+                                    <span style="color: #666; font-size: 0.8rem; font-style: italic;">{{ lang['dashboard-user-you'] }}</span>
                                 {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                
-                {% if total_pages > 1 %}
-                <div class="pagination">
-                    {% if page > 1 %}
-                        <a href="?page={{ page - 1 }}&search={{ search_query }}">&laquo; Prev</a>
-                    {% endif %}
-                    
-                    {% for p in range(1, total_pages + 1) %}
-                        <a href="?page={{ p }}&search={{ search_query }}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
-                    {% endfor %}
-                    
-                    {% if page < total_pages %}
-                        <a href="?page={{ page + 1 }}&search={{ search_query }}">Next &raquo;</a>
-                    {% endif %}
-                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="{% if 'owner' in roles.lower() %}4{% else %}3{% endif %}" style="text-align: center; padding: 3rem; color: #666;">
+                                <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                                {{ lang['dashboard-no-users-found'] }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="?page={{ page - 1 }}&search={{ search_query }}" class="page-link">&laquo; {{ lang['dashboard-prev'] }}</a>
                 {% endif %}
-            </section>
+                
+                {# Simple pagination range logic - can be improved but keeps jinja simple #}
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page or p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                        <a href="?page={{ p }}&search={{ search_query }}" class="page-link {% if p == page %}active{% endif %}">{{ p }}</a>
+                    {% elif p == page - 3 or p == page + 3 %}
+                        <span style="color: #666; align-self: flex-end; padding: 0.5rem;">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                    <a href="?page={{ page + 1 }}&search={{ search_query }}" class="page-link">{{ lang['dashboard-next'] }} &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
         </main>
     </div>
-    {% include 'utils/footer.html' %}
 </body>
 </html>
