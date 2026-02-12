@@ -1,0 +1,15 @@
+<dialog class="ban_post_popup popup-report">
+    <div class="header">
+        <h1>Report Post</h1>
+    </div>
+    <form action="/api/report_post/{{ pinned.post_id }}" method="post">
+        <div class="ban_reason">
+            <input name="reason" type="text" placeholder="Report Reason">
+        </div>
+        <div class="ban_times">
+            <ul>
+                <li class="ban_time"><button name="ban_time" value="86400" type="submit">Submit</button></li>
+            </ul>
+        </div>
+    </form>
+</dialog>

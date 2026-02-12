@@ -213,11 +213,8 @@ def resolve_report(report_id):
     board_owner = board.get('board_owner') if board else None
     board_staffs = board.get('board_staffs', []) if board else []
     
-    if is_admin or username == board_owner or username in board_staffs:
-        report_manager.resolve_report(int(report_id))
-        flash('Report resolved!', 'success')
-    else:
-        flash('You don’t have permission.', 'danger')
+    report_manager.resolve_reports_by_post(report['post_id'])
+    flash('Reports resolved!', 'success')
         
     return redirect(request.referrer or '/')
 

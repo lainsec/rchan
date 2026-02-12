@@ -453,6 +453,17 @@ class ReportManager:
         """
         self.db.update('reports', report_id, {'solved': 1})
 
+    def resolve_reports_by_post(self, post_id):
+        """
+        Mark all reports for a specific post as solved.
+        
+        Args:
+            post_id (int): Post ID
+        """
+        reports = self.db.query('reports', {'post_id': {'==': int(post_id)}, 'solved': {'==': 0}})
+        for report in reports:
+            self.db.update('reports', report['id'], {'solved': 1})
+
 
 
 if __name__ == '__main__':

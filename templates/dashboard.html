@@ -527,6 +527,11 @@
             border-radius: 4px;
         }
         .form-input:focus { outline: none; border-color: var(--cor-secundaria); }
+        
+        .form-input option {
+            background-color: #333;
+            color: #fff;
+        }
 
         .staff-list-title {
             margin: 0 0 10px 0;
@@ -557,6 +562,29 @@
         .staff-item:last-child { border-bottom: none; }
 
         .staff-username { color: #ddd; font-weight: 500; }
+
+        /* Config Selects */
+        .config-select {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+            color: #ccc;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .config-select:focus {
+            outline: none;
+            border-color: var(--cor-secundaria);
+        }
+
+        .config-select option {
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -725,7 +753,7 @@
                         <div class="config-item">
                             <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-select-language"] }}</label>
                             <form id="dashboardLanguageFormMain" action="/api/change_general_lang" method="POST">
-                                <select name="lang" onchange="document.getElementById('dashboardLanguageFormMain').submit();" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #ccc; font-size: 1rem; cursor: pointer;">
+                                <select name="lang" onchange="document.getElementById('dashboardLanguageFormMain').submit();" class="config-select">
                                     <option value="" disabled selected>{{ lang["dashboard-change-language"] }}</option>
                                     <option value="en-us">English</option>
                                     <option value="es">Español</option>
@@ -739,7 +767,7 @@
                         <div class="config-item">
                             <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-captcha-config"] }}</label>
                             <form id="dashboardCaptchaFormMain" action="/api/apply_general_captcha" method="POST">
-                                <select name="generalcaptcha_option" onchange="document.getElementById('dashboardCaptchaFormMain').submit();" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #ccc; font-size: 1rem; cursor: pointer;">
+                                <select name="generalcaptcha_option" onchange="document.getElementById('dashboardCaptchaFormMain').submit();" class="config-select">
                                     <option value="" disabled selected>{{ lang["dashboard-captcha-config"] }}</option>
                                     <option value="enable">{{ lang["dashboard-captcha-config-enable"] }}</option>
                                     <option value="disable">{{ lang["dashboard-captcha-config-disable"] }}</option>
@@ -883,7 +911,16 @@
                             
                             <div style="background: rgba(0,0,0,0.3); padding: 0.8rem; border-radius: 4px; border-left: 3px solid #ff4444;">
                                 <strong style="display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px;">{{ lang["dashboard-reason"] }}</strong>
-                                <span style="color: #eee;">{{ report.motivo }}</span>
+                                {% if report.reports_list|length > 1 %}
+                                    <div style="margin-bottom: 5px; color: #eee;">
+                                        <span style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">{{ report.reports_list|length }}</span> {{ lang["dashboard-reports"] }}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick='openReportDetailsModal({{ report.reports_list|tojson }})' style="width: 100%;">
+                                        <i class="fas fa-list"></i> View Details
+                                    </button>
+                                {% else %}
+                                    <span style="color: #eee;" title="{{ report.reports_list[0].motivo }}">{{ report.reports_list[0].motivo[:100] }}</span>
+                                {% endif %}
                             </div>
                             
                             <div style="margin-top: auto; padding-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
@@ -899,7 +936,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger" title="{{ lang["dashboard-delete-post"] }}"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% endif %}
-                                <button type="button" class="btn btn-sm btn-warning" title="{{ lang["dashboard-ban-user"] }}" onclick='openBanModal({{ report.post_id|tojson }}, {{ report.board|tojson }}, {{ report.motivo|tojson }})'>
+                                <button type="button" class="btn btn-sm btn-warning" title="{{ lang["dashboard-ban-user"] }}" onclick='openBanModal({{ report.post_id|tojson }}, {{ report.board|tojson }}, {{ report.reports_list[0].motivo|tojson }})'>
                                     <i class="fas fa-gavel"></i>
                                 </button>
                             </div>
@@ -1099,9 +1136,46 @@
         </div>
     </div>
 
+    <!-- Report Details Modal -->
+    <div id="reportDetailsModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Report Details</h3>
+                <button class="btn-close" onclick="closeReportDetailsModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                <div id="reportDetailsBody"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts for interactivity can be added here -->
     <script>
+        // Report Details Modal
+        function openReportDetailsModal(reports) {
+            const modal = document.getElementById('reportDetailsModal');
+            const body = document.getElementById('reportDetailsBody');
+            
+            let html = '<ul style="list-style: none; padding: 0;">';
+            reports.forEach(r => {
+                html += `<li style="background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; border-left: 3px solid #d2738a;">
+                    <div style="font-size: 0.8rem; color: #888; display: flex; justify-content: space-between;">
+                        <span>ID #${r.id}</span>
+                        <span>${r.solved ? '<span style="color: #2ecc71;">Solved</span>' : '<span style="color: #ff4444;">Unsolved</span>'}</span>
+                    </div>
+                    <div style="color: #fff; margin-top: 5px;">${r.motivo}</div>
+                </li>`;
+            });
+            html += '</ul>';
+            
+            body.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        function closeReportDetailsModal() {
+            document.getElementById('reportDetailsModal').style.display = 'none';
+        }
+
         // Confirmation Modal Functions
         let confirmCallback = null;
 

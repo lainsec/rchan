@@ -56,19 +56,41 @@ def login():
         report_manager = ReportManager()
         reports = []
         if 'owner' in roles.lower() or 'mod' in roles.lower():
-            reports = report_manager.get_all_reports()
-            for report in reports:
-                if database_module.check_post_exist(report['post_id']):
-                    post_info = database_module.get_post_info(report['post_id'])
-                    if 'reply_id' in post_info:
-                        report['is_reply'] = True
-                        report['thread_id'] = post_info['post_id']
+            all_reports = report_manager.get_all_reports()
+            grouped_reports = {}
+            
+            for report in all_reports:
+                if report.get('solved', 0) == 1:
+                    continue
+                    
+                post_id = report['post_id']
+                
+                if post_id not in grouped_reports:
+                    if database_module.check_post_exist(post_id):
+                        post_info = database_module.get_post_info(post_id)
+                        if 'reply_id' in post_info:
+                            is_reply = True
+                            thread_id = post_info['post_id']
+                        else:
+                            is_reply = False
+                            thread_id = report['post_id']
                     else:
-                        report['is_reply'] = False
-                        report['thread_id'] = report['post_id']
-                else:
-                    report['is_reply'] = False
-                    report['thread_id'] = report['post_id']
+                        is_reply = False
+                        thread_id = report['post_id']
+                        
+                    grouped_reports[post_id] = {
+                        'id': report['id'], # Primary report ID for links
+                        'post_id': post_id,
+                        'board': report['board'],
+                        'thread_id': thread_id,
+                        'is_reply': is_reply,
+                        'reports_list': [],
+                        'solved': 0 # For template compatibility check
+                    }
+                
+                grouped_reports[post_id]['reports_list'].append(report)
+            
+            reports = list(grouped_reports.values())
 
         return render_template('dashboard.html',
                              database_module=database_module, 
