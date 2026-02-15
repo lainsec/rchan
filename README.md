@@ -15,6 +15,7 @@ python3 app.py
 ```
 
 # Live instances (Unofficial)
+- 🇧🇷 [karty](https://kekw.party) 
 - 🇷🇺 [pejchan](https://pejchan.mooo.com) (off-line)
 
 # Features
