@@ -1,7 +1,8 @@
 #imports
-from flask import current_app, Blueprint, render_template, session, redirect, request, url_for, flash
+from flask import current_app, Blueprint, render_template, session, redirect, request, url_for, flash, send_from_directory
 from database_modules import database_module, language_module
-from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager
+from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager, ChanConfigManager, WordFilterManager
+import os
 #blueprint register.
 boards_bp = Blueprint('boards', __name__)
 #load language.
@@ -23,11 +24,23 @@ def customthemes():
 @boards_bp.errorhandler(404)
 def page_not_found(e):
     return redirect(url_for('boards.main_page'))
-#landing page route.
+#landing page route (frameset).
 @boards_bp.route('/')
 def main_page():
+    return render_template('frameset.html')
+
+#home content route.
+@boards_bp.route('/home')
+def home_page():
+    config_manager = ChanConfigManager()
+    chan_config = config_manager.get_config()
     posts = database_module.get_all_posts()
-    return render_template('index.html',all_posts=posts,posts=reversed(posts[-6:]))
+    return render_template('index.html',all_posts=posts,posts=reversed(posts[-6:]), news=chan_config['index_news'])
+
+#sidebar route.
+@boards_bp.route('/pages/sidebar.html')
+def sidebar_page():
+    return render_template('pages/sidebar.html')
 #boards page route.
 @boards_bp.route('/tabuas')
 def tabuas():
@@ -92,6 +105,10 @@ def login():
             
             reports = list(grouped_reports.values())
 
+        # Get Chan Config
+        config_manager = ChanConfigManager()
+        chan_config = config_manager.get_config()
+
         return render_template('dashboard.html',
                              database_module=database_module, 
                              username=username,
@@ -102,7 +119,8 @@ def login():
                              recent_posts=recent_posts,
                              active_timeouts=active_timeouts,
                              active_bans=active_bans,
-                             reports=reports)
+                             reports=reports,
+                             chan_config=chan_config)
     return render_template('login.html')
 
 @boards_bp.route('/conta/users')
@@ -140,6 +158,21 @@ def users_dashboard():
                          total_pages=total_pages,
                          search_query=search_query,
                          database_module=database_module)
+
+@boards_bp.route('/conta/word_filters')
+def word_filters_page():
+    if 'username' not in session:
+        return redirect('/conta')
+    username = session["username"]
+    roles = database_module.get_user_role(username)
+    if not roles or ('owner' not in roles.lower() and 'mod' not in roles.lower()):
+        return redirect('/conta')
+    manager = WordFilterManager()
+    filters = manager.get_filters()
+    return render_template('word_filters.html',
+                           username=username,
+                           roles=roles,
+                           filters=filters)
 
 #register page route.
 @boards_bp.route('/registrar')
@@ -322,3 +355,8 @@ def replies(board_name, thread_id):
         roles=roles,
         form_data=form_data
     )
+
+@boards_bp.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(current_app.root_path, 'static/imgs/decoration'),
+                               'favicon.png', mimetype='image/vnd.microsoft.icon')

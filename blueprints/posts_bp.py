@@ -18,20 +18,27 @@ class PostHandler:
         self.user_ip = user_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
-        self.post_name = formatting.escape_html_post_info(post_name)
+        self.post_name = 'Groyper' if post_name == '' else formatting.escape_html_post_info(post_name)
         self.post_subject = formatting.escape_html_post_info(post_subject)
         self.board_id = board_id
         self.original_content = comment
         self.comment = formatting.format_comment(comment)
         self.embed = embed
         self.captcha_input = captcha_input
+        # Apply word filters
+        try:
+            filter_manager = moderation_module.WordFilterManager()
+            self.original_content = filter_manager.apply_filters(self.original_content)
+            self.comment = filter_manager.apply_filters(self.comment)
+            self.post_subject = filter_manager.apply_filters(self.post_subject)
+        except Exception as e:
+            print(f"Word filter error: {e}")
     # Init the managers    
     timeout_manager = moderation_module.TimeoutManager()
     ban_manager = moderation_module.BanManager()
     # Check if the user is banned
     def check_banned(self):
         banned_status = self.ban_manager.is_banned(self.user_ip)
-        print(banned_status)
         if not banned_status.get('is_banned', False):
             return True
         boards = banned_status.get('boards')
@@ -202,6 +209,9 @@ class PostHandler:
         tripcode_html = ''
         if len(name_parts) > 1:
             tripcode_html = f' <span class="tripcode">[tripcode protected]</span>'
+        
+        media_approved = self.get_media_approval_status(bool(saved_files))
+        
         self.socketio.emit('nova_postagem', {
             'type': 'New Reply',
             'post': {
@@ -211,6 +221,7 @@ class PostHandler:
                 'subject': self.post_subject,
                 'content': self.comment,
                 'files': saved_files,
+                'media_approved': media_approved,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id
             }
@@ -256,6 +267,39 @@ class PostHandler:
         except Exception as e:
             print(f"Error processing video: {e}")
             return None
+    def get_media_approval_status(self, has_files):
+        if not has_files:
+            return 1
+            
+        board = database_module.DB.query('boards', {'board_uri': {'==': self.board_id}})
+        if not board:
+            return 1
+            
+        try:
+            require_media_approval = int(board[0].get('require_media_approval', 0))
+        except (ValueError, TypeError):
+            require_media_approval = 0
+            
+        if require_media_approval == 0:
+            return 1
+            
+        # Check privileges
+        board_owner = board[0]['board_owner']
+        board_staffs = board[0]['board_staffs']
+        
+        if self.account_name == board_owner:
+            return 1
+        if self.account_name in board_staffs:
+            return 1
+            
+        user = database_module.DB.query('accounts', {'username': {'==': self.account_name}})
+        if user:
+            role = user[0]['role'].lower()
+            if 'mod' in role or 'owner' in role:
+                return 1
+                
+        return 0
+
     # Handle new thread posts
     def handle_post(self):
         if database_module.verify_board_captcha(self.board_id):
@@ -281,6 +325,9 @@ class PostHandler:
         tripcode_html = ''
         if len(name_parts) > 1:
             tripcode_html = f' <span class="tripcode">[tripcode protected]</span>'
+        
+        media_approved = self.get_media_approval_status(bool(saved_files))
+        
         self.socketio.emit('nova_postagem', {
             'type': 'New Thread',
             'post': {
@@ -289,6 +336,7 @@ class PostHandler:
                 'subject': self.post_subject,
                 'content': self.comment,
                 'files': saved_files,
+                'media_approved': media_approved,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id,
                 'role': 'user'

@@ -413,7 +413,7 @@
 
             .dash-sidebar {
                 position: fixed;
-                left: -280px;
+                left: -400px;
                 top: 0;
                 height: 100vh;
                 z-index: 1000;
@@ -580,10 +580,32 @@
             border-color: var(--cor-secundaria);
         }
 
-        .config-select option {
-            background-color: #222;
-            color: #fff;
-            padding: 10px;
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+        
+        textarea.form-input {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
         }
     </style>
 </head>
@@ -620,12 +642,17 @@
                         <li><span style="padding-left: 1rem; color: #666; font-size: 0.8rem; text-transform: uppercase;">{{ lang["dashboard-moderation-label"] }}</span></li>
                         <li><a href="#moderation"><i class="fas fa-gavel"></i> {{ lang["dashboard-moderation-tools"] }}</a></li>
                         <li><a href="/conta/users"><i class="fas fa-users-cog"></i> {{ lang["dashboard-users-management"] }}</a></li>
+                        <li><a href="/conta/word_filters"><i class="fas fa-filter"></i> {{ lang["dashboard-word-filters"] }}</a></li>
                     {% endif %}
         
 
 
         <li><div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 0;"></div></li>
+        {% if chan_config['free_board_creation'] == 1 or 'owner' in roles.lower() or 'mod' in roles.lower() %}
         <li><a href="/create" style="color: var(--cor-secundaria);"><i class="fas fa-plus-circle"></i> {{ lang["dashboard-create-board"] }}</a></li>
+        {% else %}
+        <li><a href="javascript:void(0)" style="color: #666; cursor: not-allowed;"><i class="fas fa-plus-circle"></i> {{ lang["dashboard-create-board"] }}</a></li>
+        {% endif %}
         <li><a href="/api/logout" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> {{ lang["dashboard-logout"] }}</a></li>
                 </ul>
             </nav>
@@ -748,32 +775,59 @@
                     <div class="panel-header">
                         <h3>{{ lang["dashboard-website-configs"] }}</h3>
                     </div>
-                    <div class="panel-body" style="padding: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
-                        <!-- Language Selector -->
-                        <div class="config-item">
-                            <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-select-language"] }}</label>
-                            <form id="dashboardLanguageFormMain" action="/api/change_general_lang" method="POST">
-                                <select name="lang" onchange="document.getElementById('dashboardLanguageFormMain').submit();" class="config-select">
-                                    <option value="" disabled selected>{{ lang["dashboard-change-language"] }}</option>
-                                    <option value="en-us">English</option>
-                                    <option value="es">Español</option>
-                                    <option value="pt-br">Português</option>
-                                    <option value="jp">日本語</option>
-                                </select>
-                            </form>
+                    <div class="panel-body" style="padding: 1.5rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <!-- Language Selector -->
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-select-language"] }}</label>
+                                <form id="dashboardLanguageFormMain" action="/api/change_general_lang" method="POST">
+                                    <select name="lang" onchange="document.getElementById('dashboardLanguageFormMain').submit();" class="config-select">
+                                        <option value="" disabled selected>{{ lang["dashboard-change-language"] }}</option>
+                                        <option value="en-us">English</option>
+                                        <option value="es">Español</option>
+                                        <option value="pt-br">Português</option>
+                                        <option value="jp">日本語</option>
+                                    </select>
+                                </form>
+                            </div>
+
+                            <!-- Global Captcha -->
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-captcha-config"] }}</label>
+                                <form id="dashboardCaptchaFormMain" action="/api/apply_general_captcha" method="POST">
+                                    <select name="generalcaptcha_option" onchange="document.getElementById('dashboardCaptchaFormMain').submit();" class="config-select">
+                                        <option value="" disabled selected>{{ lang["dashboard-captcha-config"] }}</option>
+                                        <option value="enable">{{ lang["dashboard-captcha-config-enable"] }}</option>
+                                        <option value="disable">{{ lang["dashboard-captcha-config-disable"] }}</option>
+                                    </select>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-captcha-config-desc"] }}</small>
+                            </div>
+
+                            <!-- Free Board Creation -->
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-free-board-creation"] }}</label>
+                                <form id="dashboardFreeBoardForm" action="/api/toggle_free_board_creation" method="POST">
+                                    <select name="free_board_creation_option" onchange="document.getElementById('dashboardFreeBoardForm').submit();" class="config-select">
+                                        <option value="" disabled>{{ lang["dashboard-free-board-creation-select"] }}</option>
+                                        <option value="enable" {% if chan_config['free_board_creation'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
+                                        <option value="disable" {% if chan_config['free_board_creation'] == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
+                                    </select>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-free-board-creation-desc"] }}</small>
+                            </div>
                         </div>
 
-                        <!-- Global Captcha -->
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem;">
+
+                        <!-- Index News -->
                         <div class="config-item">
-                            <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-captcha-config"] }}</label>
-                            <form id="dashboardCaptchaFormMain" action="/api/apply_general_captcha" method="POST">
-                                <select name="generalcaptcha_option" onchange="document.getElementById('dashboardCaptchaFormMain').submit();" class="config-select">
-                                    <option value="" disabled selected>{{ lang["dashboard-captcha-config"] }}</option>
-                                    <option value="enable">{{ lang["dashboard-captcha-config-enable"] }}</option>
-                                    <option value="disable">{{ lang["dashboard-captcha-config-disable"] }}</option>
-                                </select>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-news-config"] }}</label>
+                            <form id="dashboardNewsForm" action="/api/change_news" method="POST">
+                                <textarea name="news" class="config-select" style="max-width: -webkit-fill-available; min-height: 100px; margin-bottom: 0.5rem; cursor: text; resize: vertical;" placeholder="{{ lang["dashboard-news-placeholder"] }}">{{ chan_config['index_news'] }}</textarea>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-news-save"] }}</button>
                             </form>
-                            <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-captcha-config-desc"] }}</small>
+                            <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-news-desc"] }}</small>
                         </div>
                     </div>
                 </div>
@@ -784,7 +838,11 @@
             <section id="my-boards">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <h2 class="section-title" style="margin-bottom: 0;"><i class="fas fa-layer-group"></i> {{ lang["dashboard-my-boards"] }}</h2>
+                    {% if chan_config['free_board_creation'] == 1 or 'owner' in roles.lower() or 'mod' in roles.lower() %}
                     <a href="/create" class="btn btn-primary"><i class="fas fa-plus"></i> {{ lang["dashboard-new-board"] }}</a>
+                    {% else %}
+                    <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled><i class="fas fa-plus"></i> {{ lang["dashboard-new-board"] }}</button>
+                    {% endif %}
                 </div>
 
                 <div class="boards-grid">
@@ -841,6 +899,9 @@
                             </form>
 
                             {% if 'owner' in roles.lower() or 'mod' in roles.lower() or username == board.board_owner %}
+                                <button type="button" class="btn btn-icon btn-primary" onclick='openEditBoardModal({{ board.board_uri|tojson }}, {{ board.board_owner|tojson }}, {{ board.board_name|tojson }}, {{ board.board_desc|tojson }}, {{ (board.tag or "")|tojson }}, {{ (board.require_media_approval or 0)|tojson }})' title="{{ lang["dashboard-edit-board-title"] }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                                 <button type="button" class="btn btn-icon btn-warning" onclick='openStaffModal("{{ board.board_uri }}", "{{ board.board_name }}", {{ board.board_staffs|tojson }})' title="{{ lang["dashboard-manage-staff-title"] }}">
                                     <i class="fas fa-user-shield"></i>
                                 </button>
@@ -875,7 +936,11 @@
                         <h3>{{ lang["dashboard-no-boards-found"] }}</h3>
                         <p style="color: #888;">{{ lang["dashboard-no-boards-text"] }}</p>
                         <br>
+                        {% if chan_config['free_board_creation'] == 1 or 'owner' in roles.lower() or 'mod' in roles.lower() %}
                         <a href="/create" class="btn btn-primary">{{ lang["dashboard-create-first-board"] }}</a>
+                        {% else %}
+                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled>{{ lang["dashboard-create-first-board"] }}</button>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -1149,8 +1214,69 @@
         </div>
     </div>
 
+    <!-- Edit Board Modal -->
+    <div id="editBoardModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>{{ lang["dashboard-edit-board-title"] }}</h3>
+                <button class="btn-close" onclick="closeEditBoardModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form action="/api/edit_board_info" method="POST">
+                    <input type="hidden" name="board_uri" id="edit_board_uri">
+
+                    <div class="form-group">
+                        <label for="edit_board_owner" class="form-label">{{ lang["dashboard-edit-board-owner"] }}</label>
+                        <input type="text" name="owner" id="edit_board_owner" class="form-input" style="width: 100%; box-sizing: border-box;" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit_board_name" class="form-label">{{ lang["dashboard-edit-board-name"] }}</label>
+                        <input type="text" name="name" id="edit_board_name" class="form-input" style="width: 100%; box-sizing: border-box;" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_board_desc" class="form-label">{{ lang["dashboard-edit-board-desc"] }}</label>
+                        <textarea name="description" id="edit_board_desc" class="form-input" rows="4" style="width: 100%; box-sizing: border-box;" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_board_tags" class="form-label">{{ lang["dashboard-edit-board-tag"] }}</label>
+                        <input type="text" name="tags" id="edit_board_tags" class="form-input" style="width: 100%; box-sizing: border-box;" placeholder="Ex: Anime, Tech, Random">
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
+                        <input type="checkbox" name="require_media_approval" id="edit_board_media_approval" style="width: auto;">
+                        <label for="edit_board_media_approval" class="form-label" style="margin: 0; cursor: pointer;">Require Media Approval</label>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeEditBoardModal()">{{ lang["dashboard-btn-cancel"] }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ lang["dashboard-save-changes"] }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts for interactivity can be added here -->
     <script>
+        // Edit Board Modal
+        function openEditBoardModal(uri, owner, name, desc, tag, requireMediaApproval) {
+            document.getElementById('edit_board_uri').value = uri;
+            document.getElementById('edit_board_owner').value = owner;
+            document.getElementById('edit_board_name').value = name;
+            document.getElementById('edit_board_desc').value = desc;
+            document.getElementById('edit_board_tags').value = tag || '';
+            document.getElementById('edit_board_media_approval').checked = requireMediaApproval == 1;
+            const modal = document.getElementById('editBoardModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeEditBoardModal() {
+            document.getElementById('editBoardModal').style.display = 'none';
+        }
+
         // Report Details Modal
         function openReportDetailsModal(reports) {
             const modal = document.getElementById('reportDetailsModal');

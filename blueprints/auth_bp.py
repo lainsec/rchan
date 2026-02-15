@@ -93,9 +93,49 @@ def refresh_captcha():
     session['captcha_text'] = text
     return {'captcha_image': image}
 
+@auth_bp.route('/api/get_post_info', methods=['GET'])
+def get_post_info():
+    post_id = request.args.get('post_id')
+    if not post_id:
+        return {'error': 'Post ID is required'}, 400
+
+    post_info = database_module.get_post_info(post_id)
+    if post_info:
+        return post_info
+    else:
+        return {'error': 'Post not found'}, 404
+
 @auth_bp.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
+
+@auth_bp.route('/api/change_news', methods=['POST'])
+@has_admin_perms
+def change_news():
+    news = request.form.get('news')
+    config_manager = moderation_module.ChanConfigManager()
+    config_manager.update_config(index_news=news)
+    flash('News updated!', 'success')
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/toggle_free_board_creation', methods=['POST'])
+@has_admin_perms
+def toggle_free_board_creation():
+    config_manager = moderation_module.ChanConfigManager()
+    
+    option = request.form.get('free_board_creation_option')
+    
+    if option:
+        new_value = True if option == 'enable' else False
+        config_manager.update_config(free_board_creation=new_value)
+        flash(f'Free board creation {"enabled" if new_value else "disabled"}!', 'success')
+    else:
+        chan_config = config_manager.get_config()
+        new_value = not chan_config['free_board_creation']
+        config_manager.update_config(free_board_creation=new_value)
+        flash('Free board creation toggled!', 'success')
+        
+    return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/change_general_lang', methods=['POST'])
 @has_admin_perms
@@ -168,6 +208,26 @@ def unhide_board(board_uri):
     else:
         flash('Could not unhide the board.', 'danger')
     return redirect(request.referrer or '/')
+@auth_bp.route('/api/word_filters/add', methods=['POST'])
+@has_admin_perms
+def add_word_filter():
+    word = request.form.get('word', '').strip()
+    replacement = request.form.get('filter', '')
+    manager = moderation_module.WordFilterManager()
+    if manager.add_filter(word, replacement):
+        flash('Filtro adicionado!', 'success')
+    else:
+        flash('Falha ao adicionar filtro.', 'danger')
+    return redirect(request.referrer or '/conta/word_filters')
+@auth_bp.route('/api/word_filters/delete/<int:filter_id>', methods=['POST'])
+@has_admin_perms
+def delete_word_filter(filter_id):
+    manager = moderation_module.WordFilterManager()
+    if manager.delete_filter(filter_id):
+        flash('Filtro removido!', 'success')
+    else:
+        flash('Falha ao remover filtro.', 'danger')
+    return redirect(request.referrer or '/conta/word_filters')
 
 @auth_bp.route('/api/report_post/<post_id>', methods=['POST'])
 def report_post(post_id):
@@ -216,6 +276,16 @@ def resolve_report(report_id):
     report_manager.resolve_reports_by_post(report['post_id'])
     flash('Reports resolved!', 'success')
         
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/approve_media/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def approve_media(post_id):
+    is_reply = request.form.get('is_reply', 'false') == 'true'
+    if database_module.approve_media(int(post_id), is_reply):
+        flash('Media approved!')
+    else:
+        flash('Could not approve media.', 'danger')
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/pin_post/<post_id>', methods=['POST'])
@@ -397,14 +467,52 @@ def register():
 
 @auth_bp.route('/api/create_board', methods=['POST'])
 def create_board():
+    # Check if board creation is allowed
+    config_manager = moderation_module.ChanConfigManager()
+    chan_config = config_manager.get_config()
+    
+    if not chan_config['free_board_creation']:
+        username = session.get('username')
+        if not username:
+             flash('You must be logged in to create a board.', 'danger')
+             return redirect(request.referrer or '/')
+             
+        roles = database_module.get_user_role(username)
+        if not roles or ('owner' not in roles.lower() and 'mod' not in roles.lower()):
+            flash('Board creation is disabled.', 'danger')
+            return redirect(request.referrer or '/')
+
     uri = request.form['uri']
     name = request.form['name']
     captcha_text = request.form['captcha']
     description = request.form['description']
-    if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text']):
+    tags_input = request.form.get('tags', '')
+    tag = tags_input.split('\n')[0].strip() if tags_input.strip() else 'Outros'
+    
+    if database_module.add_new_board(uri, name, description, session['username'], captcha_text, session['captcha_text'], tag):
         return redirect(f'/{uri}')
     flash('Something went wrong, try again.')
     session['form_data'] = request.form.to_dict()
+    return redirect(request.referrer or '/')
+
+@auth_bp.route('/api/edit_board_info', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda: request.form.get('board_uri'))
+def edit_board_info_route():
+    board_uri = request.form['board_uri']
+    new_owner = request.form['owner']
+    new_name = request.form['name']
+    new_desc = request.form['description']
+    new_tag = request.form.get('tags', 'Outros').split('\n')[0].strip()
+    require_media_approval = 1 if request.form.get('require_media_approval') == 'on' else 0
+    
+    if not database_module.check_user_exists(new_owner):
+        flash(f'User {new_owner} does not exist.', 'danger')
+        return redirect(request.referrer or '/')
+    
+    if database_module.edit_board_info(board_uri, new_owner, new_name, new_desc, new_tag, require_media_approval):
+        flash(f'Board /{board_uri}/ information updated!')
+    else:
+        flash('Failed to update board information.', 'danger')
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/upload_banner', methods=['POST'])
@@ -497,4 +605,3 @@ def change_user_role():
         flash('Failed to update user role.', 'danger')
         
     return redirect(request.referrer or '/conta/users')
-

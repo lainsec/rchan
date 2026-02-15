@@ -11,6 +11,17 @@
         </div>
         <div class="post_content_container">
             <div class="post_files {% if post.post_images|length > 1 %}multiple_files{% endif %}">
+                {% set is_approved = post.get('media_approved', 1)|int == 1 %}
+                {% set is_staff = 'owner' in roles.lower() or 'mod' in roles.lower() or ('board_owner' in board_info and session.get('username') == board_info.board_owner) or (session.get('username') in board_info.board_staffs) %}
+                {% if not is_approved and is_staff %}
+                    <div class="media-approval-banner">
+                        <form action="/api/approve_media/{{ post.post_id }}" method="POST" style="margin: 0;">
+                            <button type="submit" class="btn-mediaapproval">Approve</button>
+                        </form>
+                    </div>
+                {% endif %}
+                
+                {% if is_approved or is_staff %}
                 {% for image in post.post_images %}
                     <div class="post_image">
                         {% if image.startswith('youtube:') %}
@@ -56,6 +67,9 @@
                         {% endif %}
                     </div>
                 {% endfor %}
+                {% else %}
+                    <img src="/static/imgs/decoration/mediapendingapproval.png" style="margin: 10px; border: 1px dashed #666; color: #888; text-align: center; border-radius: 4px; margin-bottom: 10px;">
+                {% endif %}
             </div>
             <div class="post_content">
                 <pre>{{ post.post_content | safe }}</pre>
@@ -71,7 +85,18 @@
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}
+                            {% set is_approved = reply.get('media_approved', 1)|int == 1 %}
+                            {% set is_staff = 'owner' in roles.lower() or 'mod' in roles.lower() or ('board_owner' in board_info and session.get('username') == board_info.board_owner) or (session.get('username') in board_info.board_staffs) %}
+                            {% if not is_approved and is_staff %}
+                                <div class="media-approval-banner">
+                                    <form action="/api/approve_media/{{ reply.reply_id }}" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="is_reply" value="true">
+                                        <button type="submit" class="btn-mediaapproval">Approve</button>
+                                    </form>
+                                </div>
+                            {% endif %}
                             <div class="reply_files {% if reply.get('images') and reply.images|length > 1 %}multiple_files{% endif %}">
+                                {% if is_approved or is_staff %}
                                 {% for image in reply.get('images', [reply.get('image', '')]) %}
                                 <div class="reply_image">
                                         {% if image %}
@@ -120,6 +145,9 @@
                                         {% endif %}
                                 </div>
                                 {% endfor %}
+                                {% else %}
+                                    <img src="/static/imgs/decoration/mediapendingapproval.png" style="margin: 10px; border: 1px dashed #666; color: #888; text-align: center; border-radius: 4px; margin-bottom: 10px;">
+                                {% endif %}
                             </div>
                         {% endif %}
                         <div class="reply_content">

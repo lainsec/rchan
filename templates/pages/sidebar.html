@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レインｃｈａｎｎｅｌ - Navigation</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* Sidebar Styles */
+        .sidebar-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            padding: 10px; /* Added padding for body/iframe context */
+            box-sizing: border-box;
+        }
+
+        .sidebar-fieldset {
+            border: 1px solid var(--cor-borda);
+            padding: 10px;
+            margin: 0;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .sidebar-legend {
+            width: 100%; /* Wider/Full width */
+            padding: 5px 10px;
+            border: 1px solid var(--cor-borda);
+            background-color: var(--cor-borda-claro);
+            font-weight: bold;
+            color: var(--cor-texto);
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu li a {
+            text-decoration: none;
+            color: var(--cor-texto);
+            display: block;
+            padding: 5px;
+            transition: background-color 0.2s;
+            border-radius: 3px;
+        }
+
+        .sidebar-menu li a:hover {
+            background-color: var(--cor-borda-claro);
+            color: var(--cor-secundaria);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar-wrapper {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar-fieldset {
+                flex: 1 1 300px; /* Grow to fill, min 300px */
+            }
+        }
+    </style>
+</head>
+<body class="sidebar-body">
+    <div class="sidebar-wrapper">
+        <fieldset class="sidebar-fieldset">
+            <legend class="sidebar-legend">kekw.party</legend>
+            <ul class="sidebar-menu">
+                <li><a href="/" target="content"><strong>[News]</strong></a></li>
+                <li><a href="/pages/globalrules.html" target="content"><strong>[Rules]</strong></a></li>
+            </ul>
+        </fieldset>
+        {% for tag, items in (boards|groupby('tag'))|reverse %}
+        <fieldset class="sidebar-fieldset">
+            <legend class="sidebar-legend">{{ tag if tag else 'Outros' }}</legend>
+            <ul class="sidebar-menu">
+                {% for board in items %}
+                    {% if board.board_isvisible == 1 %}
+                    <li><a title="{{ board.board_desc }}" href="/{{ board.board_uri }}/" target="content">/{{ board.board_uri }}/ - {{ board.board_name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </fieldset>
+        {% else %}
+        <fieldset class="sidebar-fieldset">
+            <legend class="sidebar-legend">Navegação</legend>
+            <ul class="sidebar-menu">
+                <li><a href="/home" target="content">Início</a></li>
+                <li><a href="/tabuas" target="content">Tábuas</a></li>
+            </ul>
+        </fieldset>
+        {% endfor %}
+    </div>
+    <script src="/static/js/boardstyle.js"></script>
+</body>
+</html>

@@ -3,6 +3,43 @@ var socket = io();
 
 const notification_path = '/static/audios/notification.mp3';
 const notification = new Audio(notification_path);
+let originalTitle = document.title;
+let unseenCount = 0;
+function updateTitle() {
+    if (unseenCount > 0) {
+        document.title = `(${unseenCount}) ${originalTitle}`;
+    } else {
+        document.title = originalTitle;
+    }
+}
+function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    return rect.top < vh && rect.bottom > 0;
+}
+const unseenObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const el = entry.target;
+            if (el.classList.contains('unseen')) {
+                el.classList.remove('unseen');
+                unseenCount = Math.max(0, unseenCount - 1);
+                updateTitle();
+            }
+            unseenObserver.unobserve(el);
+        }
+    });
+}, { threshold: 0.5 });
+function markUnseenById(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.classList.contains('unseen')) {
+        el.classList.add('unseen');
+        unseenCount += 1;
+        updateTitle();
+        unseenObserver.observe(el);
+    }
+}
 
 function getCurrentBoard() {
     const path = window.location.pathname;
@@ -121,12 +158,14 @@ socket.on('nova_postagem', function(data) {
         if (data.type === 'New Thread') {
             if (currentPath === `/${currentBoard}` || currentPath === `/${currentBoard}/`) {
                 addNewThread(data.post);
+                markUnseenById(data.post.id);
             }
         } else if (data.type === 'New Reply') {
             // Verifica se o thread pai existe na página atual
             const parentThread = document.getElementById(data.post.thread_id);
             if (parentThread) {
                 addNewReply(data.post);
+                markUnseenById(data.post.id);
             }
         }
     }
@@ -137,20 +176,21 @@ function addNewThread(post) {
     const displayName = post.name === '' ? 'ドワーフ' : post.name;
     
     const threadHTML = `
+        <div class="divisoria"></div>
         <div class="post" post-role="${post.role}" id="${post.id}" bis_skin_checked="1">
             <div class="postInfo" bis_skin_checked="1">
                 <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="${post.id}" form="banDeleteForm">
                 <span class="nameBlock"><span class="name">${displayName}</span></span>
                 <span class="postDate" data-original-date="${post.date}" title="${post.date}">agora mesmo</span>
-                <a href="/b/thread/${post.id}" class="postLink" bis_skin_checked="1">No. </a> 
-                <a class="postLink" href="/b/thread/${post.id}" bis_skin_checked="1">${post.id}</a>
-                <a class="postLink" href="/b/thread/${post.id}" bis_skin_checked="1"> [Replies]</a>
+                <a href="/${post.board}/thread/${post.id}" class="postLink" bis_skin_checked="1">No. </a> 
+                <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1">${post.id}</a>
+                <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1"> [Replies]</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em; padding-left: 1em;" bis_skin_checked="1">
                     <!-- ... rest of the thread HTML ... -->
                 </div>
             </div>
             <div class="post_content_container" bis_skin_checked="1">
-                ${post.files ? generateFilesHTML(post.files, 'post') : ''}
+                ${post.files ? generateFilesHTML(post.files, 'post', post.media_approved, post.id) : ''}
                 <div class="post_content" bis_skin_checked="1">
                     <pre>${post.content}</pre>
                 </div>
@@ -172,8 +212,8 @@ function addNewReply(reply) {
                 <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="${reply.id}" form="banDeleteForm">
                 <span class="nameBlock"><span class="name">${displayName}</span></span>
                 <span class="postDate" data-original-date="${reply.date}" title="${reply.date}">agora mesmo</span>
-                <a href="/b/thread/${reply.thread_id}" class="postLink" bis_skin_checked="1">No. </a> 
-                <a class="postLink" href="/b/thread/${reply.thread_id}" bis_skin_checked="1">${reply.id}</a>
+                <a href="/${reply.board}/thread/${reply.thread_id}" class="postLink" bis_skin_checked="1">No. </a> 
+                <a class="postLink" href="/${reply.board}/thread/${reply.thread_id}#${reply.id}" onclick="quotePostId(${reply.id})" bis_skin_checked="1">${reply.id}</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;" bis_skin_checked="1">
                     <form action="/delete_reply/${reply.id}" method="post">
                         <input type="hidden" name="board_owner" value="${reply.board}">
@@ -184,7 +224,7 @@ function addNewReply(reply) {
                 </div>
             </div>
             <div class="post_content_container" bis_skin_checked="1">
-                ${reply.files ? generateFilesHTML(reply.files, 'reply') : ''}
+                ${reply.files ? generateFilesHTML(reply.files, 'reply', reply.media_approved, reply.id) : ''}
                 <div class="reply_content" bis_skin_checked="1">
                     <pre>${reply.content}</pre>
                 </div>
@@ -211,7 +251,15 @@ function addNewReply(reply) {
     }
 }
 
-function generateFilesHTML(files, type) {
+function generateFilesHTML(files, type, media_approved, postId) {
+    if (media_approved === 0) {
+        return `<div class="post_files" bis_skin_checked="1">
+                    <div class="${type === 'post' ? 'post_image' : 'reply_image'}" style="text-align: center; padding: 10px; border: 1px dashed #666; background: rgba(0,0,0,0.1);">
+                        <img src="/static/imgs/decoration/mediapendingapproval.png">
+                    </div>
+                </div>`;
+    }
+
     let html = '<div class="post_files" bis_skin_checked="1">';
     
     files.forEach(file => {

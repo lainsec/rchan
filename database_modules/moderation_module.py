@@ -1,9 +1,10 @@
 """
-Timeout Management Module using LainDB
-Handles user timeouts with thread-safe operations.
+Timeout and Moderation Management Module using LainDB
+Handles user timeouts, bans, reports, chan config and word filters.
 """
 
 import threading
+import re
 from datetime import datetime, timedelta
 from database_modules.sqlite_handler import SQLiteConfig
 
@@ -464,6 +465,102 @@ class ReportManager:
         for report in reports:
             self.db.update('reports', report['id'], {'solved': 1})
 
+
+class ChanConfigManager:
+    def __init__(self):
+        # Initialize SQLite for chan config
+        self.db = SQLiteConfig.load_db('moderation')
+        self.db.create_table('chan_config', {
+            'id': 'int',
+            'free_board_creation': 'int',
+            'index_news': 'str'
+        })
+        self._ensure_record()
+
+    def _ensure_record(self):
+        """Ensure that the configuration record exists."""
+        configs = self.db.find_all('chan_config')
+        if not configs:
+            self.db.insert('chan_config', {
+                'id': 1,
+                'free_board_creation': 1,
+                'index_news': "No news to display"
+            })
+
+    def get_config(self):
+        """
+        Get the chan configuration.
+        
+        Returns:
+            dict: The configuration record
+        """
+        self._ensure_record()
+        return self.db.find_all('chan_config')[0]
+
+    def update_config(self, free_board_creation=None, index_news=None):
+        """
+        Update the chan configuration.
+        
+        Args:
+            free_board_creation (bool): Whether to allow free board creation
+            index_news (str): News to display on index
+        """
+        self._ensure_record()
+        config = self.get_config()
+        updates = {}
+        
+        if free_board_creation is not None:
+            updates['free_board_creation'] = 1 if free_board_creation else 0
+            
+        if index_news is not None:
+            updates['index_news'] = index_news
+            
+        if updates:
+            self.db.update('chan_config', config['id'], updates)
+
+
+class WordFilterManager:
+    def __init__(self):
+        # Initialize SQLite for word filters
+        self.db = SQLiteConfig.load_db('moderation')
+        self.db.create_table('word_filters', {
+            'word': 'str',
+            'filter': 'str'
+        })
+
+    def get_filters(self):
+        return self.db.find_all('word_filters')
+
+    def add_filter(self, word, replacement):
+        if not word:
+            return False
+        existing = self.get_filters()
+        new_id = max([f.get('id', 0) for f in existing] + [0]) + 1
+        self.db.insert('word_filters', {
+            'id': new_id,
+            'word': word,
+            'filter': replacement or ''
+        })
+        return True
+
+    def delete_filter(self, filter_id):
+        try:
+            return self.db.delete('word_filters', int(filter_id))
+        except:
+            return False
+
+    def apply_filters(self, text):
+        if not text:
+            return text
+        filters = self.get_filters()
+        for f in filters:
+            word = f.get('word', '')
+            replacement = f.get('filter', '')
+            if not word:
+                continue
+            pattern = re.compile(rf'{re.escape(word)}\S*')
+            text = pattern.sub(replacement, text)
+        return text
 
 
 if __name__ == '__main__':

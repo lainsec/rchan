@@ -31,8 +31,12 @@ DB.create_table('boards', {
     'board_owner': 'str',
     'board_staffs': 'list',
     'enable_captcha': 'int',
-    'board_isvisible': 'int'
+    'board_isvisible': 'int',
+    'tag': 'str',
+    'require_media_approval': 'int'
 })
+DB.add_column('boards', 'tag')
+DB.add_column('boards', 'require_media_approval')
 DB.create_table('accounts', {
     'id': 'int',
     'username': 'str',
@@ -51,8 +55,10 @@ DB.create_table('posts', {
     'post_content': 'str',
     'post_images': 'list',
     'locked': 'int',
-    'visible': 'int'
+    'visible': 'int',
+    'media_approved': 'int'
 })
+DB.add_column('posts', 'media_approved')
 DB.create_table('pinned', {
     'id': 'int',
     'user_ip': 'str',
@@ -61,8 +67,10 @@ DB.create_table('pinned', {
     'post_date': 'str',
     'board': 'str',
     'post_content': 'str',
-    'post_images': 'list'
+    'post_images': 'list',
+    'media_approved': 'int'
 })
+DB.add_column('pinned', 'media_approved')
 DB.create_table('replies', {
     'id': 'int',
     'user_ip': 'str',
@@ -72,8 +80,10 @@ DB.create_table('replies', {
     'post_subject': 'str',
     'post_date': 'str',
     'content': 'str',
-    'images': 'list'
+    'images': 'list',
+    'media_approved': 'int'
 })
+DB.add_column('replies', 'media_approved')
 DB.create_table('users', {
     'id': 'int',
     'user_ip': 'str',
@@ -492,17 +502,43 @@ def get_max_post_id():
     max_id = max(max_post_id, max_reply_id)
     return max_id
 
+def get_post_info(post_id):
+    """Get post information by post ID, excluding the poster's IP."""
+    post_id = int(post_id)
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    replies = DB.query('replies', {'reply_id': {'==': post_id}})
+    if post:
+        post_copy = dict(post[0])
+        post_copy.pop('user_ip', None)
+        return post_copy
+    elif replies:
+        reply_copy = dict(replies[0])
+        reply_copy.pop('user_ip', None)
+        return reply_copy
+    return None
+
 def create_banner_folder(board_uri):
     """Create a folder for board banners."""
     board_folder = os.path.join('./static/imgs/banners/', board_uri)
     os.makedirs(board_folder, exist_ok=True)
 
-def add_new_board(board_uri, board_name, board_description, username, captcha_input, captcha_text):
+def add_new_board(board_uri, board_name, board_description, username, captcha_input, captcha_text, tag='Outros'):
     """Create a new board."""
     if not validate_captcha(captcha_input, captcha_text):
         return False
     
     if not board_uri.isalnum():
+        return False
+    
+    # Reserved URIs that are used as routes in boards_bp.py
+    reserved_uris = {
+        'home',
+        'tabuas',
+        'conta',
+        'registrar',
+        'create'
+    }
+    if board_uri.lower() in reserved_uris:
         return False
     
     existing_boards = DB.query('boards', {'board_uri': {'==': board_uri}})
@@ -523,7 +559,9 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         'board_name': board_name,
         'board_desc': board_description,
         'enable_captcha': 0,
-        'board_isvisible': 1
+        'board_isvisible': 1,
+        'tag': tag,
+        'require_media_approval': 0
     }
     
     DB.insert('boards', new_board)
@@ -546,6 +584,25 @@ def unhide_board(board_uri):
         return False
     
     DB.update('boards', board_info['id'], {'board_isvisible': 1})
+    return True
+
+def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, new_board_tag, require_media_approval=None):
+    """Edit board information."""
+    board_info = get_board_info(board_uri)
+    if not board_info:
+        return False
+    
+    update_data = {
+        'board_owner': new_board_owner,
+        'board_name': new_board_name,
+        'board_desc': new_board_desc,
+        'tag': new_board_tag
+    }
+
+    if require_media_approval is not None:
+        update_data['require_media_approval'] = int(require_media_approval)
+
+    DB.update('boards', board_info['id'], update_data)
     return True
 
 def remove_board(board_uri, username, role):
@@ -673,24 +730,24 @@ def get_user_role(username):
     user = DB.query('accounts', {'username': {'==': username}})
     return user[0]['role'] if user else None
 
-def get_post_info(post_id):
-    """Get the info from post."""
-    post_id = int(post_id)
-    post = DB.query('posts', {'post_id': {'==': post_id}})
-    if not post:
-        reply = DB.query('replies', {'reply_id': {'==': post_id}})
-        return reply[0]
-    return post[0]
-
 def get_post_board(post_id):
     """Get the info from post."""
     post_id = int(post_id)
     post = DB.query('posts', {'post_id': {'==': post_id}})
-    if not post:
-        reply = DB.query('replies', {'reply_id': {'==': post_id}})
+    if post:
+        return post[0]['board']
+
+    reply = DB.query('replies', {'reply_id': {'==': post_id}})
+    if reply:
         post = DB.query('posts', {'post_id': {'==': reply[0]['post_id']}})
         return post[0]['board'] if post else None
-    return post[0]['board'] if post else None
+    
+    return None
+
+def check_user_exists(username):
+    """Check if a user exists."""
+    user = DB.query('accounts', {'username': {'==': username}})
+    return True if user else False
 
 def check_post_exist(post_id):
     """Verify if thread exists."""
@@ -743,6 +800,11 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
     board = DB.query('boards', {'board_uri': {'==': board_id}})
     board_owner = board[0]['board_owner']
     board_staffs = board[0]['board_staffs']
+    try:
+        require_media_approval = int(board[0].get('require_media_approval', 0))
+    except (ValueError, TypeError):
+        require_media_approval = 0
+
     if not board:
         raise ValueError(f"Board '{board_id}' does not exist")
     
@@ -753,6 +815,24 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
         max_id = max(max_post_id, max_reply_id)
         new_post_id = max_id + 1
 
+        # Check media approval
+        media_approved = 1
+        if files and require_media_approval == 1:
+            is_privileged = False
+            if account_name == board_owner:
+                is_privileged = True
+            elif account_name in board_staffs:
+                is_privileged = True
+            else:
+                 user = DB.query('accounts', {'username': {'==': account_name}})
+                 if user:
+                     role = user[0]['role'].lower()
+                     if 'mod' in role or 'owner' in role:
+                         is_privileged = True
+            
+            if not is_privileged:
+                media_approved = 0
+            
         # Create the new post
         new_post = {
             # 'id': new_post_id, # Let SQLite handle the ID
@@ -766,7 +846,8 @@ def add_new_post(user_ip, account_name, board_id, post_subject, post_name, origi
             'post_content': comment,
             'post_images': files, 
             'locked': 0,
-            'visible': 1
+            'visible': 1,
+            'media_approved': media_approved
         }
         
         # Insert into database
@@ -779,12 +860,35 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
     board = DB.query('boards', {'board_uri': {'==': existing_post[0]['board']}})
     board_owner = board[0]['board_owner']
     board_staffs = board[0]['board_staffs']
+    try:
+        require_media_approval = int(board[0].get('require_media_approval', 0))
+    except (ValueError, TypeError):
+        require_media_approval = 0
 
     with POST_LOCK:
         max_post_id = max([post['post_id'] for post in DB.find_all('posts')] + [0]) 
         max_reply_id = max([reply['reply_id'] for reply in DB.find_all('replies')] + [0])
         max_id = max(max_post_id, max_reply_id)
         new_reply_id = max_id + 1
+
+        # Check media approval
+        media_approved = 1
+        if files and require_media_approval == 1:
+            is_privileged = False
+            if account_name == board_owner:
+                is_privileged = True
+            elif account_name in board_staffs:
+                is_privileged = True
+            else:
+                 user = DB.query('accounts', {'username': {'==': account_name}})
+                 if user:
+                     role = user[0]['role'].lower()
+                     if 'mod' in role or 'owner' in role:
+                         is_privileged = True
+            
+            if not is_privileged:
+                media_approved = 0
+
         new_reply = {
             'id': new_reply_id,
             'user_ip': user_ip,
@@ -794,7 +898,8 @@ def add_new_reply(user_ip, account_name, post_subject, reply_to, post_name, comm
             'post_subject': post_subject,
             'post_date': get_current_datetime(),
             'content': comment,
-            'images': files 
+            'images': files,
+            'media_approved': media_approved
         }
         if not 'sage' in post_subject.lower():
             bump_thread(int(reply_to))
@@ -923,14 +1028,21 @@ def remove_post(post_id):
     return True
 
 def delete_all_posts_from_user(user_ip, board_uri):
-    """Remove all posts made by an specific IP."""
+    """Remove all posts and replies made by a specific IP on a specific board."""
+    # 1. Delete user's threads
     user_posts = DB.query('posts', {'user_ip': {'==': user_ip}})
-    posts_to_delete = []
     for post in user_posts:
         if post.get('board') == board_uri:
-            posts_to_delete.append(post)
-    for post in posts_to_delete:
-        DB.delete('posts', post['id'])
+            remove_post(post['post_id'])
+
+    # 2. Delete user's replies in other threads
+    user_replies = DB.query('replies', {'user_ip': {'==': user_ip}})
+    for reply in user_replies:
+        # Check parent thread's board
+        parent_post = DB.query('posts', {'post_id': {'==': reply['post_id']}})
+        if parent_post and parent_post[0].get('board') == board_uri:
+            remove_reply(reply['reply_id'])
+            
     return True
 
 def remove_reply(reply_id):
@@ -995,6 +1107,7 @@ def pin_post(post_id):
         'post_date': post['post_date'],
         'board': post['board'],
         'post_content': post['post_content'],
+        'media_approved': post.get('media_approved', 1),
         # Usa post_images se existir, senão usa post_image (para compatibilidade)
         'post_images': post.get('post_images', [post.get('post_image', '')])
     }
@@ -1005,6 +1118,52 @@ def pin_post(post_id):
     
     DB.insert('pinned', new_pinned)
     return True
+
+def approve_media(post_id, is_reply=False):
+    """Approve media for a post or reply."""
+    table = 'replies' if is_reply else 'posts'
+    id_field = 'reply_id' if is_reply else 'post_id'
+    
+    item = DB.query(table, {id_field: {'==': post_id}})
+    if not item:
+        return False
+    
+    item = item[0]
+    item['media_approved'] = 1
+    DB.update(table, item['id'], item)
+
+    # Also update pinned table if it's a post
+    if not is_reply:
+        pinned_post = DB.query('pinned', {'post_id': {'==': post_id}})
+        if pinned_post:
+            pinned_post[0]['media_approved'] = 1
+            DB.update('pinned', pinned_post[0]['id'], pinned_post[0])
+
+    return True
+
+def get_pending_media(board_uri=None):
+    """Get all posts and replies with pending media."""
+    query = {'media_approved': {'==': 0}}
+    if board_uri:
+        query['board'] = {'==': board_uri}
+        
+    posts = DB.query('posts', query)
+    
+    # For replies, we need to filter by board if specified
+    # Replies table doesn't have 'board' column, so we need to join/check parent post
+    replies_query = {'media_approved': {'==': 0}}
+    pending_replies = DB.query('replies', replies_query)
+    
+    filtered_replies = []
+    for reply in pending_replies:
+        post = DB.query('posts', {'post_id': {'==': reply['post_id']}})
+        if post:
+            if board_uri and post[0]['board'] != board_uri:
+                continue
+            reply['board'] = post[0]['board'] # Add board info for display
+            filtered_replies.append(reply)
+            
+    return {'posts': posts, 'replies': filtered_replies}
 
 # Query Operations
 def load_db_page(board_id, offset=0, limit=10):

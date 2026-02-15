@@ -77,12 +77,11 @@ function adicionarEventosQuoteReply() {
                 const preview = targetElement.cloneNode(true);
                 const replies = preview.querySelectorAll('div.replies');
                 replies.forEach(reply => reply.remove());
+                preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
                 preview.style.minWidth = '40em';
-                preview.style.border = '1px solid var(--cor-borda)';
                 preview.style.display = 'block';
-                preview.style.backgroundColor = 'var(--cor-fundo-claro)';
 
                 document.body.appendChild(preview);
 
@@ -99,6 +98,93 @@ function adicionarEventosQuoteReply() {
                         document.removeEventListener('mousemove', updatePreviewPosition);
                     }
                 });
+            }
+            else {
+                let preview;
+                let updatePreviewPosition;
+                const buildPreview = (data) => {
+                    const isReply = !!data.reply_id;
+                    const container = document.createElement('div');
+                    container.className = isReply ? 'reply' : 'post';
+                    container.classList.add('preview-reply');
+                    container.style.position = 'absolute';
+                    container.style.zIndex = '1000';
+                    container.style.minWidth = '40em';
+                    container.style.display = 'block';
+                    const info = document.createElement('div');
+                    info.className = isReply ? 'reply-postInfo' : 'postInfo';
+                    const nameBlock = document.createElement('span');
+                    nameBlock.className = 'nameBlock';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'name';
+                    nameSpan.innerHTML = `${data.post_user || 'ドワーフ'} `;
+                    nameBlock.appendChild(nameSpan);
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'postDate';
+                    dateSpan.textContent = data.post_date || '';
+                    const numberLinkLabel = document.createElement('a');
+                    numberLinkLabel.className = 'postLink';
+                    numberLinkLabel.textContent = 'No. ';
+                    const numberLink = document.createElement('a');
+                    numberLink.className = 'postLink';
+                    numberLink.href = isReply ? `/${data.board}/thread/${data.post_id}#${isReply ? data.reply_id : data.post_id}` : `/${data.board}/thread/${data.post_id}`;
+                    numberLink.textContent = isReply ? data.reply_id : data.post_id;
+                    info.appendChild(nameBlock);
+                    info.appendChild(dateSpan);
+                    info.appendChild(numberLinkLabel);
+                    info.appendChild(numberLink);
+                    container.appendChild(info);
+                    const contentContainer = document.createElement('div');
+                    contentContainer.className = isReply ? 'post_content_container' : 'post_content_container';
+                    const filesContainer = document.createElement('div');
+                    filesContainer.className = isReply ? 'reply_files' : 'post_files';
+                    const images = isReply ? (data.images || (data.image ? [data.image] : [])) : (data.post_images || []);
+                    images.forEach((img) => {
+                        if (!img) return;
+                        const wrap = document.createElement('div');
+                        wrap.className = isReply ? 'reply_image' : 'post_image';
+                        const imgEl = document.createElement('img');
+                        imgEl.draggable = false;
+                        imgEl.className = isReply ? 'reply_img' : 'post_img';
+                        const base = isReply ? '/static/reply_images/' : '/static/post_images/';
+                        imgEl.src = base + img;
+                        wrap.appendChild(imgEl);
+                        filesContainer.appendChild(wrap);
+                    });
+                    if (images.length > 0) {
+                        contentContainer.appendChild(filesContainer);
+                    }
+                    const textContainer = document.createElement('div');
+                    textContainer.className = isReply ? 'reply_content' : 'post_content';
+                    const pre = document.createElement('pre');
+                    pre.innerHTML = isReply ? (data.content || '') : (data.post_content || data.original_content || '');
+                    textContainer.appendChild(pre);
+                    contentContainer.appendChild(textContainer);
+                    container.appendChild(contentContainer);
+                    return container;
+                };
+                fetch(`/api/get_post_info?post_id=${encodeURIComponent(targetId)}`)
+                    .then(r => r.ok ? r.json() : Promise.reject())
+                    .then(data => {
+                        preview = buildPreview(data);
+                        document.body.appendChild(preview);
+                        updatePreviewPosition = (e) => {
+                            preview.style.left = `${e.pageX + 10}px`;
+                            preview.style.top = `${e.pageY + 10}px`;
+                        };
+                        document.addEventListener('mousemove', updatePreviewPosition);
+                    })
+                    .catch(() => {})
+                    .finally(() => {
+                        span.addEventListener('mouseleave', () => {
+                            if (preview && document.body.contains(preview)) {
+                                document.body.removeChild(preview);
+                            }
+                            if (updatePreviewPosition) {
+                                document.removeEventListener('mousemove', updatePreviewPosition);
+                            }
+                        }, { once: true });
+                    });
             }
         });
     });

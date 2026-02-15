@@ -10,9 +10,9 @@
 
         {% for p in range(1, total_pages + 1) %}
             {% if p == page %}
-            <li class="page-item active"><a class="page-link" href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=p) }}">{{ p }}</a></li>
+            <li class="page-item active"><a class="page-link" href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=p) }}">[{{ p }}]</a></li>
             {% else %}
-            <li class="page-item"><a class="page-link" href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=p) }}">{{ p }}</a></li>
+            <li class="page-item"><a class="page-link" href="{{ url_for('boards.board_page', board_uri=board_info.board_uri, page=p) }}">[{{ p }}]</a></li>
             {% endif %}
         {% endfor %}
         </ul>

@@ -14,7 +14,6 @@ document.addEventListener("click", function(event) {
             video = container.querySelector('.post_video');
             
             if (!video) {
-                // Se não encontrar, tenta subir mais na hierarquia
                 container = container.parentElement;
                 if (container) {
                     video = container.querySelector('.post_video');
@@ -27,6 +26,29 @@ document.addEventListener("click", function(event) {
             video.style.maxWidth = "100%";
             video.style.maxHeight = "100%";
             video.play().catch(e => console.log("Erro ao reproduzir vídeo:", e));
+
+            // Adicionar botão de fechar se não existir
+            let infoContainer = container.querySelector('.post_image_info, .reply_image_info');
+            if (infoContainer && !infoContainer.querySelector('.video-close-btn')) {
+                const closeBtn = document.createElement('a');
+                closeBtn.href = "javascript:void(0)";
+                closeBtn.className = "video-close-btn";
+                closeBtn.textContent = " (close)";
+                closeBtn.style.marginLeft = "5px";
+                
+                closeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Parar e esconder vídeo
+                    video.pause();
+                    video.style.display = "none";
+                    // Mostrar thumbnail
+                    thumbnail.style.display = "";
+                    // Remover botão close
+                    closeBtn.remove();
+                });
+
+                infoContainer.appendChild(closeBtn);
+            }
         } else {
             console.warn("Elemento de vídeo não encontrado para a thumbnail", thumbnail);
         }
