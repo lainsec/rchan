@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>レインｃｈａｎｎｅｌ</title>
+    <title>{{ lang['word-filters-page-title'] }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -11,49 +11,64 @@
     <div class="page-content">
         <div class="boards-container" style="max-width: 900px;">
             <div class="new-thread-header" style="width: 100%; margin-bottom: 10px;">
-                <h1>Gerenciar Filtros</h1>
+                <h1>{{ lang['word-filters-header'] }}</h1>
             </div>
             <p class="text-center" style="margin-bottom: 12px;">
-                Substitui a palavra e tudo que estiver colado à direita na mesma parte do texto.
+                {{ lang['word-filters-desc'] }}
             </p>
             <form action="/api/word_filters/add" method="POST" style="display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; border: 1px solid var(--cor-borda); padding: 10px; background: var(--cor-fundo-claro);">
                 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
-                    <label style="color: var(--cor-terciaria); font-size: 10pt;">Palavra</label>
-                    <input type="text" name="word" placeholder="ex.: discord.gg" maxlength="128" required style="height: 2em; padding: 0 8px; border: 1px solid var(--cor-borda); background: #111; color: var(--cor-texto);">
+                    <label style="color: var(--cor-terciaria); font-size: 10pt;">{{ lang['word-filters-label-word'] }}</label>
+                    <input type="text" name="word" placeholder="{{ lang['word-filters-placeholder-word'] }}" maxlength="128" required style="height: 2em; padding: 0 8px; border: 1px solid var(--cor-borda); background: #111; color: var(--cor-texto);">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
-                    <label style="color: var(--cor-terciaria); font-size: 10pt;">Substituição</label>
-                    <input type="text" name="filter" placeholder="ex.: filtrado" maxlength="256" required style="height: 2em; padding: 0 8px; border: 1px solid var(--cor-borda); background: #111; color: var(--cor-texto);">
+                    <label style="color: var(--cor-terciaria); font-size: 10pt;">{{ lang['word-filters-label-replacement'] }}</label>
+                    <input type="text" name="filter" placeholder="{{ lang['word-filters-placeholder-replacement'] }}" maxlength="256" required style="height: 2em; padding: 0 8px; border: 1px solid var(--cor-borda); background: #111; color: var(--cor-texto);">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
+                    <label style="color: var(--cor-terciaria); font-size: 10pt;">{{ lang['word-filters-label-mode'] }}</label>
+                    <select name="mode" style="height: 2em; padding: 0 8px; border: 1px solid var(--cor-borda); background: #111; color: var(--cor-texto);">
+                        <option value="word">{{ lang['word-filters-mode-word'] }}</option>
+                        <option value="prefix">{{ lang['word-filters-mode-prefix'] }}</option>
+                    </select>
                 </div>
                 <div style="display: flex; align-items: flex-end;">
-                    <button type="submit" class="btn-mediaapproval">Adicionar</button>
+                    <button type="submit" class="btn-mediaapproval">{{ lang['word-filters-add-button'] }}</button>
                 </div>
             </form>
             <div style="margin-top: 16px; width: 100%;">
                 <table style="width: 100%; border-collapse: collapse; border: 1px solid var(--cor-borda);">
                     <thead style="background: var(--cor-borda-claro);">
                         <tr>
-                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">Palavra</th>
-                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">Substituição</th>
-                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">Ações</th>
+                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">{{ lang['word-filters-table-word'] }}</th>
+                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">{{ lang['word-filters-table-replacement'] }}</th>
+                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">{{ lang['word-filters-table-mode'] }}</th>
+                            <th style="text-align: left; padding: 10px; color: var(--cor-terciaria);">{{ lang['word-filters-table-actions'] }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if filters and filters|length > 0 %}
                             {% for f in filters %}
                             <tr style="background: {{ loop.cycle('#0f0f0f', '#141414') }}; border-top: 1px solid var(--cor-borda);">
-                                <td style="padding: 10px; color: #dbcfb0;">{{ f.word }}</td>
+                                <td style="padding: 10px; color: #dbcfb0;">{{ f.word.rstrip('*') }}</td>
                                 <td style="padding: 10px; color: #dbcfb0;">{{ f.filter }}</td>
+                                <td style="padding: 10px; color: #dbcfb0;">
+                                    {% if f.word.endswith('*') %}
+                                        {{ lang['word-filters-mode-prefix'] }}
+                                    {% else %}
+                                        {{ lang['word-filters-mode-word'] }}
+                                    {% endif %}
+                                </td>
                                 <td style="padding: 10px;">
                                     <form action="/api/word_filters/delete/{{ f.id }}" method="POST" style="display: inline;">
-                                        <button type="submit" class="report mod-action-btn">Excluir</button>
+                                        <button type="submit" class="report mod-action-btn">{{ lang['word-filters-delete-button'] }}</button>
                                     </form>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr style="background: #0f0f0f;">
-                                <td colspan="3" style="padding: 12px; color: var(--cor-terciaria);">Nenhum filtro criado ainda.</td>
+                                <td colspan="3" style="padding: 12px; color: var(--cor-terciaria);">{{ lang['word-filters-empty'] }}</td>
                             </tr>
                         {% endif %}
                     </tbody>

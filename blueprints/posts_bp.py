@@ -1,4 +1,4 @@
-from flask import current_app, Blueprint, render_template, redirect, request, flash, session
+from flask import current_app, Blueprint, render_template, redirect, request, flash, session, make_response
 from database_modules import database_module, moderation_module, formatting
 from flask_socketio import SocketIO, emit
 from datetime import datetime, timedelta
@@ -7,15 +7,17 @@ import magic
 import cv2
 import re
 import os
+import json
 
 # Blueprint register
 posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
 # Post handling class
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input):
+    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None):
         self.socketio = socketio
         self.user_ip = user_ip
+        self.cookie_ip = cookie_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
         self.post_name = 'Groyper' if post_name == '' else formatting.escape_html_post_info(post_name)
@@ -38,16 +40,47 @@ class PostHandler:
     ban_manager = moderation_module.BanManager()
     # Check if the user is banned
     def check_banned(self):
-        banned_status = self.ban_manager.is_banned(self.user_ip)
-        if not banned_status.get('is_banned', False):
-            return True
-        boards = banned_status.get('boards')
-        if boards is None or boards == [] or None in boards:
-            flash(f"You are banned from this board, reason: {banned_status.get('reason')}")
-            return False
-        if self.board_id in boards:
-            flash(f"You are banned from this board, reason: {banned_status.get('reason')}")
-            return False
+        banned_current = self.ban_manager.is_banned(self.user_ip)
+        banned_cookie = {'is_banned': False}
+
+        if self.cookie_ip:
+            banned_cookie = self.ban_manager.is_banned(self.cookie_ip)
+
+            if (
+                banned_cookie.get('is_banned', False)
+                and not banned_current.get('is_banned', False)
+                and self.cookie_ip != self.user_ip
+            ):
+                boards = banned_cookie.get('boards', [])
+                if banned_cookie.get('is_permanent'):
+                    duration_seconds = None
+                else:
+                    end_time = banned_cookie.get('end_time')
+                    try:
+                        remaining = (end_time - datetime.now()).total_seconds()
+                    except Exception:
+                        remaining = 0
+                    duration_seconds = None if remaining <= 0 else int(remaining)
+
+                self.ban_manager.ban_user(
+                    self.user_ip,
+                    duration_seconds=duration_seconds,
+                    boards=boards,
+                    reason="Evasor.",
+                    moderator="System",
+                )
+                banned_current = self.ban_manager.is_banned(self.user_ip)
+
+        for status in (banned_current, banned_cookie):
+            if not status.get('is_banned', False):
+                continue
+            boards = status.get('boards')
+            if boards is None or boards == [] or None in boards:
+                flash(f"You are banned from this board, reason: {status.get('reason')}")
+                return False
+            if self.board_id in boards:
+                flash(f"You are banned from this board, reason: {status.get('reason')}")
+                return False
         return True
     # Check if the user is in timeout
     def check_timeout(self):
@@ -71,6 +104,24 @@ class PostHandler:
         saved_files = []
         thumb_paths = []
 
+        raw_options = request.form.get('fileOptions')
+        file_options = []
+        if raw_options:
+            try:
+                file_options = json.loads(raw_options)
+            except Exception:
+                file_options = []
+
+        def sanitize_uuid(value):
+            if not isinstance(value, str):
+                return None
+            value = value.strip()
+            if not value:
+                return None
+            if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', value):
+                return None
+            return value
+
         # Allowed MIME types
         allowed_mime_types = {
             'image/jpeg',
@@ -86,7 +137,7 @@ class PostHandler:
         thumb_folder = './static/post_images/thumbs/' if is_thread else './static/reply_images/thumbs/'
         os.makedirs(thumb_folder, exist_ok=True)
 
-        for file in files:
+        for index, file in enumerate(files):
             if file.filename != '' and file.filename.lower().endswith(('.jpeg', '.jpg', '.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
                 # Verify the real type of the content
                 file_head = file.stream.read(2048)  # Read the first bytes
@@ -97,9 +148,24 @@ class PostHandler:
                     flash("Stop trying to hack the website, bruh.")
                     return [], []
 
-                # Generate new file name
                 filename = os.path.basename(file.filename)
                 base, ext = os.path.splitext(filename)
+
+                if index < len(file_options):
+                    opts = file_options[index]
+                    if isinstance(opts, dict):
+                        spoiler = bool(opts.get('spoiler'))
+                        strip_name = bool(opts.get('strip'))
+                        uuid_value = sanitize_uuid(opts.get('uuid'))
+                        if strip_name and uuid_value:
+                            if spoiler:
+                                base = f"spoiler-{uuid_value}"
+                            else:
+                                base = uuid_value
+                        elif spoiler:
+                            base = f"spoiler-{base}"
+
+                filename = f"{base}{ext}"
                 counter = 1
                 while os.path.exists(os.path.join(upload_folder, filename)):
                     filename = f"{base}_{counter}{ext}"
@@ -351,6 +417,7 @@ class PostHandler:
 def new_post():
     socketio = current_app.extensions['socketio']
     user_ip = request.remote_addr
+    cookie_ip = request.cookies.get('user_ip')
     post_mode = request.form["post_mode"]
     post_name = request.form["name"]
     post_subject = request.form["subject"]
@@ -367,7 +434,7 @@ def new_post():
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
-    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input)
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip)
     
     if len(post_name) > 40:
         flash("You've reached the limit of characteres in the name parameter")
@@ -418,9 +485,12 @@ def new_post():
                 return redirect(request.referrer)
     
     if post_mode == "reply":
-        return redirect(request.referrer)
-
-    return redirect(f'/{board_id}/thread/{database_module.get_max_post_id()}')
+        response = redirect(request.referrer)
+    else:
+        response = redirect(f'/{board_id}/thread/{database_module.get_max_post_id()}')
+    if user_ip:
+        response.set_cookie('user_ip', user_ip, max_age=60 * 60 * 24 * 365, httponly=True, samesite='Lax')
+    return response
 
 @posts_bp.route('/socket.io/')
 def socket_io():

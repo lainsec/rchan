@@ -45,7 +45,7 @@
                             <noscript>
                                 <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                             </noscript>
-                            <img class="post_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                            <img class="post_img post_video_thumbnail {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" id="post_video_thumbnail" draggable="false"
                                 src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
                             <noscript>
                             </a>
@@ -57,7 +57,7 @@
                                 <noscript>
                                 <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                 </noscript>
-                                <img draggable="false" class="post_img" 
+                                <img draggable="false" class="post_img {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" 
                                      src="{{ url_for('static', filename='post_images/' ~ image) }}" 
                                      alt="">
                                 <noscript>
@@ -72,7 +72,8 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{{ post.post_content | safe }}</pre>
+                <pre>{{ post.post_content | safe }}{% if post.is_banned %}
+<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>
             </div>
             <div class="replies">
                 {% for reply in replies %}
@@ -122,7 +123,7 @@
                                                     <noscript>
                                                         <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                                     </noscript>
-                                                    <img class="reply_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                                                    <img class="reply_img post_video_thumbnail {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" id="post_video_thumbnail" draggable="false"
                                                         src="{{ url_for('static', filename='reply_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
                                                     <noscript>
                                                         </a>
@@ -133,7 +134,7 @@
                                                         <noscript>
                                                             <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                                         </noscript>
-                                                            <img draggable="false" class="reply_img" 
+                                                            <img draggable="false" class="reply_img {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" 
                                                                 src="{{ url_for('static', filename='reply_images/' ~ image) }}" 
                                                                 alt="">
                                                         <noscript>
@@ -151,7 +152,8 @@
                             </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{{ reply.content | safe }}</pre>
+                            <pre>{{ reply.content | safe }}{% if reply.is_banned %}
+<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>
                         </div>
                     </div>
                 </div>

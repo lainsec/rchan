@@ -642,7 +642,7 @@
                         <li><span style="padding-left: 1rem; color: #666; font-size: 0.8rem; text-transform: uppercase;">{{ lang["dashboard-moderation-label"] }}</span></li>
                         <li><a href="#moderation"><i class="fas fa-gavel"></i> {{ lang["dashboard-moderation-tools"] }}</a></li>
                         <li><a href="/conta/users"><i class="fas fa-users-cog"></i> {{ lang["dashboard-users-management"] }}</a></li>
-                        <li><a href="/conta/word_filters"><i class="fas fa-filter"></i> {{ lang["dashboard-word-filters"] }}</a></li>
+                        <li><a href="/conta/word_filters"><i class="fas fa-filter"></i>{{ lang['dashboard-word-filters'] }}</a></li>
                     {% endif %}
         
 
@@ -816,6 +816,19 @@
                                 </form>
                                 <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-free-board-creation-desc"] }}</small>
                             </div>
+
+                            <!-- Sidebar Layout -->
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Sidebar layout</label>
+                                <form id="dashboardSidebarLayoutForm" action="/api/toggle_sidebar_layout" method="POST">
+                                    <select name="sidebar_option" onchange="document.getElementById('dashboardSidebarLayoutForm').submit();" class="config-select">
+                                        <option value="" disabled {% if chan_config['sidebar_enabled'] not in [0, 1] %}selected{% endif %}>Selecionar opção</option>
+                                        <option value="enable" {% if chan_config['sidebar_enabled'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
+                                        <option value="disable" {% if chan_config['sidebar_enabled'] == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
+                                    </select>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">Ativar ou desativar o layout com sidebar na página inicial.</small>
+                            </div>
                         </div>
 
                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem;">
@@ -947,7 +960,7 @@
             </section>
 
             <!-- Moderation Section -->
-            {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
+            {% if 'owner' in roles.lower() or 'mod' in roles.lower() or can_view_board_bans %}
             <section id="moderation" style="margin-top: 3rem;">
                 <h2 class="section-title"><i class="fas fa-shield-alt"></i> {{ lang["dashboard-moderation-tools"] }}</h2>
 
@@ -1025,6 +1038,7 @@
 
                 <div class="overview-grid">
                     <!-- Timeouts -->
+                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
                     <div class="panel">
                         <div class="panel-header">
                             <h3><i class="fas fa-hourglass-half"></i> {{ lang["dashboard-active-timeouts"] }} <span style="font-size: 0.8rem; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 8px;">{{ active_timeouts|length }}</span></h3>
@@ -1042,7 +1056,13 @@
                                 <tbody>
                                     {% for ip, info in active_timeouts.items() %}
                                     <tr>
-                                        <td>{{ ip }}</td>
+                                        <td>
+                                            {% if 'owner' in roles.lower() %}
+                                                {{ ip }}
+                                            {% else %}
+                                                {{ database_module.hash_ip(ip) }}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ info.reason }}</td>
                                         <td>{{ info.end_time }}</td>
                                         <td>
@@ -1058,6 +1078,7 @@
                             </table>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Bans -->
                     <div class="panel">
@@ -1079,7 +1100,13 @@
                                 <tbody>
                                     {% for ip, info in active_bans.items() %}
                                     <tr>
-                                        <td>{{ ip }}</td>
+                                        <td>
+                                            {% if 'owner' in roles.lower() %}
+                                                {{ ip }}
+                                            {% else %}
+                                                {{ database_module.hash_ip(ip) }}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ info.reason if info.reason else 'N/A' }}</td>
                                         <td>
                                             {% if not info.boards %}

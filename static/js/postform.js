@@ -29,6 +29,8 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
 document.addEventListener('DOMContentLoaded', function () {
     const closeButtons = document.querySelectorAll('.close.postform-style');
     const formContainer = document.getElementById('draggableForm');
+    const messageLabel = document.querySelector('.row .label span + small');
+    const messageTextarea = document.getElementById('text');
 
     closeButtons.forEach(button => {
         button.addEventListener('click', function (e) {
@@ -41,21 +43,49 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    if (messageLabel && messageTextarea) {
+        const originalText = messageLabel.textContent.trim();
+        const match = originalText.match(/^\((\d+)\s*\/\s*(\d+)\)$/);
+        let max = 20000;
+        if (match) {
+            max = parseInt(match[2], 10) || max;
+        }
+        function updateCounter() {
+            const len = messageTextarea.value.length;
+            messageLabel.textContent = `(${len}/${max})`;
+            if (len > max) {
+                messageLabel.style.color = '#d9534f';
+            } else {
+                messageLabel.style.color = '';
+            }
+        }
+        updateCounter();
+        messageTextarea.addEventListener('input', updateCounter);
+    }
 });
 
 const draggableForm = document.getElementById('draggableForm');
 const header = document.querySelector('.new-thread-header'); 
 draggableForm.style.position = 'absolute';
 
-header.addEventListener('mousedown', function(e) {
-    let isDragging = false;
-    let rect = draggableForm.getBoundingClientRect();
-    let shiftX = e.clientX - rect.left;
-    let shiftY = e.clientY - rect.top;
+function initDrag(startClientX, startClientY, getCoords) {
+    const style = window.getComputedStyle(draggableForm);
+    let startLeft = parseInt(style.left || '0', 10);
+    let startTop = parseInt(style.top || '0', 10);
 
-    function moveAt(pageX, pageY) {
-        let newLeft = pageX - shiftX;
-        let newTop = pageY - shiftY;
+    if (isNaN(startLeft) || isNaN(startTop)) {
+        const rect = draggableForm.getBoundingClientRect();
+        startLeft = rect.left + window.scrollX;
+        startTop = rect.top + window.scrollY;
+    }
+
+    function moveAt(clientX, clientY) {
+        const dx = clientX - startClientX;
+        const dy = clientY - startClientY;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
 
         const rightEdge = window.innerWidth - draggableForm.offsetWidth;
         const bottomEdge = document.body.scrollHeight - draggableForm.offsetHeight;
@@ -69,28 +99,51 @@ header.addEventListener('mousedown', function(e) {
         draggableForm.style.top = newTop + 'px';
     }
 
-    function onMouseMove(e) {
-        if (!isDragging) {
-            isDragging = true;
+    function onMove(e) {
+        const coords = getCoords(e);
+        if (!coords) return;
+        moveAt(coords.clientX, coords.clientY);
+        if (e.cancelable) {
+            e.preventDefault();
         }
-        moveAt(e.pageX, e.pageY);
     }
 
-    document.addEventListener('mousemove', onMouseMove);
-
-    function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
+    function stop() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', stop);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', stop);
     }
 
-    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', stop);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', stop);
 
     draggableForm.ondragstart = function() {
         return false; 
     };
+}
 
+header.addEventListener('mousedown', function(e) {
+    initDrag(e.clientX, e.clientY, function(ev) {
+        return { clientX: ev.clientX, clientY: ev.clientY };
+    });
     e.preventDefault();
 });
+
+header.addEventListener('touchstart', function(e) {
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    initDrag(touch.clientX, touch.clientY, function(ev) {
+        const t = ev.touches && ev.touches[0] ? ev.touches[0] : ev.changedTouches && ev.changedTouches[0] ? ev.changedTouches[0] : null;
+        if (!t) return null;
+        return { clientX: t.clientX, clientY: t.clientY };
+    });
+    if (e.cancelable) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('post-file-uploader');
@@ -99,6 +152,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const MAX_FILES = 4;
 
     let selectedFiles = [];
+    let fileOptions = [];
+
+    function generateUUID() {
+        if (window.crypto && window.crypto.randomUUID) {
+            return window.crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 
     function handleFiles(files) {
         const newFiles = Array.from(files).filter(file =>
@@ -120,6 +185,11 @@ document.addEventListener('DOMContentLoaded', function () {
             );
             if (!alreadyExists) {
                 selectedFiles.push(newFile);
+                fileOptions.push({
+                    spoiler: false,
+                    strip: false,
+                    uuid: generateUUID()
+                });
             }
         });
 
@@ -136,73 +206,112 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderPreviews() {
         uploadList.innerHTML = '';
         selectedFiles.forEach((file, index) => {
-            createFilePreview(file, index);
+            createFilePreview(file, index, fileOptions[index]);
         });
 
         fileLabel.style.display = selectedFiles.length > 0 ? 'none' : 'flex';
     }
 
-    function createFilePreview(file, index) {
+    function createFilePreview(file, index, options) {
         const previewItem = document.createElement('div');
         previewItem.className = 'file-preview';
-        previewItem.style.display = 'flex';
-        previewItem.style.flexDirection = 'column';
-        previewItem.style.alignItems = 'center';
-        previewItem.style.margin = '10px';
-        previewItem.style.position = 'relative';
+
+        const row = document.createElement('div');
+        row.className = 'file-preview-row';
 
         let media;
         if (file.type.startsWith('image/')) {
             media = document.createElement('img');
             media.src = URL.createObjectURL(file);
-            media.style.objectFit = 'cover';
         } else if (file.type.startsWith('video/')) {
             media = document.createElement('video');
             media.src = URL.createObjectURL(file);
             media.controls = true;
             media.muted = true;
-            media.style.objectFit = 'cover';
         }
 
-        media.style.maxWidth = '100px';
-        media.style.maxHeight = '100px';
+        const originalName = file.name;
 
         const fileName = document.createElement('span');
-        fileName.textContent = file.name.length > 15 ?
-            file.name.substring(0, 12) + '...' : file.name;
-        fileName.style.fontSize = '12px';
-        fileName.style.marginTop = '5px';
+        fileName.className = 'file-preview-name';
+
+        function applyName() {
+            let displayName = originalName;
+            const dot = originalName.lastIndexOf('.');
+            const ext = dot !== -1 ? originalName.slice(dot) : '';
+
+            if (options.strip && options.spoiler) {
+                displayName = 'spoiler-' + options.uuid + ext;
+            } else if (options.strip) {
+                displayName = options.uuid + ext;
+            } else if (options.spoiler) {
+                displayName = 'spoiler-' + originalName;
+            }
+
+            fileName.textContent = displayName.length > 15
+                ? displayName.substring(0, 12) + '...' : displayName;
+        }
 
         const removeBtn = document.createElement('button');
         removeBtn.innerHTML = '×';
-        removeBtn.style.position = 'absolute';
-        removeBtn.style.top = '-10px';
-        removeBtn.style.right = '-10px';
-        removeBtn.style.background = 'transparent';
-        removeBtn.style.color = 'var(--cor-texto)';
-        removeBtn.style.border = 'none';
-        removeBtn.style.width = '20px';
-        removeBtn.style.height = '20px';
-        removeBtn.style.cursor = 'pointer';
-        removeBtn.style.padding = '0';
-        removeBtn.style.display = 'flex';
-        removeBtn.style.justifyContent = 'center';
-        removeBtn.style.alignItems = 'center';
-        removeBtn.style.fontSize = '14px';
+        removeBtn.className = 'file-preview-remove';
 
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             removeFile(index);
         });
 
-        previewItem.appendChild(media);
-        previewItem.appendChild(fileName);
-        previewItem.appendChild(removeBtn);
+        const leftWrapper = document.createElement('div');
+        leftWrapper.className = 'file-preview-left';
+        leftWrapper.appendChild(media);
+
+        const rightWrapper = document.createElement('div');
+        rightWrapper.className = 'file-preview-right';
+        rightWrapper.appendChild(fileName);
+        rightWrapper.appendChild(removeBtn);
+
+        row.appendChild(leftWrapper);
+        row.appendChild(rightWrapper);
+        previewItem.appendChild(row);
+
+        const optionsRow = document.createElement('div');
+        optionsRow.className = 'file-preview-options';
+
+        const spoilerLabel = document.createElement('label');
+        const spoilerCheckbox = document.createElement('input');
+        spoilerCheckbox.type = 'checkbox';
+        spoilerCheckbox.checked = options.spoiler;
+        spoilerLabel.appendChild(spoilerCheckbox);
+        spoilerLabel.appendChild(document.createTextNode('spoiler'));
+
+        const stripLabel = document.createElement('label');
+        const stripCheckbox = document.createElement('input');
+        stripCheckbox.type = 'checkbox';
+        stripCheckbox.checked = options.strip;
+        stripLabel.appendChild(stripCheckbox);
+        stripLabel.appendChild(document.createTextNode('strip filename'));
+
+        spoilerCheckbox.addEventListener('change', () => {
+            options.spoiler = spoilerCheckbox.checked;
+            applyName();
+        });
+
+        stripCheckbox.addEventListener('change', () => {
+            options.strip = stripCheckbox.checked;
+            applyName();
+        });
+
+        optionsRow.appendChild(spoilerLabel);
+        optionsRow.appendChild(stripLabel);
+        previewItem.appendChild(optionsRow);
+
+        applyName();
         uploadList.appendChild(previewItem);
     }
 
     function removeFile(index) {
         selectedFiles.splice(index, 1);
+        fileOptions.splice(index, 1);
         updateFileInput();
         renderPreviews();
     }
@@ -256,4 +365,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setupDragDrop(fileInput);
     setupDragDrop(fileLabel);
+
+    const form = document.getElementById('postform');
+    if (form) {
+        form.addEventListener('submit', () => {
+            let hidden = form.querySelector('input[name="fileOptions"]');
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'fileOptions';
+                form.appendChild(hidden);
+            }
+            hidden.value = JSON.stringify(fileOptions);
+        });
+    }
 });

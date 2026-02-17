@@ -473,8 +473,13 @@ class ChanConfigManager:
         self.db.create_table('chan_config', {
             'id': 'int',
             'free_board_creation': 'int',
-            'index_news': 'str'
+            'index_news': 'str',
+            'sidebar_enabled': 'int'
         })
+        try:
+            self.db.add_column('chan_config', 'sidebar_enabled')
+        except Exception:
+            pass
         self._ensure_record()
 
     def _ensure_record(self):
@@ -484,8 +489,13 @@ class ChanConfigManager:
             self.db.insert('chan_config', {
                 'id': 1,
                 'free_board_creation': 1,
-                'index_news': "No news to display"
+                'index_news': "No news to display",
+                'sidebar_enabled': 0
             })
+        else:
+            config = configs[0]
+            if 'sidebar_enabled' not in config:
+                self.db.update('chan_config', config['id'], {'sidebar_enabled': 0})
 
     def get_config(self):
         """
@@ -497,13 +507,14 @@ class ChanConfigManager:
         self._ensure_record()
         return self.db.find_all('chan_config')[0]
 
-    def update_config(self, free_board_creation=None, index_news=None):
+    def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None):
         """
         Update the chan configuration.
         
         Args:
             free_board_creation (bool): Whether to allow free board creation
             index_news (str): News to display on index
+            sidebar_enabled (bool): Whether to enable sidebar layout on /
         """
         self._ensure_record()
         config = self.get_config()
@@ -514,6 +525,9 @@ class ChanConfigManager:
             
         if index_news is not None:
             updates['index_news'] = index_news
+
+        if sidebar_enabled is not None:
+            updates['sidebar_enabled'] = 1 if sidebar_enabled else 0
             
         if updates:
             self.db.update('chan_config', config['id'], updates)
@@ -531,14 +545,15 @@ class WordFilterManager:
     def get_filters(self):
         return self.db.find_all('word_filters')
 
-    def add_filter(self, word, replacement):
+    def add_filter(self, word, replacement, mode='word'):
         if not word:
             return False
         existing = self.get_filters()
         new_id = max([f.get('id', 0) for f in existing] + [0]) + 1
+        stored_word = word + '*' if mode == 'prefix' else word
         self.db.insert('word_filters', {
             'id': new_id,
-            'word': word,
+            'word': stored_word,
             'filter': replacement or ''
         })
         return True
@@ -558,8 +573,24 @@ class WordFilterManager:
             replacement = f.get('filter', '')
             if not word:
                 continue
-            pattern = re.compile(rf'{re.escape(word)}\S*')
-            text = pattern.sub(replacement, text)
+            is_prefix = word.endswith('*')
+            core = word[:-1] if is_prefix else word
+            if not core:
+                continue
+            if is_prefix:
+                pattern = re.compile(rf'{re.escape(core)}\S*', re.IGNORECASE)
+            else:
+                pattern = re.compile(rf'(?<!\w){re.escape(core)}(?!\w)', re.IGNORECASE)
+
+            def _repl(match):
+                original = match.group(0)
+                if original.isupper():
+                    return replacement.upper()
+                if original[0].isupper() and original[1:].islower():
+                    return replacement.capitalize()
+                return replacement
+
+            text = pattern.sub(_repl, text)
         return text
 
 

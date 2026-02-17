@@ -17,13 +17,20 @@
         </div>
         <h1 class="board-title">{{ lang["board-options-catalog"] }}(/{{ board_info.board_uri }}/)</h1>
         {% include 'utils/threadform.html' %}
+        <div class="catalog-sort-controls">
+            <input type="text" id="catalogSearchInput" placeholder="Buscar...">
+            <select id="catalogSortSelect">
+                <option value="bump">Ordenar por bump</option>
+                <option value="date">Ordenar por data/hora</option>
+            </select>
+        </div>
         <div class="catalog-container">
             {% for post in posts %}
-            <div class="catalog-post">
+            <div class="catalog-post" id="{{ post.post_id }}">
                 <div class="catalog-post-info">
                     <input type="checkbox" name="" id="">
                     <span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span>
-                    <span class="postDate">{{ post.post_date }}</span>
+                    <span class="postDate" data-original-date="{{ post.post_date }}" title="{{ post.post_date }}">{{ post.post_date }}</span>
                     <a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
                     <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
                     <div class="catalog-post-counter">
@@ -51,7 +58,8 @@
                     </a>
                 </div>
                 <div class="catalog-post-content">
-                    <pre>{{ post.post_content[:400] | safe }}</pre>
+                    <pre>{{ post.post_content[:400] | safe }}{% if post.is_banned %}
+<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>
                 </div>
             </div>
             {% endfor %}

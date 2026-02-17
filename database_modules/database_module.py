@@ -219,6 +219,13 @@ def validate_captcha(captcha_input, captcha_text):
     """Validate CAPTCHA input."""
     return captcha_input == captcha_text
 
+def hash_ip(ip):
+    if not ip:
+        return ''
+    ip_str = str(ip)
+    digest = hashlib.sha256(ip_str.encode('utf-8')).hexdigest()
+    return digest[:12]
+
 def get_current_datetime():
     """Get current datetime in Brazil timezone."""
     current_date_time = pytz.timezone('America/Sao_Paulo') # Change this if your country isn't Brasil.
@@ -504,7 +511,10 @@ def get_max_post_id():
 
 def get_post_info(post_id):
     """Get post information by post ID, excluding the poster's IP."""
-    post_id = int(post_id)
+    try:
+        post_id = int(post_id)
+    except (TypeError, ValueError):
+        return None
     post = DB.query('posts', {'post_id': {'==': post_id}})
     replies = DB.query('replies', {'reply_id': {'==': post_id}})
     if post:
@@ -515,6 +525,17 @@ def get_post_info(post_id):
         reply_copy = dict(replies[0])
         reply_copy.pop('user_ip', None)
         return reply_copy
+    return None
+
+def get_post_ip(post_id):
+    """Get the IP address of a post or reply."""
+    post_id = int(post_id)
+    post = DB.query('posts', {'post_id': {'==': post_id}})
+    replies = DB.query('replies', {'reply_id': {'==': post_id}})
+    if post:
+        return post[0].get('user_ip')
+    elif replies:
+        return replies[0].get('user_ip')
     return None
 
 def create_banner_folder(board_uri):
@@ -965,11 +986,6 @@ def move_thread(thread_id, new_board_uri: str):
     # Atualizar board da thread
     DB.update('posts', thread[0]['id'], {'board': new_board_uri})
 
-    # Atualizar replies vinculadas a essa thread (caso precise mover também)
-    replies = DB.query('posts', {'thread_id': {'==': int(thread_id)}})
-    for reply in replies:
-        DB.update('posts', reply['id'], {'board': new_board_uri})
-
     # Atualizar pinned se existir
     pinned = DB.query('pinned', {'post_id': {'==': int(thread_id)}})
     if pinned:
@@ -1002,7 +1018,6 @@ def delete_media_files(file_list, base_path, is_video=False):
                     os.remove(thumb_path)
         except Exception as e:
             print(f"Error deleting file {filename}: {e}")
-
 
 def remove_post(post_id):
     """Remove a post, its replies, and all associated media files."""
@@ -1070,11 +1085,13 @@ def verify_locked_thread(thread_id):
 def lock_thread(thread_id):
     """Lock or unlock a thread."""
     post = DB.query('posts', {'post_id': {'==': thread_id}})
-    if post:
-        post[0]['locked'] = 1 if post[0].get('locked', 0) == 0 else 0
-        DB.update('posts', thread_id, post[0])
-        return True
-    return False
+    if not post:
+        return False
+
+    post_record = post[0]
+    post_record['locked'] = 1 if post_record.get('locked', 0) == 0 else 0
+    DB.update('posts', post_record['id'], post_record)
+    return True
 
 def pin_post(post_id):
     """Pin or unpin a post."""

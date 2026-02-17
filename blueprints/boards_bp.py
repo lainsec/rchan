@@ -20,6 +20,22 @@ def globalboards():
 def customthemes():
     custom_themes_list = database_module.get_custom_themes()
     return {"custom_themes": custom_themes_list}
+
+
+def mark_banned_flags(records, board_uri, ban_manager):
+    if not records:
+        return
+    for record in records:
+        record['is_banned'] = False
+        user_ip = record.get('user_ip')
+        if not user_ip:
+            continue
+        status = ban_manager.is_banned(user_ip)
+        if not status.get('is_banned'):
+            continue
+        boards = status.get('boards')
+        if boards is None or boards == [] or None in boards or board_uri in boards:
+            record['is_banned'] = True
 #error handling.
 @boards_bp.errorhandler(404)
 def page_not_found(e):
@@ -27,7 +43,22 @@ def page_not_found(e):
 #landing page route (frameset).
 @boards_bp.route('/')
 def main_page():
-    return render_template('frameset.html')
+    config_manager = ChanConfigManager()
+    chan_config = config_manager.get_config()
+    sidebar_raw = chan_config.get('sidebar_enabled', 0)
+    try:
+        sidebar_enabled = int(sidebar_raw)
+    except (TypeError, ValueError):
+        sidebar_enabled = 0
+
+    if sidebar_enabled == 1:
+        return render_template('frameset.html')
+
+    posts = database_module.get_all_posts()
+    return render_template('index.html',
+                           all_posts=posts,
+                           posts=reversed(posts[-6:]),
+                           news=chan_config.get('index_news', 'No news to display'))
 
 #home content route.
 @boards_bp.route('/home')
@@ -54,6 +85,7 @@ def login():
         user_boards = database_module.get_user_boards(username)
         all_boards = database_module.get_all_boards(include_stats=True)
         roles = database_module.get_user_role(username)
+        roles_lower = roles.lower() if roles else ''
         
         # Extended data for dashboard
         popular_boards = database_module.get_popular_boards(limit=4)
@@ -63,12 +95,37 @@ def login():
         timeout_manager = TimeoutManager()
         ban_manager = BanManager()
         active_timeouts = timeout_manager.get_active_timeouts()
-        active_bans = ban_manager.get_active_bans()
+        all_active_bans = ban_manager.get_active_bans()
+
+        user_board_uris = set()
+        for board in all_boards:
+            board_uri = board.get('board_uri')
+            if not board_uri:
+                continue
+            if board.get('board_owner') == username or username in board.get('board_staffs', []):
+                user_board_uris.add(board_uri)
+
+        is_global_admin = 'owner' in roles_lower or 'mod' in roles_lower
+
+        if is_global_admin:
+            active_bans = all_active_bans
+        else:
+            active_bans = {}
+            if user_board_uris:
+                for ip, info in all_active_bans.items():
+                    boards = info.get('boards') or []
+                    boards = [b for b in boards if b is not None]
+                    if not boards:
+                        continue
+                    if any(board_uri in user_board_uris for board_uri in boards):
+                        active_bans[ip] = info
+
+        can_view_board_bans = is_global_admin or bool(user_board_uris)
         
         # Reports
         report_manager = ReportManager()
         reports = []
-        if 'owner' in roles.lower() or 'mod' in roles.lower():
+        if is_global_admin:
             all_reports = report_manager.get_all_reports()
             grouped_reports = {}
             
@@ -120,7 +177,8 @@ def login():
                              active_timeouts=active_timeouts,
                              active_bans=active_bans,
                              reports=reports,
-                             chan_config=chan_config)
+                             chan_config=chan_config,
+                             can_view_board_bans=can_view_board_bans)
     return render_template('login.html')
 
 @boards_bp.route('/conta/users')
@@ -214,7 +272,6 @@ def board_page(board_uri):
     posts_per_page = 6
     offset = (page - 1) * posts_per_page
     
-    # Get board content
     posts = database_module.load_db_page(board_uri, offset=offset, limit=posts_per_page)
     pinneds = database_module.get_pinned_posts(board_uri)
     board_info = database_module.get_board_info(board_uri)
@@ -227,10 +284,13 @@ def board_page(board_uri):
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = captcha_text
     
-    # Get replies for the current page's posts (alternative method)
+    ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
     all_replies = database_module.DB.find_all('replies')
     replies = [reply for reply in all_replies if reply['post_id'] in visible_post_ids]
+    mark_banned_flags(posts, board_uri, ban_manager)
+    mark_banned_flags(pinneds, board_uri, ban_manager)
+    mark_banned_flags(replies, board_uri, ban_manager)
     
     # Get user role if logged in
     roles = 'none'
@@ -269,10 +329,13 @@ def board_catalog(board_uri):
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = captcha_text
     
-    # Get replies for the current page's posts (alternative method)
+    ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
     all_replies = database_module.DB.find_all('replies')
     replies = [reply for reply in all_replies if reply['post_id'] in visible_post_ids]
+    mark_banned_flags(posts, board_uri, ban_manager)
+    mark_banned_flags(pinneds, board_uri, ban_manager)
+    mark_banned_flags(replies, board_uri, ban_manager)
     
     # Get user role if logged in
     roles = 'none'
@@ -320,17 +383,22 @@ def replies(board_name, thread_id):
     except ValueError:
         return redirect(request.referrer or url_for('boards.main_page'))
 
-    # Check if thread exists
+    # Prevent SQLite OverflowError with absurdly large IDs
+    if thread_id > 2**63 - 1 or thread_id < 0:
+        return redirect(request.referrer or url_for('boards.main_page'))
+
     thread = database_module.DB.query('posts', {
-        'post_id': {'==': thread_id}, 
+        'post_id': {'==': thread_id},
         'board': {'==': board_name}
     })
     if not thread:
         return redirect(url_for('boards.main_page'))
 
-    # Get all replies for this thread (alternative method since 'in' operator isn't supported)
+    ban_manager = BanManager()
     all_replies = database_module.DB.find_all('replies')
     post_replies = [reply for reply in all_replies if reply.get('post_id') == thread_id]
+    mark_banned_flags(thread, board_name, ban_manager)
+    mark_banned_flags(post_replies, board_name, ban_manager)
 
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
@@ -359,4 +427,4 @@ def replies(board_name, thread_id):
 @boards_bp.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(current_app.root_path, 'static/imgs/decoration'),
-                               'favicon.png', mimetype='image/vnd.microsoft.icon')
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')

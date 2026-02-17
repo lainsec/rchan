@@ -1,4 +1,4 @@
-<div id="togglePostFormLink" bis_skin_checked="1"><a href="#draggableForm">{% if post_mode == 'reply' %}[NEW REPLY]{% else %}[{{ lang["thread-form-button"] }}]{% endif %}</a></div>
+<div id="togglePostFormLink" bis_skin_checked="1"><a href="#draggableForm">{% if post_mode == 'reply' %}[{{ lang['threadform-toggle-new-reply'] }}]{% else %}[{{ lang["thread-form-button"] }}]{% endif %}</a></div>
 
 <div class="newboard-form" id="draggableForm">
     <form id="postform" action="/api/new_post" enctype="multipart/form-data" method="POST">
@@ -8,39 +8,39 @@
 
         <div class="new-thread-container">
             <div class="new-thread-header">
-                <h1>{% if post_mode == 'reply' %}New Reply{% else %}{{ lang["thread-form-button"] }}{% endif %}</h1>
+                <h1>{% if post_mode == 'reply' %}{{ lang['threadform-title-new-reply'] }}{% else %}{{ lang["thread-form-button"] }}{% endif %}</h1>
             </div>
             <section class="row">
-                <div class="label" bis_skin_checked="1">Name</div><input class="mr-1" type="text" name="name"
-                    placeholder="Anon" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
+                <div class="label" bis_skin_checked="1">{{ lang['threadform-label-name'] }}</div><input class="mr-1" type="text" name="name"
+                    placeholder="{{ lang['threadform-placeholder-name'] }}" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
                     bis_skin_checked="1">×</a>
             </section>
             <section class="row">
-                <div class="label" bis_skin_checked="1"><span>Subject</span></div><input type="text" name="subject"
-                    autocomplete="off" placeholder="Subject or Sage" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
+                <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-subject'] }}</span></div><input type="text" name="subject"
+                    autocomplete="off" placeholder="{{ lang['threadform-placeholder-subject'] }}" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
             </section>
             <section class="row">
-                <div class="label" bis_skin_checked="1"><span>Message</span><small>(0/20000)</small></div><textarea
+                <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-message'] }}</span><small>(0/20000)</small></div><textarea
                     id="text" name="text" rows="5" minlength="0" maxlength="20000">{{ form_data.text if form_data else '' }}</textarea>
             </section>
             <section class="row">
-                <div class="label" bis_skin_checked="1"><span>Files<span class="required">*</span></span>
-                    <small>Max 4 files</small><small>100MB total</small>
-                </div><span class="col"><label class="jsonly postform-style filelabel" for="post-file-uploader"> Select/Paste/Drop
-                        files</label><input id="post-file-uploader" type="file" name="fileInput" multiple=""
+                <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-files'] }}<span class="required">*</span></span>
+                    <small>{{ lang['threadform-files-max'] }}</small><small>{{ lang['threadform-total-max'] }}</small>
+                </div><span class="col"><label class="jsonly postform-style filelabel" for="post-file-uploader">
+                        {{ lang['threadform-files-select'] }}</label><input id="post-file-uploader" type="file" name="fileInput" multiple=""
                         style="position: absolute; border: none; height: 1px; width: 1px;">
                     <div class="upload-list" data-spoilers="true" data-strip-filenames="true" bis_skin_checked="1">
                     </div>
                 </span>
             </section>
             <section class="row">
-                <div class="label" bis_skin_checked="1"><span>Embed</span></div><input type="text" name="embed"
-                    autocomplete="off" maxlength="100" placeholder="Youtube URL" value="{{ form_data.embed if form_data else '' }}">
+                <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-embed'] }}</span></div><input type="text" name="embed"
+                    autocomplete="off" maxlength="100" placeholder="{{ lang['threadform-placeholder-embed'] }}" value="{{ form_data.embed if form_data else '' }}">
             </section>
             {% if board_info.enable_captcha %}
             {% if board_info.enable_captcha == 1%}
             <div class="row" bis_skin_checked="1">
-                <div class="label" bis_skin_checked="1">captcha</div>
+                <div class="label" bis_skin_checked="1">{{ lang['threadform-label-captcha'] }}</div>
                 <div class="captcha-container">
                     <img style="width: 100%;" src="{{ captcha_image }}" alt="">
                     <button type="button" class="captcha-refresh-btn" onclick="refreshCaptcha(this)">
@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="row" bis_skin_checked="1">
-                <div class="label" bis_skin_checked="1">captcha</div>
+                <div class="label" bis_skin_checked="1">{{ lang['threadform-label-captcha'] }}</div>
                 <input type="text" name="captcha" maxlength="100">
             </div>
             {% endif %}

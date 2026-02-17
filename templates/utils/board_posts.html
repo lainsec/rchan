@@ -5,6 +5,7 @@
     <div class="divisoria"></div>
     <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
+            <a href="javascript:void(0);" title="{{ lang['thread-hide-title'] }}" class="hide-thread" thread_to_hide="{{ post.post_id }}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
             {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
@@ -47,7 +48,7 @@
                             <noscript>
                                 <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                             </noscript>
-                            <img class="post_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                            <img class="post_img post_video_thumbnail {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" id="post_video_thumbnail" draggable="false"
                                 src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
                             <noscript>
                                 </a>
@@ -59,7 +60,7 @@
                                 <noscript>
                                     <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                 </noscript>
-                                    <img draggable="false" class="post_img" 
+                                    <img draggable="false" class="post_img {% if image.startswith('spoiler-') %}media-spoiler{% endif %}"
                                          src="{{ url_for('static', filename='post_images/' ~ image) }}" 
                                          alt="">
                                 <noscript>
@@ -74,7 +75,8 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...{% else %}{{ post.post_content | safe }}{% endif %}</pre>{% if post.post_content | length >= 500 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">[VIEW ALL CONTENT]</a>{% endif %}
+                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...{% else %}{{ post.post_content | safe }}{% endif %}{% if post.is_banned %}
+<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>{% if post.post_content | length >= 500 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
             </div>
             <div class="replies">
                 {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
@@ -129,7 +131,7 @@
                                                     <noscript>
                                                         <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                                     </noscript>
-                                                    <img class="reply_img post_video_thumbnail" id="post_video_thumbnail" draggable="false"
+                                                    <img class="reply_img post_video_thumbnail {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" id="post_video_thumbnail" draggable="false"
                                                         src="{{ url_for('static', filename='reply_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
                                                     <noscript>
                                                         </a>
@@ -140,7 +142,7 @@
                                                         <noscript>
                                                             <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
                                                         </noscript>
-                                                        <img draggable="false" class="reply_img" 
+                                                        <img draggable="false" class="reply_img {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" 
                                                             src="{{ url_for('static', filename='reply_images/' ~ image) }}" 
                                                             alt="">
                                                         <noscript>
@@ -158,7 +160,8 @@
                             </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">[VIEW ALL CONTENT]</a>{% endif %}
+                            <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}{% if reply.is_banned %}
+<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -174,5 +177,6 @@
     {% endif %}
     {% endif %}
     {% endfor %}
+    <div class="divisoria"></div>
     {% include 'utils/board_pagination.html' %}
 </div>

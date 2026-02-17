@@ -107,7 +107,7 @@ def get_post_info():
 
 @auth_bp.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'icon.png', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(os.path.join(current_app.root_path, 'static', 'imgs', 'decoration'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @auth_bp.route('/api/change_news', methods=['POST'])
 @has_admin_perms
@@ -134,6 +134,27 @@ def toggle_free_board_creation():
         new_value = not chan_config['free_board_creation']
         config_manager.update_config(free_board_creation=new_value)
         flash('Free board creation toggled!', 'success')
+        
+    return redirect(request.referrer or '/')
+
+
+@auth_bp.route('/api/toggle_sidebar_layout', methods=['POST'])
+@has_admin_perms
+def toggle_sidebar_layout():
+    config_manager = moderation_module.ChanConfigManager()
+    
+    option = request.form.get('sidebar_option')
+    
+    if option:
+        new_value = True if option == 'enable' else False
+        config_manager.update_config(sidebar_enabled=new_value)
+        flash(f'Sidebar layout {"enabled" if new_value else "disabled"}!', 'success')
+    else:
+        chan_config = config_manager.get_config()
+        current = bool(chan_config.get('sidebar_enabled', 0))
+        new_value = not current
+        config_manager.update_config(sidebar_enabled=new_value)
+        flash('Sidebar layout toggled!', 'success')
         
     return redirect(request.referrer or '/')
 
@@ -213,8 +234,9 @@ def unhide_board(board_uri):
 def add_word_filter():
     word = request.form.get('word', '').strip()
     replacement = request.form.get('filter', '')
+    mode = request.form.get('mode', 'word')
     manager = moderation_module.WordFilterManager()
-    if manager.add_filter(word, replacement):
+    if manager.add_filter(word, replacement, mode):
         flash('Filtro adicionado!', 'success')
     else:
         flash('Falha ao adicionar filtro.', 'danger')
@@ -361,8 +383,9 @@ def ban_user(post_id):
 
     if database_module.check_post_exist(int(post_id)):
         post_info = database_module.get_post_info(int(post_id))
+        post_ip = database_module.get_post_ip(int(post_id))
         ban_manager = moderation_module.BanManager()
-        ban_manager.ban_user(post_info["user_ip"], duration_seconds=ban_for, boards=[ban_from], reason=ban_reason, moderator=session["username"])
+        ban_manager.ban_user(post_ip, duration_seconds=ban_for, boards=[ban_from], reason=ban_reason, moderator=session["username"])
         flash('The user has been banned!')
         current_app.extensions['socketio'].emit('ban_post', {
             'type': 'Ban Post',
@@ -436,9 +459,47 @@ def remove_timeout(timeout_id):
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/remove_ban/<int:ban_id>', methods=['POST'])
-@has_admin_perms
 def remove_ban(ban_id):
+    if 'username' not in session:
+        return redirect('/conta')
+
+    username = session['username']
+    roles = database_module.get_user_role(username)
+    roles_lower = roles.lower() if roles else ''
+
     ban_manager = moderation_module.BanManager()
+
+    if 'owner' in roles_lower or 'mod' in roles_lower:
+        ban_manager.unban_user_by_id(ban_id)
+        flash('Ban removed!', 'success')
+        return redirect(request.referrer or '/')
+
+    ban_records = ban_manager.db.query('bans', {'id': {'==': ban_id}})
+    if not ban_records:
+        flash('Ban not found.', 'danger')
+        return redirect(request.referrer or '/')
+
+    ban = ban_records[0]
+    boards = ban.get('boards') or []
+    boards = [b for b in boards if b is not None]
+
+    if not boards:
+        flash('You do not have permission to remove this ban.', 'danger')
+        return redirect(request.referrer or '/')
+
+    all_boards = database_module.get_all_boards(include_stats=True)
+    user_board_uris = set()
+    for board in all_boards:
+        board_uri = board.get('board_uri')
+        if not board_uri:
+            continue
+        if board.get('board_owner') == username or username in board.get('board_staffs', []):
+            user_board_uris.add(board_uri)
+
+    if not user_board_uris or not set(boards).issubset(user_board_uris):
+        flash('You do not have permission to remove this ban.', 'danger')
+        return redirect(request.referrer or '/')
+
     ban_manager.unban_user_by_id(ban_id)
     flash('Ban removed!', 'success')
     return redirect(request.referrer or '/')

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>レインｃｈａｎｎｅｌ - Navigation</title>
+    <title>レインｃｈａｎｎｅｌ - Navegação</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         /* Sidebar Styles */
@@ -74,32 +74,45 @@
 <body class="sidebar-body">
     <div class="sidebar-wrapper">
         <fieldset class="sidebar-fieldset">
-            <legend class="sidebar-legend">kekw.party</legend>
+            <legend class="sidebar-legend">レインｃｈａｎｎｅｌ</legend>
             <ul class="sidebar-menu">
-                <li><a href="/" target="content"><strong>[News]</strong></a></li>
-                <li><a href="/pages/globalrules.html" target="content"><strong>[Rules]</strong></a></li>
+                <li><a href="/" target="content"><strong>{{ lang['sidebar-news'] }}</strong></a></li>
+                <li><a href="/pages/globalrules.html" target="content"><strong>{{ lang['sidebar-rules'] }}</strong></a></li>
             </ul>
         </fieldset>
-        {% for tag, items in (boards|groupby('tag'))|reverse %}
+        {% if boards %}
+        {% set ns = namespace(tags=[]) %}
+        {# coleta tags únicas, normalizando vazio para 'Outros' #}
+        {% for board in boards %}
+            {% set tag = board.tag if board.tag else 'Outros' %}
+            {% if tag not in ns.tags %}
+                {% set ns.tags = ns.tags + [tag] %}
+            {% endif %}
+        {% endfor %}
+
+        {# renderiza categorias na ordem coletada #}
+        {% for tag in ns.tags %}
         <fieldset class="sidebar-fieldset">
-            <legend class="sidebar-legend">{{ tag if tag else 'Outros' }}</legend>
+            <legend class="sidebar-legend">{{ tag }}</legend>
             <ul class="sidebar-menu">
-                {% for board in items %}
-                    {% if board.board_isvisible == 1 %}
+                {% for board in boards %}
+                    {% set board_tag = board.tag if board.tag else 'Outros' %}
+                    {% if board_tag == tag and board.board_isvisible == 1 %}
                     <li><a title="{{ board.board_desc }}" href="/{{ board.board_uri }}/" target="content">/{{ board.board_uri }}/ - {{ board.board_name }}</a></li>
                     {% endif %}
                 {% endfor %}
             </ul>
         </fieldset>
+        {% endfor %}
         {% else %}
         <fieldset class="sidebar-fieldset">
-            <legend class="sidebar-legend">Navegação</legend>
+            <legend class="sidebar-legend">{{ lang['sidebar-navigation'] }}</legend>
             <ul class="sidebar-menu">
-                <li><a href="/home" target="content">Início</a></li>
-                <li><a href="/tabuas" target="content">Tábuas</a></li>
+                <li><a href="/home" target="content">{{ lang['sidebar-home'] }}</a></li>
+                <li><a href="/tabuas" target="content">{{ lang['sidebar-boards'] }}</a></li>
             </ul>
         </fieldset>
-        {% endfor %}
+        {% endif %}
     </div>
     <script src="/static/js/boardstyle.js"></script>
 </body>

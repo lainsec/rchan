@@ -5,6 +5,7 @@ Handles user reply, preventing XSS failures and text decoration.
 
 import html
 import re
+from database_modules import database_module
 
 def escape_html(s):
     return html.escape(s).replace('&gt;', '>').replace('&lt;', '<')
@@ -114,6 +115,47 @@ def format_comment(comment):
         else:
             formatted_comment.append(f'&gt;&gt;{part}')
     comment = ''.join(formatted_comment)
+
+    # cross-board >>>/board/ ou >>>/board/123
+    def replace_cross_board(match):
+        board = match.group(1)
+        post_id = match.group(2)
+        trailing_ws = match.group(3) or ''
+
+        board_exists = bool(database_module.get_board_info(board))
+        post_exists = True
+
+        if post_id:
+            thread_id = post_id
+            try:
+                info = database_module.get_post_info(post_id)
+            except Exception:
+                info = None
+            if info and 'reply_id' in info and 'post_id' in info:
+                thread_id = str(info['post_id'])
+            if not info:
+                post_exists = False
+            display = f'&gt;&gt;>/{board}/{post_id}'
+            style = ''
+            if not board_exists or not post_exists:
+                style = ' style="text-decoration: line-through; cursor: not-allowed;"'
+            anchor = (
+                f'<a class="quote-reply" data-board="{board}" data-id="{post_id}" '
+                f'href="/{board}/thread/{thread_id}#{post_id}"{style}>{display}</a>'
+            )
+        else:
+            display = f'&gt;&gt;>/{board}/'
+            style = ''
+            if not board_exists:
+                style = ' style="text-decoration: line-through; cursor: not-allowed;"'
+            anchor = f'<a class="quote-reply" data-board="{board}" href="/{board}/"{style}>{display}</a>'
+        return anchor + trailing_ws
+
+    comment = re.sub(
+        r'&gt;&gt;<span class="verde">&gt;\/([a-zA-Z0-9_]+)(?:\/(\d+))?\/?(\s*)<\/span>',
+        replace_cross_board,
+        comment
+    )
 
     # links [texto](url)
     comment = re.sub(
