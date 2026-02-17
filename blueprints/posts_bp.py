@@ -20,7 +20,7 @@ class PostHandler:
         self.cookie_ip = cookie_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
-        self.post_name = 'Groyper' if post_name == '' else formatting.escape_html_post_info(post_name)
+        self.post_name = 'ドワーフ' if post_name == '' else formatting.escape_html_post_info(post_name)
         self.post_subject = formatting.escape_html_post_info(post_subject)
         self.board_id = board_id
         self.original_content = comment
