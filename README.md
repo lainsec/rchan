@@ -27,7 +27,7 @@ python3 app.py
 - [x] Responsive style for mobile.
 - [x] Tripcode system with SHA256.
 - [x] Encrypted passwords and IP with bcrypt.
-- [x] Uploads validated by file extension, mimetype and python-magic.
+- [x] Uploads validated by file extension, mimetype and python-magic and metadata removal.
 - [x] Board pagination.
 - [x] Multi language i18n support. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
 - [x] Media Pending Approval system (Toggleable per board).
