@@ -21,15 +21,19 @@ python3 app.py
 # Features
 - [x] Fully configurable through the dashboard, allowing real-time adjustments without code changes.
 - [x] Free creation of boards for all users (Toggleable).
-- [x] lightweight source code.
+- [x] Lightweight source code.
+- [x] Fully usable withouy JS enabled.
 - [x] Real-time posts with websocket.
 - [x] Responsive style for mobile.
 - [x] Tripcode system with SHA256.
+- [x] Encrypted passwords and IP with bcrypt.
+- [x] Uploads validated by file extension, mimetype and python-magic.
 - [x] Board pagination.
 - [x] Multi language i18n support. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
-- [x] Encrypted passwords and IP with bcrypt.
 - [x] Media Pending Approval system (Toggleable per board).
 - [x] Word filters system editable on the dashboard.
+- [X] Server-side text decoration for posts.
+- [x] Spoiler and filename strip (poster's choice) 
 - [x] Anti-spam with built-in toggleable captcha per board, timeout and evade ban system.
 
 # License
