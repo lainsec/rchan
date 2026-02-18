@@ -16,19 +16,21 @@ python3 app.py
 
 # Live instances (Unofficial)
 - 🇧🇷 [karty](https://kekw.party) 
-- 🇷🇺 [pejchan](https://pejchan.mooo.com) (off-line)
+- 🇷🇺 [pejchan](https://pejchan.mooo.com) (currently offline)
 
 # Features
-- [x] Free creation of boards for all users.
+- [x] Fully configurable through the dashboard, allowing real-time adjustments without code changes.
+- [x] Free creation of boards for all users (Toggleable).
 - [x] lightweight source code.
 - [x] Real-time posts with websocket.
 - [x] Responsive style for mobile.
 - [x] Tripcode system with SHA256.
 - [x] Board pagination.
-- [x] Multi language support. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
-- [x] Encrypted passwords and IP with SHA256.
-- [x] Media Pending Approval system .
-- [x] Anti-spam with internal captcha, timeout and evade ban system.
+- [x] Multi language i18n support. 🇯🇵 🇧🇷 🇺🇸 🇪🇸
+- [x] Encrypted passwords and IP with bcrypt.
+- [x] Media Pending Approval system (Toggleable per board).
+- [x] Word filters system editable on the dashboard.
+- [x] Anti-spam with built-in toggleable captcha per board, timeout and evade ban system.
 
 # License
 GNU AGPLv3, see [LICENSE](https://github.com/lainsec/rchan/blob/master/LICENSE)
