@@ -1,5 +1,6 @@
 #imports.
 from flask import Flask
+from flask_wtf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_socketio import SocketIO
 from blueprints.posts_bp import posts_bp
@@ -7,6 +8,7 @@ from blueprints.boards_bp import boards_bp
 from blueprints.auth_bp import auth_bp
 #app configuration.
 app = Flask(__name__)
+csrf = CSRFProtect() csrf.init_app(app)
 socketio = SocketIO(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.secret_key = 'your-secret-key'
