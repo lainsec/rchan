@@ -3,6 +3,7 @@
         <h1>Report Post</h1>
     </div>
     <form action="/api/report_post/{{ pinned.post_id }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="ban_reason">
             <input name="reason" type="text" placeholder="Report Reason">
         </div>

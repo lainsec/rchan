@@ -3,6 +3,7 @@
         <h1>{{ lang["popup-ban-header"] }}</h1>
     </div>
     <form action="/api/ban_user/{{ reply.reply_id }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="board_ban_selector">
             <h1>{{ lang["popup-ban-ask"] }}</h1>
             <select name="board">

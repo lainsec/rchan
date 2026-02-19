@@ -3,6 +3,7 @@
         <h1>{{ lang["popup-move-header"] }}</h1>
     </div>
     <form action="/api/move_post/{{ post.post_id }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="board_ban_selector">
             <h1>{{ lang["popup-move-ask"] }}</h1>
             <select name="new_board">

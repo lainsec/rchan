@@ -3,6 +3,7 @@
         <h1>{{ lang["popup-delete-header"] }}</h1>
     </div>
     <form action="/api/delete_reply/{{ reply.reply_id }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="remove_all_ip_posts">
             <input type="checkbox" name="remove_all" value="on">
             <h1>{{ lang["popup-delete-ask"] }}</h1>
