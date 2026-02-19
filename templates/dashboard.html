@@ -781,6 +781,7 @@
                             <div class="config-item">
                                 <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-select-language"] }}</label>
                                 <form id="dashboardLanguageFormMain" action="/api/change_general_lang" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="lang" onchange="document.getElementById('dashboardLanguageFormMain').submit();" class="config-select">
                                         <option value="" disabled selected>{{ lang["dashboard-change-language"] }}</option>
                                         <option value="en-us">English</option>
@@ -795,6 +796,7 @@
                             <div class="config-item">
                                 <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-captcha-config"] }}</label>
                                 <form id="dashboardCaptchaFormMain" action="/api/apply_general_captcha" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="generalcaptcha_option" onchange="document.getElementById('dashboardCaptchaFormMain').submit();" class="config-select">
                                         <option value="" disabled selected>{{ lang["dashboard-captcha-config"] }}</option>
                                         <option value="enable">{{ lang["dashboard-captcha-config-enable"] }}</option>
@@ -808,6 +810,7 @@
                             <div class="config-item">
                                 <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-free-board-creation"] }}</label>
                                 <form id="dashboardFreeBoardForm" action="/api/toggle_free_board_creation" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="free_board_creation_option" onchange="document.getElementById('dashboardFreeBoardForm').submit();" class="config-select">
                                         <option value="" disabled>{{ lang["dashboard-free-board-creation-select"] }}</option>
                                         <option value="enable" {% if chan_config['free_board_creation'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
@@ -821,6 +824,7 @@
                             <div class="config-item">
                                 <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Sidebar layout</label>
                                 <form id="dashboardSidebarLayoutForm" action="/api/toggle_sidebar_layout" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="sidebar_option" onchange="document.getElementById('dashboardSidebarLayoutForm').submit();" class="config-select">
                                         <option value="" disabled {% if chan_config['sidebar_enabled'] not in [0, 1] %}selected{% endif %}>Selecionar opção</option>
                                         <option value="enable" {% if chan_config['sidebar_enabled'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
@@ -837,6 +841,7 @@
                         <div class="config-item">
                             <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-news-config"] }}</label>
                             <form id="dashboardNewsForm" action="/api/change_news" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <textarea name="news" class="config-select" style="max-width: -webkit-fill-available; min-height: 100px; margin-bottom: 0.5rem; cursor: text; resize: vertical;" placeholder="{{ lang["dashboard-news-placeholder"] }}">{{ chan_config['index_news'] }}</textarea>
                                 <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-news-save"] }}</button>
                             </form>
@@ -900,6 +905,7 @@
                             </a>
                             
                             <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 {% if board.enable_captcha == 1 %}
                                     <button type="submit" class="btn btn-icon btn-danger" name="boardcaptcha_option" value="disable" title="{{ lang["dashboard-disable-captcha-title"] }}">
                                         <i class="fas fa-lock-open"></i>
@@ -923,12 +929,14 @@
                             {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
                                 {% if board.board_isvisible == 1 %}
                                 <form action="/api/hide_board/{{ board.board_uri }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-icon btn-secondary" title="{{ lang["dashboard-hide-board"] }}">
                                         <i class="fas fa-eye-slash"></i>
                                     </button>
                                 </form>
                                 {% else %}
                                 <form action="/api/unhide_board/{{ board.board_uri }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-icon btn-secondary" title="{{ lang["dashboard-unhide-board"] }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -937,6 +945,7 @@
                             {% endif %}
 
                             <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline; margin-left: auto;" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-board"] }}', () => this.submit());">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-icon btn-danger" title="{{ lang["dashboard-delete-board"] }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -1003,14 +1012,17 @@
                             
                             <div style="margin-top: auto; padding-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 <form action="/api/resolve_report/{{ report.id }}" method="POST" style="margin:0; flex: 1;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-success" style="width: 100%; justify-content: center;" title="{{ lang["dashboard-mark-resolved"] }}"><i class="fas fa-check"></i> {{ lang["dashboard-resolve"] }}</button>
                                 </form>
                                 {% if report.is_reply %}
                                 <form action="/api/delete_reply/{{ report.post_id }}" method="POST" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-reply"] }}', () => this.submit());" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="{{ lang["dashboard-delete-reply"] }}"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% else %}
                                 <form action="/api/delete_post/{{ report.post_id }}" method="POST" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-post"] }}', () => this.submit());" style="margin:0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="{{ lang["dashboard-delete-post"] }}"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% endif %}
@@ -1067,6 +1079,7 @@
                                         <td>{{ info.end_time }}</td>
                                         <td>
                                             <form action="/api/remove_timeout/{{ info.timeout_id }}" method="POST">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
                                             </form>
                                         </td>
@@ -1124,6 +1137,7 @@
                                         </td>
                                         <td>
                                             <form action="/api/remove_ban/{{ info.ban_id }}" method="POST">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
                                             </form>
                                         </td>
@@ -1153,6 +1167,7 @@
             <div class="modal-body">
                 <!-- Add Staff Form -->
                 <form id="addStaffForm" method="POST" class="add-staff-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="input-group">
                         <input type="text" name="username" placeholder="{{ lang["dashboard-placeholder-username"] }}" required class="form-input">
                         <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> {{ lang["dashboard-btn-add"] }}</button>
@@ -1177,6 +1192,7 @@
             </div>
             <div class="modal-body">
                 <form id="banUserForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="ban_reason" style="display: block; margin-bottom: 0.5rem;">{{ lang["dashboard-modal-reason"] }}</label>
                         <input type="text" name="ban_reason" id="ban_reason" class="form-input" required style="width: 100%; box-sizing: border-box;">
@@ -1250,6 +1266,7 @@
             </div>
             <div class="modal-body">
                 <form action="/api/edit_board_info" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="board_uri" id="edit_board_uri">
 
                     <div class="form-group">
@@ -1371,6 +1388,7 @@
                     li.innerHTML = `
                         <span class="staff-username">${username}</span>
                         <form action="/api/remove_board_staff/${boardUri}" method="POST" style="margin:0;" onsubmit="event.preventDefault(); openConfirmModal(\`{{ lang["dashboard-js-remove"] }} ${username} {{ lang["dashboard-js-from-staff"] }}\`, () => this.submit());">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="username" value="${username}">
                             <button type="submit" class="btn-icon btn-danger" title="{{ lang["dashboard-js-remove-staff-tooltip"] }}">
                                 <i class="fas fa-trash"></i>

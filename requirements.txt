@@ -6,6 +6,7 @@ charset-normalizer==3.4.2
 click==8.1.7
 Flask==3.0.3
 Flask-SocketIO==5.3.6
+Flask-WTF==1.2.2
 h11==0.14.0
 idna==3.10
 itsdangerous==2.2.0
@@ -23,3 +24,4 @@ simple-websocket==1.0.0
 urllib3==2.4.0
 Werkzeug==3.0.3
 wsproto==1.2.0
+WTForms==3.2.1

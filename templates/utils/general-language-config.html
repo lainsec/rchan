@@ -1,4 +1,5 @@
 <form id="generalLanguageForm" action="/change_general_lang" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <select name="lang" id="lang" onchange="document.getElementById('generalLanguageForm').submit();">
         <option value="en-us">select a language</option>
         <option value="en-us">English</option>

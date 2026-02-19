@@ -20,6 +20,7 @@
                     <div class="media-approval-banner">
                         <div style="font-size: 0.8em; margin-bottom: 5px; color: #d9534f; font-weight: bold;">(Hidden for regular users)</div>
                         <form action="/api/approve_media/{{ pinned.post_id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-mediaapproval">Approve Media</button>
                         </form>
                     </div>
@@ -106,6 +107,7 @@
                                 <div class="media-approval-banner">
                                     <div style="font-size: 0.8em; margin-bottom: 5px; color: #d9534f; font-weight: bold;">(Hidden for regular users)</div>
                                     <form action="/api/approve_media/{{ reply.reply_id }}" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="is_reply" value="true">
                                         <button type="submit" class="btn-mediaapproval">Approve</button>
                                     </form>

@@ -16,6 +16,7 @@
                 {% if not is_approved and is_staff %}
                     <div class="media-approval-banner">
                         <form action="/api/approve_media/{{ post.post_id }}" method="POST" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-mediaapproval">Approve</button>
                         </form>
                     </div>
@@ -91,6 +92,7 @@
                             {% if not is_approved and is_staff %}
                                 <div class="media-approval-banner">
                                     <form action="/api/approve_media/{{ reply.reply_id }}" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="is_reply" value="true">
                                         <button type="submit" class="btn-mediaapproval">Approve</button>
                                     </form>

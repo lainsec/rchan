@@ -1,10 +1,15 @@
 #imports
 from flask import current_app, Blueprint, render_template, session, redirect, request, url_for, flash, send_from_directory
+from flask_wtf.csrf import generate_csrf
 from database_modules import database_module, language_module
 from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager, ChanConfigManager, WordFilterManager
 import os
 #blueprint register.
 boards_bp = Blueprint('boards', __name__)
+#add csrf_token in all routes.
+@boards_bp.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=generate_csrf())
 #load language.
 @boards_bp.context_processor
 def inject_lang():
@@ -20,7 +25,6 @@ def globalboards():
 def customthemes():
     custom_themes_list = database_module.get_custom_themes()
     return {"custom_themes": custom_themes_list}
-
 
 def mark_banned_flags(records, board_uri, ban_manager):
     if not records:
