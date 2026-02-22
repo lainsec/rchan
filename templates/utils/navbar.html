@@ -13,13 +13,30 @@
                 <p>]</p>
             </ul>
             <ul class="board-links nav-boards">
-                <p>[</p>
-                {% for board in boards %}
-                    {% if board.board_isvisible == 1 %}
-                        <li class="board-link"><a href="/{{ board.board_uri }}/" title="{{ board.board_desc }}">{{ board.board_uri }}</a><p>/</p></li>
-                    {% endif %}
-                {% endfor %}
-                <p>]</p>
+                {% if boards %}
+                    {% set ns = namespace(tags=[]) %}
+                    {% for board in boards %}
+                        {% set tag = board.tag if board.tag else 'Outros' %}
+                        {% if tag not in ns.tags %}
+                            {% set ns.tags = ns.tags + [tag] %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for tag in ns.tags %}
+                        <p>[</p>
+                        {% for board in boards %}
+                            {% set board_tag = board.tag if board.tag else 'Outros' %}
+                            {% if board_tag == tag and board.board_isvisible == 1 %}
+                                <p>/</p>
+                                <li class="board-link">
+                                    <a href="/{{ board.board_uri }}/" title="{{ board.board_desc }}">{{ board.board_uri }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        <p>/</p>
+                        <p>]</p>
+                    {% endfor %}
+                {% endif %}
             </ul>
         </div>
     </div>

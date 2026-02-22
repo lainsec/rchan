@@ -23,6 +23,7 @@
             <img src="{{ banner }}" class="board_banner all_banners">
             {% if can_manage %}
             <form action="/api/delete_banner" method="POST" style="position: absolute; top: 5px; right: 5px;">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
                 <input type="hidden" name="banner_filename" value="{{ banner.split('/')[-1] }}">
                 <button type="submit" style="background: rgba(255, 0, 0, 0.7); color: white; border: none; cursor: pointer; padding: 2px 6px; border-radius: 3px; font-weight: bold;">
@@ -35,6 +36,7 @@
     
     {% if can_manage %}
         <form id="bannerForm" action="/api/upload_banner" method="post" onchange="autoSubmit()" enctype="multipart/form-data">
+	    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
             <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
         </form>

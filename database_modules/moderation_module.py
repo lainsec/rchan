@@ -374,6 +374,62 @@ class BanManager:
                     self.unban_user_by_id(ban['id'])
 
 
+class ThreadCreationAllowlistManager:
+    def __init__(self):
+        self.db = SQLiteConfig.load_db('moderation')
+        self.db.create_table('thread_creation_allowed_ips', {
+            'ip': 'str',
+            'expire_at': 'str'
+        })
+
+    def _cleanup_expired(self):
+        now = datetime.now()
+        entries = self.db.find_all('thread_creation_allowed_ips')
+        for entry in entries:
+            expire_raw = entry.get('expire_at')
+            try:
+                expire_at = datetime.fromisoformat(expire_raw)
+            except Exception:
+                self.db.delete('thread_creation_allowed_ips', entry['id'])
+                continue
+            if now >= expire_at:
+                self.db.delete('thread_creation_allowed_ips', entry['id'])
+
+    def is_ip_allowed(self, ip):
+        self._cleanup_expired()
+        records = self.db.query('thread_creation_allowed_ips', {'ip': {'==': ip}})
+        if not records:
+            return False
+        entry = records[0]
+        expire_raw = entry.get('expire_at')
+        try:
+            expire_at = datetime.fromisoformat(expire_raw)
+        except Exception:
+            self.db.delete('thread_creation_allowed_ips', entry['id'])
+            return False
+        now = datetime.now()
+        if now >= expire_at:
+            self.db.delete('thread_creation_allowed_ips', entry['id'])
+            return False
+        return True
+
+    def allow_for_hours(self, ip, hours=2):
+        expire_at = (datetime.now() + timedelta(hours=hours)).isoformat()
+        existing = self.db.query('thread_creation_allowed_ips', {'ip': {'==': ip}})
+        if existing:
+            entry_id = existing[0]['id']
+            self.db.update('thread_creation_allowed_ips', entry_id, {'expire_at': expire_at})
+        else:
+            entries = self.db.find_all('thread_creation_allowed_ips')
+            max_id = max([e.get('id', 0) for e in entries] + [0])
+            entry_id = max_id + 1
+            self.db.insert('thread_creation_allowed_ips', {
+                'id': entry_id,
+                'ip': ip,
+                'expire_at': expire_at
+            })
+
+
 class ReportManager:
     def __init__(self):
         # Initialize SQLite for report management
@@ -474,10 +530,25 @@ class ChanConfigManager:
             'id': 'int',
             'free_board_creation': 'int',
             'index_news': 'str',
-            'sidebar_enabled': 'int'
+            'sidebar_enabled': 'int',
+            'max_pages_per_board': 'int',
+            'default_poster_name': 'str',
+            'posts_per_page': 'int'
         })
         try:
-            self.db.add_column('chan_config', 'sidebar_enabled')
+            self.db.add_column('chan_config', 'sidebar_enabled', 'int')
+        except Exception:
+            pass
+        try:
+            self.db.add_column('chan_config', 'max_pages_per_board', 'int')
+        except Exception:
+            pass
+        try:
+            self.db.add_column('chan_config', 'default_poster_name', 'str')
+        except Exception:
+            pass
+        try:
+            self.db.add_column('chan_config', 'posts_per_page', 'int')
         except Exception:
             pass
         self._ensure_record()
@@ -490,12 +561,21 @@ class ChanConfigManager:
                 'id': 1,
                 'free_board_creation': 1,
                 'index_news': "No news to display",
-                'sidebar_enabled': 0
+                'sidebar_enabled': 0,
+                'max_pages_per_board': 0,
+                'default_poster_name': "Anonymous",
+                'posts_per_page': 6
             })
         else:
             config = configs[0]
             if 'sidebar_enabled' not in config:
                 self.db.update('chan_config', config['id'], {'sidebar_enabled': 0})
+            if 'max_pages_per_board' not in config:
+                self.db.update('chan_config', config['id'], {'max_pages_per_board': 0})
+            if 'default_poster_name' not in config:
+                self.db.update('chan_config', config['id'], {'default_poster_name': "Anonymous"})
+            if 'posts_per_page' not in config:
+                self.db.update('chan_config', config['id'], {'posts_per_page': 6})
 
     def get_config(self):
         """
@@ -507,7 +587,8 @@ class ChanConfigManager:
         self._ensure_record()
         return self.db.find_all('chan_config')[0]
 
-    def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None):
+    def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None,
+                      max_pages_per_board=None, default_poster_name=None, posts_per_page=None):
         """
         Update the chan configuration.
         
@@ -528,6 +609,27 @@ class ChanConfigManager:
 
         if sidebar_enabled is not None:
             updates['sidebar_enabled'] = 1 if sidebar_enabled else 0
+
+        if max_pages_per_board is not None:
+            try:
+                value = int(max_pages_per_board)
+            except (TypeError, ValueError):
+                value = 0
+            if value < 0:
+                value = 0
+            updates['max_pages_per_board'] = value
+
+        if default_poster_name is not None:
+            updates['default_poster_name'] = default_poster_name
+
+        if posts_per_page is not None:
+            try:
+                value = int(posts_per_page)
+            except (TypeError, ValueError):
+                value = 6
+            if value < 1:
+                value = 1
+            updates['posts_per_page'] = value
             
         if updates:
             self.db.update('chan_config', config['id'], updates)

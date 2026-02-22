@@ -1,9 +1,13 @@
 document.addEventListener('click', function(event) {
-    // Verifica se o clique foi em uma imagem que deve ser expandida
     const img = event.target.closest('.post_img, .reply_img');
     
-    // Se não for uma imagem válida ou for uma thumbnail de vídeo, ignora
-    if (!img || img.id === "post_video_thumbnail" || img.classList.contains('post_video_thumbnail') || img.classList.contains('reply_video_thumbnail')) {
+    if (
+        !img ||
+        img.id === "post_video_thumbnail" ||
+        img.classList.contains('post_video_thumbnail') ||
+        img.classList.contains('reply_video_thumbnail') ||
+        img.classList.contains('post_video')
+    ) {
         return;
     }
 

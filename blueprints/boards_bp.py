@@ -9,7 +9,7 @@ boards_bp = Blueprint('boards', __name__)
 #add csrf_token in all routes.
 @boards_bp.context_processor
 def inject_csrf_token():
-    return dict(csrf_token=generate_csrf())
+    return dict(csrf_token=generate_csrf)
 #load language.
 @boards_bp.context_processor
 def inject_lang():
@@ -25,6 +25,7 @@ def globalboards():
 def customthemes():
     custom_themes_list = database_module.get_custom_themes()
     return {"custom_themes": custom_themes_list}
+
 
 def mark_banned_flags(records, board_uri, ban_manager):
     if not records:
@@ -44,7 +45,7 @@ def mark_banned_flags(records, board_uri, ban_manager):
 @boards_bp.errorhandler(404)
 def page_not_found(e):
     return redirect(url_for('boards.main_page'))
-#landing page route (frameset).
+#landing page route.
 @boards_bp.route('/')
 def main_page():
     config_manager = ChanConfigManager()
@@ -59,10 +60,12 @@ def main_page():
         return render_template('frameset.html')
 
     posts = database_module.get_all_posts()
-    return render_template('index.html',
-                           all_posts=posts,
-                           posts=reversed(posts[-6:]),
-                           news=chan_config.get('index_news', 'No news to display'))
+    return render_template(
+        'index.html',
+        all_posts=posts,
+        posts=reversed(posts[-6:]),
+        news=chan_config.get('index_news', 'No news to display')
+    )
 
 #home content route.
 @boards_bp.route('/home')
@@ -267,15 +270,44 @@ def board_page(board_uri):
     if not database_module.get_board_info(board_uri):
         return redirect(url_for('boards.main_page'))
     
+    config_manager = ChanConfigManager()
+    chan_config = config_manager.get_config()
     # Handle pagination
     try:
         page = int(request.args.get('page', '1'))
     except ValueError:
         page = 1
-    
-    posts_per_page = 6
+
+    posts_per_page_raw = chan_config.get('posts_per_page', 6)
+    try:
+        posts_per_page = int(posts_per_page_raw)
+    except (TypeError, ValueError):
+        posts_per_page = 6
+    if posts_per_page < 1:
+        posts_per_page = 1
+
     offset = (page - 1) * posts_per_page
-    
+    max_pages_raw = chan_config.get('max_pages_per_board', 0)
+    try:
+        max_pages_per_board = int(max_pages_raw)
+    except (TypeError, ValueError):
+        max_pages_per_board = 0
+
+    if max_pages_per_board > 0:
+        posts_for_board = database_module.DB.query('posts', {'board': {'==': board_uri}})
+        posts_for_board.sort(key=lambda p: p.get('post_id', 0))
+        max_posts_allowed = posts_per_page * max_pages_per_board
+        if len(posts_for_board) > max_posts_allowed:
+            overflow_posts = posts_for_board[:-max_posts_allowed]
+            for old_post in overflow_posts:
+                old_post_id = old_post.get('post_id')
+                if old_post_id is None:
+                    continue
+                old_replies = database_module.DB.query('replies', {'post_id': {'==': old_post_id}})
+                for old_reply in old_replies:
+                    database_module.DB.delete('replies', old_reply['id'])
+                database_module.DB.delete('posts', old_post['id'])
+
     posts = database_module.load_db_page(board_uri, offset=offset, limit=posts_per_page)
     pinneds = database_module.get_pinned_posts(board_uri)
     board_info = database_module.get_board_info(board_uri)

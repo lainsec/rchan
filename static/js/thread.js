@@ -34,6 +34,137 @@ function manipularConteudo() {
     adicionarEventosQuoteReply();
 }
 
+function adicionarEventosRepliedQuotes() {
+    const links = document.querySelectorAll('a.replied_quote');
+    links.forEach(link => {
+        const raw = (link.textContent || '').trim();
+        const idText = raw.replace(/^>>\s*/, '').trim();
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (idText) {
+                window.location.hash = idText;
+            }
+        });
+        link.addEventListener('mouseenter', () => {
+            const targetElement = document.getElementById(idText);
+            if (targetElement) {
+                const preview = targetElement.cloneNode(true);
+                const replies = preview.querySelectorAll('div.replies');
+                replies.forEach(r => r.remove());
+                preview.classList.add('preview-reply');
+                preview.style.position = 'absolute';
+                preview.style.zIndex = '1000';
+                preview.style.minWidth = '40em';
+                preview.style.display = 'block';
+                document.body.appendChild(preview);
+                const updatePreviewPosition = (e) => {
+                    preview.style.left = `${e.pageX + 10}px`;
+                    preview.style.top = `${e.pageY + 10}px`;
+                };
+                document.addEventListener('mousemove', updatePreviewPosition);
+                link.addEventListener('mouseleave', () => {
+                    if (preview && document.body.contains(preview)) {
+                        document.body.removeChild(preview);
+                        document.removeEventListener('mousemove', updatePreviewPosition);
+                    }
+                }, { once: true });
+            } else {
+                let preview;
+                let updatePreviewPosition;
+                let cancelled = false;
+                const onLeave = () => {
+                    cancelled = true;
+                    if (preview && document.body.contains(preview)) {
+                        document.body.removeChild(preview);
+                    }
+                    if (updatePreviewPosition) {
+                        document.removeEventListener('mousemove', updatePreviewPosition);
+                    }
+                };
+                link.addEventListener('mouseleave', onLeave, { once: true });
+                const buildPreview = (data) => {
+                    const isReply = !!data.reply_id;
+                    const container = document.createElement('div');
+                    container.className = isReply ? 'reply' : 'post';
+                    container.classList.add('preview-reply');
+                    container.style.position = 'absolute';
+                    container.style.zIndex = '1000';
+                    container.style.minWidth = '40em';
+                    container.style.display = 'block';
+                    const info = document.createElement('div');
+                    info.className = isReply ? 'reply-postInfo' : 'postInfo';
+                    const nameBlock = document.createElement('span');
+                    nameBlock.className = 'nameBlock';
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'name';
+                    nameSpan.innerHTML = `${data.post_user || 'ドワーフ'} `;
+                    nameBlock.appendChild(nameSpan);
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'postDate';
+                    dateSpan.textContent = data.post_date || '';
+                    const numberLinkLabel = document.createElement('a');
+                    numberLinkLabel.className = 'postLink';
+                    numberLinkLabel.textContent = 'No. ';
+                    const numberLink = document.createElement('a');
+                    numberLink.className = 'postLink';
+                    numberLink.href = isReply ? `/${data.board}/thread/${data.post_id}#${isReply ? data.reply_id : data.post_id}` : `/${data.board}/thread/${data.post_id}`;
+                    numberLink.textContent = isReply ? data.reply_id : data.post_id;
+                    info.appendChild(nameBlock);
+                    info.appendChild(dateSpan);
+                    info.appendChild(numberLinkLabel);
+                    info.appendChild(numberLink);
+                    container.appendChild(info);
+                    const contentContainer = document.createElement('div');
+                    contentContainer.className = isReply ? 'post_content_container' : 'post_content_container';
+                    const filesContainer = document.createElement('div');
+                    filesContainer.className = isReply ? 'reply_files' : 'post_files';
+                    const images = isReply ? (data.images || (data.image ? [data.image] : [])) : (data.post_images || []);
+                    images.forEach((img) => {
+                        if (!img) return;
+                        const wrap = document.createElement('div');
+                        wrap.className = isReply ? 'reply_image' : 'post_image';
+                        const imgEl = document.createElement('img');
+                        imgEl.draggable = false;
+                        imgEl.className = isReply ? 'reply_img' : 'post_img';
+                        const base = isReply ? '/static/reply_images/' : '/static/post_images/';
+                        imgEl.src = base + img;
+                        wrap.appendChild(imgEl);
+                        filesContainer.appendChild(wrap);
+                    });
+                    if (images.length > 0) {
+                        contentContainer.appendChild(filesContainer);
+                    }
+                    const textContainer = document.createElement('div');
+                    textContainer.className = isReply ? 'reply_content' : 'post_content';
+                    const pre = document.createElement('pre');
+                    pre.innerHTML = isReply ? (data.content || '') : (data.post_content || data.original_content || '');
+                    textContainer.appendChild(pre);
+                    contentContainer.appendChild(textContainer);
+                    container.appendChild(contentContainer);
+                    return container;
+                };
+                if (!idText || isNaN(Number(idText))) {
+                    return;
+                }
+                fetch(`/api/get_post_info?post_id=${encodeURIComponent(idText)}`)
+                    .then(r => r.ok ? r.json() : Promise.reject())
+                    .then(data => {
+                        if (cancelled) return;
+                        preview = buildPreview(data);
+                        document.body.appendChild(preview);
+                        updatePreviewPosition = (e) => {
+                            preview.style.left = `${e.pageX + 10}px`;
+                            preview.style.top = `${e.pageY + 10}px`;
+                        };
+                        document.addEventListener('mousemove', updatePreviewPosition);
+                    })
+                    .catch(() => {})
+                    .finally(() => {});
+            }
+        });
+    });
+}
+
 
 function adicionarEventosQuoteReply() {
     const quoteReplies = document.querySelectorAll('span.quote-reply');
@@ -324,16 +455,19 @@ function adicionarEventosQuoteReply() {
 }
 
 
-function quotePostId(postId) {
+function quotePostId(ev, postId) {
     const textarea = document.getElementById('text');
     const draggableForm = document.getElementById('draggableForm');
 
     textarea.value += '' + (textarea.value ? '\n>>' : '>>') + postId;
 
-    draggableForm.style.position = 'absolute';
+    draggableForm.style.position = 'fixed';
 
-    const mouseX = event.pageX;
-    const mouseY = event.pageY + 10;
+    const e = ev || window.event;
+    let mouseX = typeof e.clientX === 'number' ? e.clientX : window.innerWidth / 2;
+    let mouseY = typeof e.clientY === 'number' ? e.clientY : window.innerHeight / 2;
+
+    mouseY = mouseY + 10;
 
     const rightEdge = window.innerWidth - draggableForm.offsetWidth;
     const bottomEdge = window.innerHeight - draggableForm.offsetHeight;
@@ -342,9 +476,9 @@ function quotePostId(postId) {
     let newTop = mouseY;
 
     if (newLeft < 0) newLeft = 0;
+    if (newLeft > rightEdge) newLeft = rightEdge < 0 ? 0 : rightEdge;
     if (newTop < 0) newTop = 0;
-    if (newLeft > rightEdge) newLeft = rightEdge;
-    if (newTop > bottomEdge) newTop = bottomEdge;
+    if (newTop > bottomEdge) newTop = bottomEdge < 0 ? 0 : bottomEdge;
 
     draggableForm.style.display = 'block';
     draggableForm.style.left = `${newLeft}px`;
@@ -354,6 +488,7 @@ function quotePostId(postId) {
 
 document.addEventListener("DOMContentLoaded", function() {
     manipularConteudo();
+    adicionarEventosRepliedQuotes();
 
     const textarea = document.getElementById('text');
     let quoteButton;

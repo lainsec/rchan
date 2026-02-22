@@ -11,7 +11,7 @@ app = Flask(__name__)
 csrf = CSRFProtect(app)
 socketio = SocketIO(app)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
-app.secret_key = 'your-secret-key'
+app.secret_key = 'your-secret'
 
 app.register_blueprint(posts_bp, socketio=socketio)
 app.register_blueprint(boards_bp)
@@ -19,4 +19,4 @@ app.register_blueprint(auth_bp)
 
 if __name__ == '__main__':
     #run with socketIO for real-time features.
-    socketio.run(app, port=3000)
+    socketio.run(app, port=3000, debug=True)

@@ -6,21 +6,33 @@ document.getElementById('togglePostFormLink').addEventListener('click', function
     
     if (currentDisplay === 'none' || !formDiv.style.display) {
         formDiv.style.display = 'block';
-        formDiv.style.position = 'absolute'; 
-        
-        let newLeft = event.pageX;
-        let newTop = event.pageY + 10;
+        formDiv.style.position = 'fixed';
 
-        const rightEdge = window.innerWidth - formDiv.offsetWidth;
-        const bottomEdge = document.body.scrollHeight - formDiv.offsetHeight;
+        const formWidth = formDiv.offsetWidth;
+        const formHeight = formDiv.offsetHeight;
 
-        if (newLeft < 0) newLeft = 0;
-        if (newTop < 0) newTop = 0;
-        if (newLeft > rightEdge) newLeft = rightEdge;
-        if (newTop > bottomEdge) newTop = bottomEdge;
+        let clickX = typeof event.clientX === 'number' ? event.clientX : window.innerWidth / 2;
+        let clickY = typeof event.clientY === 'number' ? event.clientY : window.innerHeight / 2;
 
-        formDiv.style.left = newLeft + 'px'; 
-        formDiv.style.top = newTop + 'px'; 
+        let newLeft = clickX;
+        let newTop = clickY + 10;
+
+        if (formWidth >= window.innerWidth) {
+            newLeft = 0;
+        } else {
+            if (newLeft + formWidth > window.innerWidth) newLeft = window.innerWidth - formWidth;
+            if (newLeft < 0) newLeft = 0;
+        }
+
+        if (formHeight >= window.innerHeight) {
+            newTop = 0;
+        } else {
+            if (newTop + formHeight > window.innerHeight) newTop = window.innerHeight - formHeight;
+            if (newTop < 0) newTop = 0;
+        }
+
+        formDiv.style.left = newLeft + 'px';
+        formDiv.style.top = newTop + 'px';
     } else {
         formDiv.style.display = 'none'; 
     }
@@ -67,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const draggableForm = document.getElementById('draggableForm');
 const header = document.querySelector('.new-thread-header'); 
-draggableForm.style.position = 'absolute';
+draggableForm.style.position = 'fixed';
 
 function initDrag(startClientX, startClientY, getCoords) {
     const style = window.getComputedStyle(draggableForm);
@@ -87,13 +99,14 @@ function initDrag(startClientX, startClientY, getCoords) {
         let newLeft = startLeft + dx;
         let newTop = startTop + dy;
 
-        const rightEdge = window.innerWidth - draggableForm.offsetWidth;
-        const bottomEdge = document.body.scrollHeight - draggableForm.offsetHeight;
+        const maxLeft = window.innerWidth - draggableForm.offsetWidth;
+        const maxTop = window.innerHeight - draggableForm.offsetHeight;
 
         if (newLeft < 0) newLeft = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft < 0 ? 0 : maxLeft;
+
         if (newTop < 0) newTop = 0;
-        if (newLeft > rightEdge) newLeft = rightEdge;
-        if (newTop > bottomEdge) newTop = bottomEdge;
+        if (newTop > maxTop) newTop = maxTop < 0 ? 0 : maxTop;
 
         draggableForm.style.left = newLeft + 'px';
         draggableForm.style.top = newTop + 'px';

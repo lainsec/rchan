@@ -17,9 +17,10 @@ def filter_xss(comment):
     pattern = re.compile(r'<(script|h[1-6]|a|/a|/img|body|p|/p)>', re.IGNORECASE)
     return bool(pattern.search(comment))
 
-def format_comment(comment):
+def format_comment(comment, current_post_id=None, current_thread_id=None):
     
     code_blocks = []
+    quoted_ids = set()
 
     def save_code_block(match):
         code = match.group(1)
@@ -37,6 +38,10 @@ def format_comment(comment):
         number = re.match(r'^\d+', part)
         if number:
             quoted_id = number.group(0)
+            try:
+                quoted_ids.add(int(quoted_id))
+            except (TypeError, ValueError):
+                pass
             quote_span = f'<span class="quote-reply" data-id="{quoted_id}" href="#{quoted_id}">&gt;&gt;{quoted_id}</span>'
             formatted_comment.append(f'{quote_span}{part[len(quoted_id):]}')
         else:
@@ -110,6 +115,10 @@ def format_comment(comment):
         number = re.match(r'^\d+', part)
         if number:
             quoted_id = number.group(0)
+            try:
+                quoted_ids.add(int(quoted_id))
+            except (TypeError, ValueError):
+                pass
             quote_span = f'<span class="quote-reply" data-id="{quoted_id}">&gt;&gt;{quoted_id}</span>'
             formatted_comment.append(f'{quote_span}{part[len(quoted_id):]}')
         else:
@@ -205,6 +214,34 @@ def format_comment(comment):
         list_items = ''.join(f'<li>{line}</li>' for line in lines)
         formatted_code = f'<span class="command-block"><ol>{list_items}</ol></span>'
         comment = comment.replace(f"__CODE_BLOCK_{idx}__", formatted_code)
+
+    if current_post_id is not None and quoted_ids:
+        try:
+            current_post_id_int = int(current_post_id)
+        except (TypeError, ValueError):
+            current_post_id_int = None
+
+        thread_id = None
+        if current_thread_id is not None:
+            try:
+                thread_id = int(current_thread_id)
+            except (TypeError, ValueError):
+                thread_id = None
+
+        if current_post_id_int is not None:
+            for qid in quoted_ids:
+                replies = database_module.DB.query('replies', {'reply_id': {'==': qid}})
+                if not replies:
+                    continue
+                reply = replies[0]
+                if thread_id is not None and reply.get('post_id') != thread_id:
+                    continue
+                replied_at = reply.get('replied_at') or []
+                if not isinstance(replied_at, list):
+                    replied_at = []
+                if current_post_id_int not in replied_at:
+                    replied_at.append(current_post_id_int)
+                    database_module.DB.update('replies', reply['id'], {'replied_at': replied_at})
 
     return comment
 

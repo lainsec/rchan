@@ -33,10 +33,22 @@ DB.create_table('boards', {
     'enable_captcha': 'int',
     'board_isvisible': 'int',
     'tag': 'str',
-    'require_media_approval': 'int'
+    'require_media_approval': 'int',
+    'allow_name': 'bool',
+    'allow_thread_self_mod': 'bool',
+    'max_pages': 'int',
+    'default_css': 'str',
+    'custom_css': 'str',
+    'default_poster_name': 'str'
 })
-DB.add_column('boards', 'tag')
-DB.add_column('boards', 'require_media_approval')
+DB.add_column('boards', 'tag', 'str')
+DB.add_column('boards', 'require_media_approval', 'int')
+DB.add_column('boards', 'allow_name', 'bool')
+DB.add_column('boards', 'allow_thread_self_mod', 'bool')
+DB.add_column('boards', 'max_pages', 'int')
+DB.add_column('boards', 'default_css', 'str')
+DB.add_column('boards', 'custom_css', 'str')
+DB.add_column('boards', 'default_poster_name', 'str')
 DB.create_table('accounts', {
     'id': 'int',
     'username': 'str',
@@ -58,7 +70,7 @@ DB.create_table('posts', {
     'visible': 'int',
     'media_approved': 'int'
 })
-DB.add_column('posts', 'media_approved')
+DB.add_column('posts', 'media_approved', 'int')
 DB.create_table('pinned', {
     'id': 'int',
     'user_ip': 'str',
@@ -70,7 +82,7 @@ DB.create_table('pinned', {
     'post_images': 'list',
     'media_approved': 'int'
 })
-DB.add_column('pinned', 'media_approved')
+DB.add_column('pinned', 'media_approved', 'int')
 DB.create_table('replies', {
     'id': 'int',
     'user_ip': 'str',
@@ -81,9 +93,11 @@ DB.create_table('replies', {
     'post_date': 'str',
     'content': 'str',
     'images': 'list',
-    'media_approved': 'int'
+    'media_approved': 'int',
+    'replied_at': 'list'
 })
-DB.add_column('replies', 'media_approved')
+DB.add_column('replies', 'media_approved', 'int')
+DB.add_column('replies', 'replied_at', 'list')
 DB.create_table('users', {
     'id': 'int',
     'user_ip': 'str',
@@ -582,7 +596,9 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         'enable_captcha': 0,
         'board_isvisible': 1,
         'tag': tag,
-        'require_media_approval': 0
+        'require_media_approval': 0,
+        'default_poster_name': '',
+        'allow_name': 1
     }
     
     DB.insert('boards', new_board)
@@ -607,7 +623,8 @@ def unhide_board(board_uri):
     DB.update('boards', board_info['id'], {'board_isvisible': 1})
     return True
 
-def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, new_board_tag, require_media_approval=None):
+def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, new_board_tag, require_media_approval=None,
+                    default_poster_name=None, max_pages=None, default_css=None, allow_name=None):
     """Edit board information."""
     board_info = get_board_info(board_uri)
     if not board_info:
@@ -622,6 +639,30 @@ def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, 
 
     if require_media_approval is not None:
         update_data['require_media_approval'] = int(require_media_approval)
+
+    if default_poster_name is not None:
+        update_data['default_poster_name'] = default_poster_name
+
+    if max_pages is not None:
+        try:
+            value = int(max_pages)
+        except (TypeError, ValueError):
+            value = 0
+        if value < 0:
+            value = 0
+        update_data['max_pages'] = value
+
+    if default_css is not None:
+        update_data['default_css'] = default_css
+
+    if allow_name is not None:
+        try:
+            value = int(allow_name)
+        except (TypeError, ValueError):
+            value = 1
+        if value not in (0, 1):
+            value = 1
+        update_data['allow_name'] = value
 
     DB.update('boards', board_info['id'], update_data)
     return True
@@ -1156,6 +1197,38 @@ def approve_media(post_id, is_reply=False):
             pinned_post[0]['media_approved'] = 1
             DB.update('pinned', pinned_post[0]['id'], pinned_post[0])
 
+    return True
+
+def append_banned_warning_to_post(post_id, warn_text):
+    try:
+        pid = int(post_id)
+    except (TypeError, ValueError):
+        return False
+    # First try to update a thread (post)
+    post = DB.query('posts', {'post_id': {'==': pid}})
+    if post:
+        rec = post[0]
+        content = rec.get('post_content', '') or ''
+        if '<span class="banned-warning"' not in content:
+            rec['post_content'] = content + '\n<span class="banned-warning">' + str(warn_text) + '</span>'
+            DB.update('posts', rec['id'], rec)
+        pinned = DB.query('pinned', {'post_id': {'==': rec['post_id']}})
+        if pinned:
+            p = pinned[0]
+            pc = p.get('post_content', '') or ''
+            if '<span class="banned-warning"' not in pc:
+                p['post_content'] = pc + '\n<span class="banned-warning">' + str(warn_text) + '</span>'
+                DB.update('pinned', p['id'], p)
+        return True
+    # Then try to update a reply (content)
+    reply = DB.query('replies', {'reply_id': {'==': pid}})
+    if reply:
+        r = reply[0]
+        rc = r.get('content', '') or ''
+        if '<span class="banned-warning"' not in rc:
+            r['content'] = rc + '\n<span class="banned-warning">' + str(warn_text) + '</span>'
+            DB.update('replies', r['id'], r)
+        return True
     return True
 
 def get_pending_media(board_uri=None):

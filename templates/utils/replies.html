@@ -7,7 +7,7 @@
             <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
             {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
-            <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="#" onclick="quotePostId({{ post.post_id }})" class="postNumber">{{ post.post_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this post"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
+            <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="#" onclick="quotePostId(event, {{ post.post_id }}); return false;" class="postNumber">{{ post.post_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this post"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
             <div class="post_files {% if post.post_images|length > 1 %}multiple_files{% endif %}">
@@ -16,7 +16,7 @@
                 {% if not is_approved and is_staff %}
                     <div class="media-approval-banner">
                         <form action="/api/approve_media/{{ post.post_id }}" method="POST" style="margin: 0;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+			    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-mediaapproval">Approve</button>
                         </form>
                     </div>
@@ -73,8 +73,7 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{{ post.post_content | safe }}{% if post.is_banned %}
-<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>
+                <pre>{{ post.post_content | safe }}</pre>
             </div>
             <div class="replies">
                 {% for reply in replies %}
@@ -83,7 +82,7 @@
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span> </span>
                         {% if reply.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
-                        <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="#{{ reply.reply_id }}" onclick="quotePostId({{ reply.reply_id }})" class="postNumber">{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %}
+                        <span class="postDate">{{ reply.post_date }}</span><a href="#" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="#{{ reply.reply_id }}" onclick="quotePostId(event, {{ reply.reply_id }}); return false;" class="postNumber">{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %} <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }}</a>{% endfor %}</span>
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}
@@ -92,7 +91,7 @@
                             {% if not is_approved and is_staff %}
                                 <div class="media-approval-banner">
                                     <form action="/api/approve_media/{{ reply.reply_id }}" method="POST" style="margin: 0;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+					<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="is_reply" value="true">
                                         <button type="submit" class="btn-mediaapproval">Approve</button>
                                     </form>
@@ -154,8 +153,7 @@
                             </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{{ reply.content | safe }}{% if reply.is_banned %}
-<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>
+                            <pre>{{ reply.content | safe }}</pre>
                         </div>
                     </div>
                 </div>

@@ -2,7 +2,7 @@
     <h1 class="board-title">Create Board</h1>
     <div class="form-wrapper flex-center mv-10" bis_skin_checked="1">
         <form class="form-post" action="/api/create_board" method="POST" data-captcha-preload="true">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">URI e.g. /uri/</div><input type="text" name="uri" maxlength="50"
                     pattern="[a-zA-Z0-9]+" required="" title="alphanumeric only" value="{{ form_data.uri if form_data else '' }}">

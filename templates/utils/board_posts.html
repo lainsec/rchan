@@ -19,7 +19,7 @@
                 {% if not is_approved and is_staff %}
                     <div class="media-approval-banner">
                         <form action="/api/approve_media/{{ post.post_id }}" method="POST" style="margin: 0;">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+			    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-mediaapproval">Approve</button>
                         </form>
                     </div>
@@ -76,8 +76,7 @@
                 {% endif %}
             </div>
             <div class="post_content">
-                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...{% else %}{{ post.post_content | safe }}{% endif %}{% if post.is_banned %}
-<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>{% if post.post_content | length >= 500 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
+                <pre>{% if post.post_content | length >= 500 %}{{ post.post_content[:450] | safe }}...{% else %}{{ post.post_content | safe }}{% endif %}</pre>{% if post.post_content | length >= 500 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
             </div>
             <div class="replies">
                 {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
@@ -90,7 +89,7 @@
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
                         {% if reply.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
-                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %}
+                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %} <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }}</a>{% endfor %}</span>
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}
@@ -99,7 +98,7 @@
                                 {% if not is_approved and is_staff %}
                                     <div class="media-approval-banner">
                                         <form action="/api/approve_media/{{ reply.reply_id }}" method="POST" style="margin: 0;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+					    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="is_reply" value="true">
                                             <button type="submit" class="btn-mediaapproval">Approve</button>
                                         </form>
@@ -162,8 +161,7 @@
                             </div>
                         {% endif %}
                         <div class="reply_content">
-                            <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}{% if reply.is_banned %}
-<span class="banned-warning">{{ lang['banned-thread-warn'] }}</span>{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
+                            <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
                         </div>
                     </div>
                 </div>

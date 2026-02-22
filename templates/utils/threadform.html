@@ -12,13 +12,25 @@
                 <h1>{% if post_mode == 'reply' %}{{ lang['threadform-title-new-reply'] }}{% else %}{{ lang["thread-form-button"] }}{% endif %}</h1>
             </div>
             <section class="row">
+                {% set user_roles = (roles|default('')|string|lower) %}
+                {% set is_global_admin = 'owner' in user_roles or 'mod' in user_roles %}
+                {% set is_board_owner = 'username' in session and board_info and session["username"] == board_info.board_owner %}
+                {% set is_board_staff = 'username' in session and board_info and session["username"] in board_info.board_staffs %}
+                {% set is_privileged_for_name = is_global_admin or is_board_owner or is_board_staff %}
+                {% set board_allow_name = (board_info.get('allow_name') if board_info else 1)|int %}
+
+                {% if board_allow_name == 0 and not is_privileged_for_name %}
+                <input type="hidden" name="name" value="{{ form_data.name if form_data else '' }}">
+                {% else %}
                 <div class="label" bis_skin_checked="1">{{ lang['threadform-label-name'] }}</div><input class="mr-1" type="text" name="name"
                     placeholder="{{ lang['threadform-placeholder-name'] }}" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
                     bis_skin_checked="1">×</a>
+                {% endif %}
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-subject'] }}</span></div><input type="text" name="subject"
-                    autocomplete="off" placeholder="{{ lang['threadform-placeholder-subject'] }}" maxlength="50" value="{{ form_data.subject if form_data else '' }}">
+                    autocomplete="off" placeholder="{{ lang['threadform-placeholder-subject'] }}" maxlength="50" value="{{ form_data.subject if form_data else '' }}">{% if board_info and (board_info.allow_name|int == 0) %}<a class="close postform-style" href="#!"
+                    bis_skin_checked="1">×</a>{% endif %}
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-message'] }}</span><small>(0/20000)</small></div><textarea

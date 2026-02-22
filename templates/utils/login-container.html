@@ -3,7 +3,7 @@
     <div class="form-wrapper flex-center mv-10" bis_skin_checked="1">
         <form class="form-post" action="/api/auth_user" method="POST"><input type="hidden" name="goto"
                 value="/account.html">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">Username</div><input type="text" name="username" maxlength="50"
                     required="">

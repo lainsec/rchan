@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ lang['dashboard-page-title-users'] }}{{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -356,6 +357,7 @@
             <!-- Search and Filter -->
             <div class="search-container">
                 <form action="" method="GET" class="search-form">
+		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="text" name="search" class="search-input" placeholder="{{ lang['dashboard-search-placeholder'] }}" value="{{ search_query }}">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> {{ lang['dashboard-search-btn'] }}</button>
                 </form>
@@ -400,6 +402,7 @@
                             <td>
                                 {% if user.username != username %}
                                     <form action="/api/change_user_role" method="POST" style="display:inline;">
+					<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="username" value="{{ user.username }}">
                                         {% if user.role == 'mod' %}
                                             <input type="hidden" name="role" value="user">

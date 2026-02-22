@@ -152,6 +152,12 @@ pre {
     max-width: 35em;
 }
 
+.video-close-btn {
+    margin-left: 5px;
+    color: var(--cor-secundaria);
+    text-decoration: none;
+}
+
 .command-block ol{
     text-wrap-mode: nowrap;
     padding-left: 1.5em;
@@ -404,6 +410,18 @@ dialog::backdrop {
 .spoiler {
   background-color: #000;
   color: #000;
+}
+
+.media-approval-banner {
+    padding: 5px;
+    border: 1px dashed var(--cor-borda);
+    margin-left: 5px;
+}
+
+.btn-mediaapproval {
+    background-color: var(--cor-borda);
+    border: 1px solid #000;
+    color: #fff;
 }
 
 .spoiler:hover {
@@ -1336,7 +1354,7 @@ img#post_video_thumbnail {
   border: 1px solid var(--cor-borda);
   padding: 1em;
   color: #fff;
-  width: 25%;
+  width: 12em;
   height: 23em;
   gap: 1em;
   overflow: hidden;
@@ -1725,7 +1743,7 @@ img#post_video_thumbnail {
     line-height: 1;
   }
   .catalog-container .catalog-post{
-    width: 75%;
+    width: 12em;
   }
   .index-fixed-pages{
     width: calc(90% - 2em);

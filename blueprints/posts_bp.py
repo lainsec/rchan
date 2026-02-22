@@ -1,9 +1,10 @@
 from flask import current_app, Blueprint, render_template, redirect, request, flash, session, make_response
-from database_modules import database_module, moderation_module, formatting
+from database_modules import database_module, moderation_module, formatting, language_module
 from flask_socketio import SocketIO, emit
 from datetime import datetime, timedelta
 from PIL import Image, ImageOps
 import magic
+import uuid
 import cv2
 import re
 import os
@@ -14,17 +15,70 @@ posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
 # Post handling class
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None):
+    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None, thread_id=None):
         self.socketio = socketio
         self.user_ip = user_ip
         self.cookie_ip = cookie_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
-        self.post_name = 'ドワーフ' if post_name == '' else formatting.escape_html_post_info(post_name)
+
+        board_info = database_module.get_board_info(board_id)
+        try:
+            allow_name_raw = board_info.get('allow_name', 1) if board_info else 1
+            allow_name = int(allow_name_raw)
+        except (ValueError, TypeError):
+            allow_name = 1
+
+        username = self.account_name
+        roles = database_module.get_user_role(username) if username else None
+        roles_lower = roles.lower() if roles else ''
+
+        board_default_name = ''
+        if board_info:
+            board_default_name = board_info.get('default_poster_name') or ''
+            board_owner = board_info.get('board_owner')
+            board_staffs = board_info.get('board_staffs', [])
+        else:
+            board_owner = None
+            board_staffs = []
+
+        chan_default_name = "Anonymous"
+        try:
+            chan_config_manager = moderation_module.ChanConfigManager()
+            chan_config = chan_config_manager.get_config()
+            chan_default_name = chan_config.get('default_poster_name', "Anonymous") or "Anonymous"
+        except Exception:
+            chan_default_name = "Anonymous"
+
+        is_global_admin = 'owner' in roles_lower or 'mod' in roles_lower
+        is_board_owner = bool(username and board_owner and username == board_owner)
+        is_board_staff = bool(username and username in board_staffs)
+        is_privileged_for_name = is_global_admin or is_board_owner or is_board_staff
+
+        raw_post_name = post_name or ''
+
+        if allow_name or is_privileged_for_name:
+            if raw_post_name.strip():
+                effective_name = raw_post_name
+            else:
+                effective_name = board_default_name or chan_default_name
+        else:
+            effective_name = board_default_name or chan_default_name
+
+        self.post_name = formatting.escape_html_post_info(effective_name)
         self.post_subject = formatting.escape_html_post_info(post_subject)
         self.board_id = board_id
+        self.thread_id = thread_id
         self.original_content = comment
-        self.comment = formatting.format_comment(comment)
+        try:
+            self.current_post_id = database_module.get_max_post_id() + 1
+        except Exception:
+            self.current_post_id = None
+        self.comment = formatting.format_comment(
+            comment,
+            current_post_id=self.current_post_id,
+            current_thread_id=self.thread_id
+        )
         self.embed = embed
         self.captcha_input = captcha_input
         # Apply word filters
@@ -40,6 +94,7 @@ class PostHandler:
     ban_manager = moderation_module.BanManager()
     # Check if the user is banned
     def check_banned(self):
+        lang = language_module.get_user_lang('default')
         banned_current = self.ban_manager.is_banned(self.user_ip)
         banned_cookie = {'is_banned': False}
 
@@ -76,26 +131,29 @@ class PostHandler:
                 continue
             boards = status.get('boards')
             if boards is None or boards == [] or None in boards:
-                flash(f"You are banned from this board, reason: {status.get('reason')}")
+                flash(lang["flash-banned-from-board"].format(reason=status.get('reason')))
                 return False
             if self.board_id in boards:
-                flash(f"You are banned from this board, reason: {status.get('reason')}")
+                flash(lang["flash-banned-from-board"].format(reason=status.get('reason')))
                 return False
         return True
     # Check if the user is in timeout
     def check_timeout(self):
         timeout_status = self.timeout_manager.check_timeout(self.user_ip)
         if timeout_status.get('is_timeout', False):
-            flash('Wait a few seconds to post again.')
+            lang = language_module.get_user_lang('default')
+            flash(lang["flash-timeout-wait"])
             return False
         return True
     # Validate the comment length and content
     def validate_comment(self):
         if len(self.comment) >= 20000:
-            flash('You reached the limit.')
+            lang = language_module.get_user_lang('default')
+            flash(lang["flash-comment-length-limit"])
             return False
         if self.comment == '':
-            flash('You have to type something, you bastard.')
+            lang = language_module.get_user_lang('default')
+            flash(lang["flash-comment-required"])
             return False
         return True
     # Process uploaded files
@@ -137,6 +195,7 @@ class PostHandler:
         thumb_folder = './static/post_images/thumbs/' if is_thread else './static/reply_images/thumbs/'
         os.makedirs(thumb_folder, exist_ok=True)
 
+        lang = language_module.get_user_lang('default')
         for index, file in enumerate(files):
             if file.filename != '' and file.filename.lower().endswith(('.jpeg', '.jpg', '.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
                 # Verify the real type of the content
@@ -145,11 +204,14 @@ class PostHandler:
                 file.stream.seek(0)  # Go to the start to save
 
                 if mime_type not in allowed_mime_types:
-                    flash("Stop trying to hack the website, bruh.")
+                    flash(lang["flash-invalid-file-type"])
                     return [], []
 
-                filename = os.path.basename(file.filename)
-                base, ext = os.path.splitext(filename)
+                original_filename = os.path.basename(file.filename)
+                _, ext = os.path.splitext(original_filename)
+
+                base = uuid.uuid4().hex
+                filename = f"{base}{ext.lower()}"
 
                 if index < len(file_options):
                     opts = file_options[index]
@@ -247,17 +309,18 @@ class PostHandler:
 
     # Handle reply posts
     def handle_reply(self, reply_to):
+        lang = language_module.get_user_lang('default')
         if not database_module.check_replyto_exist(int(reply_to)):
-            flash("This thread don't even exist, dumb!")
+            flash(lang["flash-thread-not-exist"])
             return False
         # Check if the thread is locked
         if database_module.verify_locked_thread(int(reply_to)):
-            flash("This thread is locked.")
+            flash(lang["flash-thread-locked"])
             return False
         # check if the captcha is correct
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
-                flash("Invalid captcha.")
+                flash(lang["flash-invalid-captcha"])
                 return False
         
         upload_folder = './static/reply_images/'
@@ -368,9 +431,10 @@ class PostHandler:
 
     # Handle new thread posts
     def handle_post(self):
+        lang = language_module.get_user_lang('default')
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
-                flash("Invalid captcha.")
+                flash(lang["flash-invalid-captcha"])
                 return False
         
         upload_folder = './static/post_images/'
@@ -384,7 +448,7 @@ class PostHandler:
             saved_files.append(embed_file)
         
         if not saved_files:
-            flash("You need to upload at least one image/video to start a thread.")
+            flash(lang["flash-thread-requires-media"])
             return False
         name_parts = self.post_name.split('#', 1)
         display_name = name_parts[0]
@@ -430,19 +494,26 @@ def new_post():
         captcha_input = request.form['captcha']
     
     if formatting.filter_xss(comment) or formatting.filter_xss(post_name):
-        flash('You cant use HTML tags.')
+        lang = language_module.get_user_lang('default')
+        flash(lang["flash-html-tags-not-allowed"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
-    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip)
+    thread_id = None
+    if post_mode == "reply":
+        thread_id = request.form.get('thread_id')
+
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip, thread_id)
     
     if len(post_name) > 40:
-        flash("You've reached the limit of characteres in the name parameter")
+        lang = language_module.get_user_lang('default')
+        flash(lang["flash-name-length-limit"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
     
     if len(post_subject) > 50:
-        flash("You've reached the limit of characteres in the subject parameter")
+        lang = language_module.get_user_lang('default')
+        flash(lang["flash-subject-length-limit"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
 
@@ -462,21 +533,40 @@ def new_post():
         if not handler.handle_reply(reply_to):
             session['form_data'] = request.form.to_dict()
             return redirect(request.referrer)
+        try:
+            allowlist_manager = moderation_module.ThreadCreationAllowlistManager()
+            allowlist_manager.allow_for_hours(user_ip, hours=2)
+        except Exception as e:
+            print(f"Allowlist error on reply: {e}")
     else:
+        lang = language_module.get_user_lang('default')
         match = re.match(r'^>>(\d+)', comment)
         if match:
             reply_to = match.group(1)
             if not database_module.check_post_exist(int(reply_to)):
                 reply_to = request.form.get('thread_id', '')
                 if not reply_to:
-                    flash("Invalid thread reference.")
+                    flash(lang["flash-invalid-thread-reference"])
                     session['form_data'] = request.form.to_dict()
                     return redirect(request.referrer)
             
             if not handler.handle_reply(reply_to):
                 session['form_data'] = request.form.to_dict()
                 return redirect(request.referrer)
+            try:
+                allowlist_manager = moderation_module.ThreadCreationAllowlistManager()
+                allowlist_manager.allow_for_hours(user_ip, hours=2)
+            except Exception as e:
+                print(f"Allowlist error on reply: {e}")
         else:
+            try:
+                allowlist_manager = moderation_module.ThreadCreationAllowlistManager()
+                if database_module.count_posts_in_board(board_id) > 0 and not allowlist_manager.is_ip_allowed(user_ip):
+                    flash(lang["flash-thread-reply-before-post"])
+                    session['form_data'] = request.form.to_dict()
+                    return redirect(request.referrer)
+            except Exception as e:
+                print(f"Allowlist error on thread creation check: {e}")
             if not handler.validate_comment():
                 session['form_data'] = request.form.to_dict()
                 return redirect(request.referrer)

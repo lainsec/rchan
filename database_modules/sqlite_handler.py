@@ -139,13 +139,21 @@ class SQLiteHandler:
             rows = cursor.fetchall()
             return [self._deserialize(table_name, row) for row in rows]
             
-    def add_column(self, table_name, column_name):
-        # Default to TEXT as per generic add
-        # LainDB adds as 'str'
-        self.column_types[table_name][column_name] = 'str'
+    def add_column(self, table_name, column_name, col_type='str'):
+        if table_name not in self.column_types:
+            self.column_types[table_name] = {}
+
+        self.column_types[table_name][column_name] = col_type
+
+        sql_type = "TEXT"
+        if col_type == 'int':
+            sql_type = "INTEGER"
+        elif col_type == 'float':
+            sql_type = "REAL"
+
         try:
             with self._get_connection() as conn:
-                conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} TEXT")
+                conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {sql_type}")
         except sqlite3.OperationalError:
             # Column might already exist
             pass

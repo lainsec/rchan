@@ -61,6 +61,17 @@ function getCurrentBoard() {
     return segments[0] || '';
 }
 
+function shouldHaveRainbowText(id) {
+    const s = String(id);
+    if (s === '1') return true;
+    if (s.length >= 2) {
+        const last = s[s.length - 1];
+        const secondLast = s[s.length - 2];
+        return last === secondLast;
+    }
+    return false;
+}
+
 let catalogOriginalOrder = [];
 let catalogCurrentSort = 'bump';
 
@@ -205,6 +216,7 @@ function addNewCatalogThread(post) {
     const displayName = post.name === '' ? 'ドワーフ' : post.name;
     const filesCount = post.files ? post.files.length : 0;
     const thumbHTML = generateCatalogThumbHTML(post.files, post.media_approved);
+    const rainbowClass = shouldHaveRainbowText(post.id) ? ' rainbowtext' : '';
     const threadHTML = ''
         + '<div class="catalog-post" id="' + post.id + '">'
         + '    <div class="catalog-post-info">'
@@ -212,7 +224,7 @@ function addNewCatalogThread(post) {
         + '        <span class="name">' + displayName + '</span>'
         + '        <span class="postDate" data-original-date="' + post.date + '" title="' + post.date + '">agora mesmo</span>'
         + '        <a href="/' + post.board + '/thread/' + post.id + '" class="postLink">No. </a> '
-        + '        <a class="postLink" href="/' + post.board + '/thread/' + post.id + '" class="postNumber">' + post.id + '</a>'
+        + '        <a class="postLink' + rainbowClass + '" href="/' + post.board + '/thread/' + post.id + '" class="postNumber">' + post.id + '</a>'
         + '        <a class="postLink" href="/' + post.board + '/thread/' + post.id + '"> [Replies]</a>'
         + '        <div class="catalog-post-counter">'
         + '            R: 0 / F: ' + filesCount + ' / P: 1'
@@ -440,8 +452,8 @@ if (document.readyState === 'loading') {
 }
 
 function addNewThread(post) {
-    // Use default name if empty
     const displayName = post.name === '' ? 'ドワーフ' : post.name;
+    const rainbowClass = shouldHaveRainbowText(post.id) ? ' rainbowtext' : '';
     
     const threadHTML = `
         <div class="divisoria"></div>
@@ -452,7 +464,7 @@ function addNewThread(post) {
                 <span class="nameBlock"><span class="name">${displayName}</span></span>
                 <span class="postDate" data-original-date="${post.date}" title="${post.date}">agora mesmo</span>
                 <a href="/${post.board}/thread/${post.id}" class="postLink" bis_skin_checked="1">No. </a> 
-                <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1">${post.id}</a>
+                <a class="postLink${rainbowClass}" href="/${post.board}/thread/${post.id}" bis_skin_checked="1">${post.id}</a>
                 <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1"> [Replies]</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em; padding-left: 1em;" bis_skin_checked="1">
                     <!-- ... rest of the thread HTML ... -->
@@ -472,8 +484,8 @@ function addNewThread(post) {
 }
 
 function addNewReply(reply) {
-    // Use default name if empty
     const displayName = reply.name === '' ? 'ドワーフ' : reply.name;
+    const rainbowClass = shouldHaveRainbowText(reply.id) ? ' rainbowtext' : '';
     
     const replyHTML = `
         <div class="reply" id="${reply.id}" bis_skin_checked="1">
@@ -482,7 +494,7 @@ function addNewReply(reply) {
                 <span class="nameBlock"><span class="name">${displayName}</span></span>
                 <span class="postDate" data-original-date="${reply.date}" title="${reply.date}">agora mesmo</span>
                 <a href="/${reply.board}/thread/${reply.thread_id}" class="postLink" bis_skin_checked="1">No. </a> 
-                <a class="postLink" href="/${reply.board}/thread/${reply.thread_id}#${reply.id}" onclick="quotePostId(${reply.id})" bis_skin_checked="1">${reply.id}</a>
+                <a class="postLink${rainbowClass}" href="/${reply.board}/thread/${reply.thread_id}#${reply.id}" onclick="quotePostId(event, ${reply.id}); return false;" bis_skin_checked="1">${reply.id}</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;" bis_skin_checked="1">
                     <form action="/delete_reply/${reply.id}" method="post">
                         <input type="hidden" name="board_owner" value="${reply.board}">

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard - {{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -810,7 +811,7 @@
                             <div class="config-item">
                                 <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-free-board-creation"] }}</label>
                                 <form id="dashboardFreeBoardForm" action="/api/toggle_free_board_creation" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="free_board_creation_option" onchange="document.getElementById('dashboardFreeBoardForm').submit();" class="config-select">
                                         <option value="" disabled>{{ lang["dashboard-free-board-creation-select"] }}</option>
                                         <option value="enable" {% if chan_config['free_board_creation'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
@@ -822,30 +823,70 @@
 
                             <!-- Sidebar Layout -->
                             <div class="config-item">
-                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Sidebar layout</label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-sidebar-layout"] }}</label>
                                 <form id="dashboardSidebarLayoutForm" action="/api/toggle_sidebar_layout" method="POST">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="sidebar_option" onchange="document.getElementById('dashboardSidebarLayoutForm').submit();" class="config-select">
-                                        <option value="" disabled {% if chan_config['sidebar_enabled'] not in [0, 1] %}selected{% endif %}>Selecionar opção</option>
+                                        <option value="" disabled {% if chan_config['sidebar_enabled'] not in [0, 1] %}selected{% endif %}>{{ lang["dashboard-free-board-creation-select"] }}</option>
                                         <option value="enable" {% if chan_config['sidebar_enabled'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
                                         <option value="disable" {% if chan_config['sidebar_enabled'] == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
                                     </select>
                                 </form>
-                                <small style="display: block; margin-top: 0.5rem; color: #666;">Ativar ou desativar o layout com sidebar na página inicial.</small>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-sidebar-layout-desc"] }}</small>
                             </div>
                         </div>
 
                         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 1.5rem;">
 
-                        <!-- Index News -->
-                        <div class="config-item">
-                            <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-news-config"] }}</label>
-                            <form id="dashboardNewsForm" action="/api/change_news" method="POST">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <textarea name="news" class="config-select" style="max-width: -webkit-fill-available; min-height: 100px; margin-bottom: 0.5rem; cursor: text; resize: vertical;" placeholder="{{ lang["dashboard-news-placeholder"] }}">{{ chan_config['index_news'] }}</textarea>
-                                <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-news-save"] }}</button>
-                            </form>
-                            <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-news-desc"] }}</small>
+                        <!-- Default poster name, max pages & posts per page -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-default-poster-name"] }}</label>
+                                <form id="dashboardChanDefaultsForm" action="/api/update_chan_defaults" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="text"
+                                           name="default_poster_name"
+                                           class="config-select"
+                                           style="width: -webkit-fill-available; cursor: text;"
+                                           value="{{ chan_config.get('default_poster_name', 'Anonymous') }}">
+                                    <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-default-poster-name-desc"] }}</small>
+
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-max-pages-per-board"] }}</label>
+                                        <input type="number"
+                                               min="0"
+                                               name="max_pages_per_board"
+                                               class="config-select"
+                                               style="width: -webkit-fill-available; cursor: text;"
+                                               value="{{ chan_config.get('max_pages_per_board', 0) }}">
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-max-pages-per-board-desc"] }}</small>
+                                    </div>
+
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-posts-per-page"] }}</label>
+                                        <input type="number"
+                                               min="1"
+                                               name="posts_per_page"
+                                               class="config-select"
+                                               style="width: -webkit-fill-available; cursor: text;"
+                                               value="{{ chan_config.get('posts_per_page', 6) }}">
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-posts-per-page-desc"] }}</small>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{{ lang["dashboard-save-config"] }}</button>
+                                </form>
+                            </div>
+
+                            <!-- Index News -->
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-news-config"] }}</label>
+                                <form id="dashboardNewsForm" action="/api/change_news" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <textarea name="news" class="config-select" style="max-width: -webkit-fill-available; min-height: 100px; margin-bottom: 0.5rem; cursor: text; resize: vertical;" placeholder="{{ lang["dashboard-news-placeholder"] }}">{{ chan_config['index_news'] }}</textarea>
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-news-save"] }}</button>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-news-desc"] }}</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -905,7 +946,7 @@
                             </a>
                             
                             <form action="/api/apply_captcha_on_board/{{ board.board_uri }}" method="post" style="display:inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 {% if board.enable_captcha == 1 %}
                                     <button type="submit" class="btn btn-icon btn-danger" name="boardcaptcha_option" value="disable" title="{{ lang["dashboard-disable-captcha-title"] }}">
                                         <i class="fas fa-lock-open"></i>
@@ -918,7 +959,18 @@
                             </form>
 
                             {% if 'owner' in roles.lower() or 'mod' in roles.lower() or username == board.board_owner %}
-                                <button type="button" class="btn btn-icon btn-primary" onclick='openEditBoardModal({{ board.board_uri|tojson }}, {{ board.board_owner|tojson }}, {{ board.board_name|tojson }}, {{ board.board_desc|tojson }}, {{ (board.tag or "")|tojson }}, {{ (board.require_media_approval or 0)|tojson }})' title="{{ lang["dashboard-edit-board-title"] }}">
+                                <button type="button" class="btn btn-icon btn-primary" onclick='openEditBoardModal(
+                                        {{ board.board_uri|tojson }},
+                                        {{ board.board_owner|tojson }},
+                                        {{ board.board_name|tojson }},
+                                        {{ board.board_desc|tojson }},
+                                        {{ (board.tag or "")|tojson }},
+                                        {{ (board.require_media_approval or 0)|tojson }},
+                                        {{ (board.default_poster_name or "")|tojson }},
+                                        {{ (board.max_pages or 0)|tojson }},
+                                        {{ (board.default_css or "")|tojson }},
+                                        {{ (board.allow_name if board.get("allow_name") is not none else 1)|tojson }}
+                                    )' title="{{ lang["dashboard-edit-board-title"] }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button type="button" class="btn btn-icon btn-warning" onclick='openStaffModal("{{ board.board_uri }}", "{{ board.board_name }}", {{ board.board_staffs|tojson }})' title="{{ lang["dashboard-manage-staff-title"] }}">
@@ -929,14 +981,14 @@
                             {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
                                 {% if board.board_isvisible == 1 %}
                                 <form action="/api/hide_board/{{ board.board_uri }}" method="POST" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+			            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-icon btn-secondary" title="{{ lang["dashboard-hide-board"] }}">
                                         <i class="fas fa-eye-slash"></i>
                                     </button>
                                 </form>
                                 {% else %}
                                 <form action="/api/unhide_board/{{ board.board_uri }}" method="POST" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-icon btn-secondary" title="{{ lang["dashboard-unhide-board"] }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -945,7 +997,7 @@
                             {% endif %}
 
                             <form action="/api/remove_board/{{ board.board_uri }}" method="POST" style="display:inline; margin-left: auto;" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-board"] }}', () => this.submit());">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+			        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-icon btn-danger" title="{{ lang["dashboard-delete-board"] }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -1012,17 +1064,17 @@
                             
                             <div style="margin-top: auto; padding-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 <form action="/api/resolve_report/{{ report.id }}" method="POST" style="margin:0; flex: 1;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-success" style="width: 100%; justify-content: center;" title="{{ lang["dashboard-mark-resolved"] }}"><i class="fas fa-check"></i> {{ lang["dashboard-resolve"] }}</button>
                                 </form>
                                 {% if report.is_reply %}
                                 <form action="/api/delete_reply/{{ report.post_id }}" method="POST" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-reply"] }}', () => this.submit());" style="margin:0;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="{{ lang["dashboard-delete-reply"] }}"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% else %}
                                 <form action="/api/delete_post/{{ report.post_id }}" method="POST" onsubmit="event.preventDefault(); openConfirmModal('{{ lang["dashboard-confirm-delete-post"] }}', () => this.submit());" style="margin:0;">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+				    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-danger" title="{{ lang["dashboard-delete-post"] }}"><i class="fas fa-trash"></i></button>
                                 </form>
                                 {% endif %}
@@ -1079,7 +1131,7 @@
                                         <td>{{ info.end_time }}</td>
                                         <td>
                                             <form action="/api/remove_timeout/{{ info.timeout_id }}" method="POST">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
                                             </form>
                                         </td>
@@ -1137,7 +1189,7 @@
                                         </td>
                                         <td>
                                             <form action="/api/remove_ban/{{ info.ban_id }}" method="POST">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+						<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
                                             </form>
                                         </td>
@@ -1167,7 +1219,7 @@
             <div class="modal-body">
                 <!-- Add Staff Form -->
                 <form id="addStaffForm" method="POST" class="add-staff-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="input-group">
                         <input type="text" name="username" placeholder="{{ lang["dashboard-placeholder-username"] }}" required class="form-input">
                         <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> {{ lang["dashboard-btn-add"] }}</button>
@@ -1192,7 +1244,7 @@
             </div>
             <div class="modal-body">
                 <form id="banUserForm" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label for="ban_reason" style="display: block; margin-bottom: 0.5rem;">{{ lang["dashboard-modal-reason"] }}</label>
                         <input type="text" name="ban_reason" id="ban_reason" class="form-input" required style="width: 100%; box-sizing: border-box;">
@@ -1266,7 +1318,7 @@
             </div>
             <div class="modal-body">
                 <form action="/api/edit_board_info" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+		    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="board_uri" id="edit_board_uri">
 
                     <div class="form-group">
@@ -1289,9 +1341,37 @@
                         <input type="text" name="tags" id="edit_board_tags" class="form-input" style="width: 100%; box-sizing: border-box;" placeholder="Ex: Anime, Tech, Random">
                     </div>
 
-                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
-                        <input type="checkbox" name="require_media_approval" id="edit_board_media_approval" style="width: auto;">
-                        <label for="edit_board_media_approval" class="form-label" style="margin: 0; cursor: pointer;">Require Media Approval</label>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" name="require_media_approval" id="edit_board_media_approval" style="width: auto;">
+                            <label for="edit_board_media_approval" class="form-label" style="margin: 0; cursor: pointer;">Require Media Approval</label>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" name="allow_name" id="edit_board_allow_name" style="width: auto;">
+                            <label for="edit_board_allow_name" class="form-label" style="margin: 0; cursor: pointer;">Permitir usuários usarem nome</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="edit_board_default_poster_name" class="form-label">Default poster name (board)</label>
+                        <input type="text" name="default_poster_name" id="edit_board_default_poster_name" class="form-input" style="width: 100%; box-sizing: border-box;">
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="edit_board_max_pages" class="form-label">Max pages (board)</label>
+                        <input type="number" min="0" name="max_pages" id="edit_board_max_pages" class="form-input" style="width: 100%; box-sizing: border-box;">
+                        <small style="display:block; margin-top:4px; color:#888;">Não pode ultrapassar o limite global configurado em General Config.</small>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="edit_board_default_css" class="form-label">Default CSS (board)</label>
+                        <select name="default_css" id="edit_board_default_css" class="form-input" style="width: 100%; box-sizing: border-box;">
+                            <option value="">Padrão do site</option>
+                            {% for theme in custom_themes %}
+                                <option value="{{ theme.theme_file }}">{{ theme.theme_name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                     <div class="modal-footer">
@@ -1306,13 +1386,27 @@
     <!-- Scripts for interactivity can be added here -->
     <script>
         // Edit Board Modal
-        function openEditBoardModal(uri, owner, name, desc, tag, requireMediaApproval) {
+        function openEditBoardModal(uri, owner, name, desc, tag, requireMediaApproval, defaultPosterName, maxPages, defaultCss, allowName) {
             document.getElementById('edit_board_uri').value = uri;
             document.getElementById('edit_board_owner').value = owner;
             document.getElementById('edit_board_name').value = name;
             document.getElementById('edit_board_desc').value = desc;
             document.getElementById('edit_board_tags').value = tag || '';
             document.getElementById('edit_board_media_approval').checked = requireMediaApproval == 1;
+            const allowNameBool = (allowName === 1 || allowName === true || allowName === '1' || allowName === 'true');
+            document.getElementById('edit_board_allow_name').checked = allowNameBool;
+            document.getElementById('edit_board_default_poster_name').value = defaultPosterName || '';
+            document.getElementById('edit_board_max_pages').value = maxPages || 0;
+
+            const select = document.getElementById('edit_board_default_css');
+            if (select) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === (defaultCss || '')) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
             const modal = document.getElementById('editBoardModal');
             modal.style.display = 'flex';
         }
@@ -1388,7 +1482,7 @@
                     li.innerHTML = `
                         <span class="staff-username">${username}</span>
                         <form action="/api/remove_board_staff/${boardUri}" method="POST" style="margin:0;" onsubmit="event.preventDefault(); openConfirmModal(\`{{ lang["dashboard-js-remove"] }} ${username} {{ lang["dashboard-js-from-staff"] }}\`, () => this.submit());">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+			    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="username" value="${username}">
                             <button type="submit" class="btn-icon btn-danger" title="{{ lang["dashboard-js-remove-staff-tooltip"] }}">
                                 <i class="fas fa-trash"></i>
