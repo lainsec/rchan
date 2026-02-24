@@ -22,7 +22,7 @@ python3 app.py
 - [x] Fully configurable through the dashboard, allowing real-time adjustments without code changes.
 - [x] Free creation of boards for all users (Toggleable).
 - [x] Lightweight source code.
-- [x] Fully usable withouy JS enabled.
+- [x] Fully usable without JS enabled.
 - [x] Real-time posts with websocket.
 - [x] Responsive style for mobile.
 - [x] Tripcode system with SHA256.
@@ -42,4 +42,4 @@ GNU AGPLv3, see [LICENSE](https://github.com/lainsec/rchan/blob/master/LICENSE)
 
 # Help
 For those who wants to help keep the project up:
-Ethereum: `0x289cf02233dDE601959d9D6DC9D3D91194583fbb`
+Ethereum: `0x6107BD27BcCB4305224320Ca03057E192b18fa75`

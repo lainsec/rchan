@@ -32,11 +32,6 @@
             {% for post in posts %}
             <div class="catalog-post" id="{{ post.post_id }}">
                 <div class="catalog-post-info">
-                    <input type="checkbox" name="" id="">
-                    <span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span>
-                    <span class="postDate" data-original-date="{{ post.post_date }}" title="{{ post.post_date }}">{{ post.post_date }}</span>
-                    <a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
-                    <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
                     <div class="catalog-post-counter">
                         {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
                         R: {{ post_replies | length }} / F: {{ post.post_images | length }} / P: 1

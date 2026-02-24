@@ -459,7 +459,7 @@ function addNewThread(post) {
         <div class="divisoria"></div>
         <div class="post" post-role="${post.role}" id="${post.id}" bis_skin_checked="1">
             <div class="postInfo" bis_skin_checked="1">
-                <a href="javascript:void(0);" title="hide thread" class="hide-thread" thread_to_hide="${post.id}" style="color: #000; text-decoration: none; letter-spacing: 1.5px;">[-]</a>
+                <a href="javascript:void(0);" title="hide thread" class="hide-thread" thread_to_hide="${post.id}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
                 <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="${post.id}" form="banDeleteForm">
                 <span class="nameBlock"><span class="name">${displayName}</span></span>
                 <span class="postDate" data-original-date="${post.date}" title="${post.date}">agora mesmo</span>

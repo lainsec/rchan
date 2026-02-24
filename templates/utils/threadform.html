@@ -29,7 +29,7 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-subject'] }}</span></div><input type="text" name="subject"
-                    autocomplete="off" placeholder="{{ lang['threadform-placeholder-subject'] }}" maxlength="50" value="{{ form_data.subject if form_data else '' }}">{% if board_info and (board_info.allow_name|int == 0) %}<a class="close postform-style" href="#!"
+                    autocomplete="off" placeholder="{{ lang['threadform-placeholder-subject'] }}" maxlength="50" value="{{ form_data.subject if form_data else '' }}">{% if board_allow_name == 0 and not is_privileged_for_name %}<a class="close postform-style" href="#!"
                     bis_skin_checked="1">×</a>{% endif %}
             </section>
             <section class="row">

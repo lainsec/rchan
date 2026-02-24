@@ -7,7 +7,7 @@
         <div class="postInfo">
             <a href="javascript:void(0);" title="{{ lang['thread-hide-title'] }}" class="hide-thread" thread_to_hide="{{ post.post_id }}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
-            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
+            <span class="nameBlock"><span class="name">{% if post.post_user == ''%}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
             {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>

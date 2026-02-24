@@ -4,7 +4,7 @@
     <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" form="banDeleteForm">
-            <span class="nameBlock"><span class="name">{% if post.post_user == '' or post.post_user == 'Anonymous' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
+            <span class="nameBlock"><span class="name">{% if post.post_user == '' %}ドワーフ{% else %}{{ post.post_user | safe }}{% endif %}</span></span>
             {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="#" onclick="quotePostId(event, {{ post.post_id }}); return false;" class="postNumber">{{ post.post_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this post"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
