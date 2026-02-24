@@ -1,12 +1,21 @@
 # Installation
 
 ## How to install
+### linux
 ```bash
 1. git clone https://github.com/lainsec/rchan
 2. cd rchan
 3. python3 -m venv rchanenv
 4. source rchanenv/bin/activate
 5. pip install -r requirements.txt
+```
+### windows
+```bash
+1. git clone https://github.com/lainsec/rchan
+2. cd rchan
+3. python3 -m venv rchanenv
+4. rchanenv\Scripts\activate.bat
+5. pip install -r requirements.txt python-magic-bin
 ```
 ## How to use
 ```bash
