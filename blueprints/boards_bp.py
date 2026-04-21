@@ -245,7 +245,7 @@ def register():
     if 'username' in session:
         return redirect('/conta')
     captcha_text, captcha_image = database_module.generate_captcha()
-    session['captcha_text'] = captcha_text
+    session['captcha_text'] = database_module.hash_captcha(captcha_text)
     print(session['captcha_text'])
     form_data = session.pop('form_data', {})
     return render_template('register.html',captcha_image=captcha_image, form_data=form_data)
@@ -254,7 +254,8 @@ def register():
 def create():
     if 'username' in session:
         captcha_text, captcha_image = database_module.generate_captcha()
-        session['captcha_text'] = captcha_text
+        session['captcha_text'] = database_module.hash_captcha(captcha_text)
+        print(session["captcha_text"])
         form_data = session.pop('form_data', {})
         return render_template('board-create.html',captcha_image=captcha_image, form_data=form_data)
     else:
@@ -318,7 +319,8 @@ def board_page(board_uri):
     
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
-    session['captcha_text'] = captcha_text
+    session['captcha_text'] = database_module.hash_captcha(captcha_text)
+    print(session["captcha_text"])
     
     ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
@@ -363,7 +365,8 @@ def board_catalog(board_uri):
     
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
-    session['captcha_text'] = captcha_text
+    session['captcha_text'] = database_module.hash_captcha(captcha_text)
+    print(session["captcha_text"])
     
     ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
@@ -438,7 +441,8 @@ def replies(board_name, thread_id):
 
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
-    session['captcha_text'] = captcha_text
+    session['captcha_text'] = database_module.hash_captcha(captcha_text)
+    print(session["captcha_text"])
 
     # Get user role if logged in
     roles = 'none'
