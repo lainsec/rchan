@@ -6,6 +6,7 @@ This module handles all database operations for an imageboard system.
 import datetime
 import hashlib
 import random
+import bcrypt
 import base64
 import string
 import pytz
@@ -41,20 +42,14 @@ DB.create_table('boards', {
     'custom_css': 'str',
     'default_poster_name': 'str'
 })
-DB.add_column('boards', 'tag', 'str')
-DB.add_column('boards', 'require_media_approval', 'int')
-DB.add_column('boards', 'allow_name', 'bool')
-DB.add_column('boards', 'allow_thread_self_mod', 'bool')
-DB.add_column('boards', 'max_pages', 'int')
-DB.add_column('boards', 'default_css', 'str')
-DB.add_column('boards', 'custom_css', 'str')
-DB.add_column('boards', 'default_poster_name', 'str')
+
 DB.create_table('accounts', {
     'id': 'int',
     'username': 'str',
     'password': 'str',
     'role': 'str'
 })
+
 DB.create_table('posts', {
     'id': 'int',
     'user_ip': 'str',
@@ -70,7 +65,7 @@ DB.create_table('posts', {
     'visible': 'int',
     'media_approved': 'int'
 })
-DB.add_column('posts', 'media_approved', 'int')
+
 DB.create_table('pinned', {
     'id': 'int',
     'user_ip': 'str',
@@ -82,7 +77,7 @@ DB.create_table('pinned', {
     'post_images': 'list',
     'media_approved': 'int'
 })
-DB.add_column('pinned', 'media_approved', 'int')
+
 DB.create_table('replies', {
     'id': 'int',
     'user_ip': 'str',
@@ -96,8 +91,7 @@ DB.create_table('replies', {
     'media_approved': 'int',
     'replied_at': 'list'
 })
-DB.add_column('replies', 'media_approved', 'int')
-DB.add_column('replies', 'replied_at', 'list')
+
 DB.create_table('users', {
     'id': 'int',
     'user_ip': 'str',
@@ -105,6 +99,17 @@ DB.create_table('users', {
 })
 
 # Utility Functions
+def hash_captcha(text: str) -> str:
+    """
+    Gera hash do captcha usando bcrypt.
+    
+    :param text: Texto do captcha
+    :return: Hash (string)
+    """
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(text.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
 def generate_captcha():
     """Generate a custom CAPTCHA challenge."""
     # 1. Generate text (lowercase + digits)
@@ -196,7 +201,7 @@ def generate_tripcode(post_name, account_name, board_owner, board_staffs):
                 user_role = 'General Moderator'
                 post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             elif existing_user[0]['role'] == 'owner':
-                user_role = 'General Owner'
+                user_role = '!reinchan'
                 post_name = post_name.replace('##', f'<span class="user_name_role">{user_role}</span>')
             elif existing_user[0]['role'] == '' and account_name == board_owner:
                 user_role = 'Board Owner'
@@ -229,9 +234,15 @@ def verify_password(stored_password, provided_password):
     hashed_provided = hashlib.pbkdf2_hmac('sha256', provided_password.encode('utf-8'), salt, 100000)
     return hashed_provided.hex() == hashed
 
-def validate_captcha(captcha_input, captcha_text):
-    """Validate CAPTCHA input."""
-    return captcha_input == captcha_text
+def validate_captcha(captcha_input: str, stored_hash: str) -> bool:
+    """Valida o CAPTCHA comparando com hash bcrypt."""
+    if not captcha_input or not stored_hash:
+        return False
+
+    return bcrypt.checkpw(
+        captcha_input.encode('utf-8'),
+        stored_hash.encode('utf-8')
+    )
 
 def hash_ip(ip):
     if not ip:
@@ -1132,6 +1143,35 @@ def lock_thread(thread_id):
     post_record = post[0]
     post_record['locked'] = 1 if post_record.get('locked', 0) == 0 else 0
     DB.update('posts', post_record['id'], post_record)
+    return True
+
+def delete_media_from_post(thread_id):
+    """Remove imagens de um post ou reply."""
+    
+    post = DB.query('posts', {'post_id': {'==': thread_id}})
+    is_reply = False
+
+    if not post:
+        post = DB.query('replies', {'reply_id': {'==': thread_id}})
+        is_reply = True
+
+    if not post:
+        return False
+
+    post_record = post[0]
+
+    if is_reply:
+        images = post_record.get('images', [])
+        delete_media_files(images, './static/reply_images/')
+        post_record['images'] = []
+        DB.update('replies', post_record['id'], post_record)
+
+    else:
+        images = post_record.get('post_images', [])
+        delete_media_files(images, './static/post_images/', is_video=True)
+        post_record['post_images'] = []
+        DB.update('posts', post_record['id'], post_record)
+
     return True
 
 def pin_post(post_id):
