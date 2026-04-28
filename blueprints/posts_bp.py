@@ -23,6 +23,7 @@ class PostHandler:
         self.post_mode = post_mode
 
         board_info = database_module.get_board_info(board_id)
+
         try:
             allow_name_raw = board_info.get('allow_name', 1) if board_info else 1
             allow_name = int(allow_name_raw)
@@ -53,11 +54,11 @@ class PostHandler:
         is_global_admin = 'owner' in roles_lower or 'mod' in roles_lower
         is_board_owner = bool(username and board_owner and username == board_owner)
         is_board_staff = bool(username and username in board_staffs)
-        is_privileged_for_name = is_global_admin or is_board_owner or is_board_staff
+        self.is_privileged = is_global_admin or is_board_owner or is_board_staff
 
         raw_post_name = post_name or ''
 
-        if allow_name or is_privileged_for_name:
+        if allow_name or self.is_privileged:
             if raw_post_name.strip():
                 effective_name = raw_post_name
             else:
@@ -89,6 +90,16 @@ class PostHandler:
             self.post_subject = filter_manager.apply_filters(self.post_subject)
         except Exception as e:
             print(f"Word filter error: {e}")
+
+    def check_board_locked(self):
+        if self.is_privileged:
+            return False
+            
+        board_info = database_module.get_board_info(self.board_id)
+        if board_info.get("board_islocked") not in (None, 0):
+            return True
+        return False
+
     # Init the managers    
     timeout_manager = moderation_module.TimeoutManager()
     ban_manager = moderation_module.BanManager()
@@ -341,6 +352,13 @@ class PostHandler:
         
         media_approved = self.get_media_approval_status(bool(saved_files))
         
+        # Calculate poster ID hash
+        poster_id = str(abs(hash(str(self.user_ip) + str(reply_to))))[:5]
+        
+        # Get board config for show_thread_poster_id
+        board_info = database_module.get_board_info(self.board_id)
+        show_poster_id = board_info.get('show_thread_poster_id', 0) if board_info else 0
+
         self.socketio.emit('nova_postagem', {
             'type': 'New Reply',
             'post': {
@@ -352,7 +370,11 @@ class PostHandler:
                 'files': saved_files,
                 'media_approved': media_approved,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-                'board': self.board_id
+                'board': self.board_id,
+                'poster_id': poster_id,
+                'show_poster_id': show_poster_id,
+                'user_ip': self.user_ip,
+                'role': 'user' # Default for replies
             }
         }, broadcast=True)
         database_module.add_new_reply(self.user_ip, self.account_name, self.post_subject, reply_to, self.post_name, self.comment, self.embed, saved_files)
@@ -504,7 +526,12 @@ def new_post():
         thread_id = request.form.get('thread_id')
 
     handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip, thread_id)
-    
+
+    if handler.check_board_locked():
+        lang = language_module.get_user_lang('default')
+        flash(lang["flash-board-locked"], 'danger')
+        return redirect(request.referrer)
+
     if len(post_name) > 40:
         lang = language_module.get_user_lang('default')
         flash(lang["flash-name-length-limit"])

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <title>faq.html</title>
+    <style>
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: var(--cor-secundaria);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover {
+            color: rgb(121, 33, 33);
+        }
+        @media (max-width: 700px) {
+            .format-example {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include 'utils/navbar.html' %}
+    
+    <div class="page-content">
+        <div class="faq-container">
+            <div class="index-fixed-pages" style="margin-bottom: 2rem;">
+                <div class="nav-links">
+                    <li><a href="#formatacao">Formatação de Posts</a></li>
+                    <li><a href="#moderacao">Moderação</a></li>
+                    <li><a href="#staff">Staff e Permissões</a></li>
+                    <li><a href="#boards">Gerenciamento de Boards</a></li>
+                </div>
+            </div>
+        {% include 'utils/footer.html' %}
+    </div>
+    <script src="/static/js/boardstyle.js"></script>
+</body>
+</html>

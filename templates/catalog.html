@@ -11,6 +11,11 @@
     {% if board_info.default_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/' ~ board_info.default_css) }}">
     {% endif %}
+    {% if board_info.custom_css %}
+        <style>
+            {{ board_info.custom_css }}
+        </style>
+    {% endif %}
     <title>/{{ board_id }}/ - {{ lang["board-options-catalog"] }}</title>
 </head>
 <body>
@@ -41,18 +46,21 @@
                     <a href="/{{ board_info.board_uri }}/thread/{{ post.post_id }}">
                     {% set is_approved = post.get('media_approved', 1)|int == 1 %}
                     {% set is_staff = 'owner' in roles.lower() or 'mod' in roles.lower() or ('board_owner' in board_info and session.get('username') == board_info.board_owner) or (session.get('username') in board_info.board_staffs) %}
-                    
-                    {% if is_approved or is_staff %}
-                        {% if post.post_images[0].startswith('youtube:') %}
-                            {% set video_id = post.post_images[0].split(':')[1] %}
-                            <img src="https://img.youtube.com/vi/{{ video_id }}/0.jpg">
-                        {% elif post.post_images[0].split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
-                        <img src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ post.post_images[0]|replace('.' ~ post.post_images[0].split('.')[-1], '') ~ '.jpg') }}">
+                    {% if post.post_images|length > 0 %}
+                        {% if is_approved or is_staff %}
+                            {% if post.post_images[0].startswith('youtube:') %}
+                                {% set video_id = post.post_images[0].split(':')[1] %}
+                                <img src="https://img.youtube.com/vi/{{ video_id }}/0.jpg">
+                            {% elif post.post_images[0].split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
+                            <img src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ post.post_images[0]|replace('.' ~ post.post_images[0].split('.')[-1], '') ~ '.jpg') }}">
+                            {% else %}
+                            <img src="/static/post_images/{{ post.post_images[0] }}">
+                            {% endif %}
                         {% else %}
-                        <img src="/static/post_images/{{ post.post_images[0] }}">
-                        {% endif %}
+                            <img src="/static/imgs/decoration/mediapendingapproval.png">
+                    {% endif %}
                     {% else %}
-                        <img src="/static/imgs/decoration/mediapendingapproval.png">
+                        <img src="/static/post_images/decorations/deleted.png" style="margin: 10px; border: 1px dashed var(--cor-borda); color: #888; text-align: center; border-radius: 4px; margin-bottom: 10px;">
                     {% endif %}
                     </a>
                 </div>

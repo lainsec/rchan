@@ -411,6 +411,10 @@ socket.on('nova_postagem', function(data) {
             if (currentPath === `/${currentBoard}` || currentPath === `/${currentBoard}/`) {
                 addNewThread(data.post);
                 markUnseenById(data.post.id);
+                
+                // Re-apply formatting and events for the new content
+                if (typeof manipularConteudo === 'function') manipularConteudo();
+                if (typeof adicionarEventosRepliedQuotes === 'function') adicionarEventosRepliedQuotes();
             } else if (currentPath === `/${currentBoard}/catalog` || currentPath === `/${currentBoard}/catalog/`) {
                 addNewCatalogThread(data.post);
                 markUnseenById(data.post.id);
@@ -420,6 +424,10 @@ socket.on('nova_postagem', function(data) {
             if (parentThread) {
                 addNewReply(data.post);
                 markUnseenById(data.post.id);
+                
+                // Re-apply formatting and events for the new content
+                if (typeof manipularConteudo === 'function') manipularConteudo();
+                if (typeof adicionarEventosRepliedQuotes === 'function') adicionarEventosRepliedQuotes();
             }
             if (currentPath === `/${currentBoard}/catalog` || currentPath === `/${currentBoard}/catalog/`) {
                 updateCatalogPostDate(data.post.thread_id, data.post.date);
@@ -517,15 +525,115 @@ function addNewReply(reply) {
     const repliesContainer = parentThreadEl ? parentThreadEl.querySelector('.replies') : null;
     
     if (repliesContainer) {
-        const hiddenReplies = repliesContainer.querySelector('.hidden-replies');
-        if (hiddenReplies) {
-            hiddenReplies.insertAdjacentHTML('beforebegin', replyHTML);
+        // Check if user is inside the specific thread page
+        const currentPath = window.location.pathname;
+        const isInsideThread = currentPath.match(/\/[^\/]+\/thread\/\d+/);
+        const currentThreadId = isInsideThread ? currentPath.split('/').pop() : null;
+        const isThisSpecificThread = isInsideThread && currentThreadId === String(reply.thread_id);
+        
+        // Insert the new reply at the end of the container
+        repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
+        
+        // ONLY apply the 4-reply limit if NOT inside this specific thread
+        if (!isThisSpecificThread) {
+            // Get all current visible replies (excluding hidden ones)
+            let currentReplies = Array.from(repliesContainer.querySelectorAll('.reply:not(.hidden-reply)'));
+            
+            // Maximum replies to show when outside the thread
+            const maxReplies = 4;
+            
+            if (currentReplies.length > maxReplies) {
+                // Calculate how many to remove
+                const toRemove = currentReplies.length - maxReplies;
+                
+                // Remove the oldest replies (first ones)
+                for (let i = 0; i < toRemove; i++) {
+                    const oldestReply = currentReplies[i];
+                    if (oldestReply && oldestReply.parentNode) {
+                        // Check if we have a hidden-replies container
+                        let existingHiddenReplies = repliesContainer.querySelector('.hidden-replies');
+                        
+                        if (existingHiddenReplies) {
+                            // Move to existing hidden-replies container
+                            existingHiddenReplies.appendChild(oldestReply);
+                            oldestReply.classList.add('hidden-reply');
+                            oldestReply.style.display = 'none';
+
+                            // Update the hidden replies count if possible
+                            const countSpan = existingHiddenReplies.querySelector('span');
+                            if (countSpan) {
+                                const currentText = countSpan.textContent;
+                                const match = currentText.match(/(\d+)/);
+                                if (match) {
+                                    const newCount = parseInt(match[1]) + 1;
+                                    // Use a simpler replacement to avoid destroying the link inside the span if any
+                                    countSpan.innerHTML = countSpan.innerHTML.replace(match[1], newCount);
+                                }
+                            }
+                        } else {
+                            // Create hidden-replies container
+                            const newHiddenReplies = document.createElement('div');
+                            newHiddenReplies.className = 'hidden-replies';
+                            newHiddenReplies.style.display = 'none';
+                            newHiddenReplies.appendChild(oldestReply);
+                            repliesContainer.appendChild(newHiddenReplies);
+                            oldestReply.classList.add('hidden-reply');
+                            
+                            // Add a "show more" button if it doesn't exist
+                            if (!repliesContainer.querySelector('.show-more-replies')) {
+                                const showMoreBtn = document.createElement('button');
+                                const hiddenCount = newHiddenReplies.children.length;
+                                showMoreBtn.textContent = `Show older replies (${hiddenCount})`;
+                                showMoreBtn.className = 'show-more-replies';
+                                showMoreBtn.style.cssText = 'margin: 10px 0; padding: 5px 10px; cursor: pointer; background: var(--cor-fundo); border: 1px solid var(--cor-borda); color: var(--cor-texto);';
+                                showMoreBtn.onclick = function() {
+                                    const hiddenDiv = repliesContainer.querySelector('.hidden-replies');
+                                    if (hiddenDiv) {
+                                        const allHidden = hiddenDiv.querySelectorAll('.reply');
+                                        const count = allHidden.length;
+                                        if (confirm(`Show all ${count} hidden replies?`)) {
+                                            hiddenDiv.style.display = 'block';
+                                            this.style.display = 'none';
+                                        }
+                                    }
+                                };
+                                repliesContainer.insertBefore(showMoreBtn, repliesContainer.firstChild);
+                            } else {
+                                // Update the button text
+                                const showMoreBtn = repliesContainer.querySelector('.show-more-replies');
+                                const hiddenDiv = repliesContainer.querySelector('.hidden-replies');
+                                const hiddenCount = hiddenDiv ? hiddenDiv.children.length : 0;
+                                showMoreBtn.textContent = `Show older replies (${hiddenCount})`;
+                            }
+                        }
+                    }
+                }
+            }
         } else {
-            repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
+            // When inside the thread, show ALL replies (no limit)
+            // Make sure all hidden replies are visible
+            const hiddenDiv = repliesContainer.querySelector('.hidden-replies');
+            if (hiddenDiv) {
+                // Move all replies from hidden div back to main container
+                const hiddenRepliesList = Array.from(hiddenDiv.querySelectorAll('.reply'));
+                hiddenRepliesList.forEach(replyEl => {
+                    replyEl.classList.remove('hidden-reply');
+                    replyEl.style.display = '';
+                    repliesContainer.insertBefore(replyEl, hiddenDiv);
+                });
+                // Remove the hidden container
+                hiddenDiv.remove();
+            }
+            
+            // Remove the "show more" button if it exists
+            const showMoreBtn = repliesContainer.querySelector('.show-more-replies');
+            if (showMoreBtn) {
+                showMoreBtn.remove();
+            }
         }
         
-        const isThreadPage = window.location.pathname.match(/\/[^\/]+\/thread\/\d+/);
-        if (!isThreadPage) {
+        // Move thread to top logic (only when not inside the thread)
+        if (!isInsideThread) {
             const parentThread = document.getElementById(String(reply.thread_id));
             if (parentThread) {
                 const postsBoard = document.getElementById('posts_board');

@@ -1,0 +1,31 @@
+<div class="thread_tools">
+        <input type="checkbox" id="toggle-menu-{{post.post_id}}" class="toggle-menu" hidden>
+        <label for="toggle-menu-{{post.post_id}}">
+            <span class="thread_tools_arrow"></span>
+        </label>
+        <div class="thread_tools_menu">
+            <ul>
+                <li class="post-item"><button class="report mod-action-btn report-option">Report thread</button></li>
+                {% if is_board_owner or is_moderator or is_board_staff %}
+                <form action="/api/pin_post/{{ post.post_id }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <li><button type="submit">Pin thread</button></li>
+                </form>
+                <form action="/api/lock_thread/{{ post.post_id }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <li><button type="submit">{% if post.locked == 0 %}Lock thread{% else %} Unlock thread {% endif %}</button></li>
+                </form>
+                <form action="/api/remove_media/{{ post.post_id }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <li><button type="submit">Delete Files</button></li>
+                </form>
+                {% endif %}
+                {% if post.user_ip == request.remote_addr %}
+                <form action="/api/delete_post/{{ post.post_id }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <li><button type="submit">Delete thread</button></li>
+                </form>
+                {% endif %}
+            </ul>
+        </div>
+    </div>

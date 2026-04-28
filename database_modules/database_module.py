@@ -33,10 +33,12 @@ DB.create_table('boards', {
     'board_staffs': 'list',
     'enable_captcha': 'int',
     'board_isvisible': 'int',
+    'board_islocked': 'int',
     'tag': 'str',
     'require_media_approval': 'int',
-    'allow_name': 'bool',
-    'allow_thread_self_mod': 'bool',
+    'allow_name': 'int',
+    'allow_thread_self_mod': 'int',
+    'show_thread_poster_id': 'int',
     'max_pages': 'int',
     'default_css': 'str',
     'custom_css': 'str',
@@ -71,10 +73,12 @@ DB.create_table('pinned', {
     'user_ip': 'str',
     'post_id': 'int',
     'post_user': 'str',
+    'post_subject': 'str',
     'post_date': 'str',
     'board': 'str',
     'post_content': 'str',
     'post_images': 'list',
+    'locked': 'int',
     'media_approved': 'int'
 })
 
@@ -606,6 +610,9 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         'board_desc': board_description,
         'enable_captcha': 0,
         'board_isvisible': 1,
+        'board_islocked': 0,
+        'allow_thread_self_mod': True,
+        'show_thread_poster_id': False,
         'tag': tag,
         'require_media_approval': 0,
         'default_poster_name': '',
@@ -635,7 +642,8 @@ def unhide_board(board_uri):
     return True
 
 def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, new_board_tag, require_media_approval=None,
-                    default_poster_name=None, max_pages=None, default_css=None, allow_name=None):
+                    default_poster_name=None, max_pages=None, default_css=None, allow_name=None,
+                    allow_thread_self_mod=None, show_thread_poster_id=None, custom_css=None, board_islocked=None):
     """Edit board information."""
     board_info = get_board_info(board_uri)
     if not board_info:
@@ -674,6 +682,30 @@ def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, 
         if value not in (0, 1):
             value = 1
         update_data['allow_name'] = value
+
+    if allow_thread_self_mod is not None:
+        try:
+            value = int(allow_thread_self_mod)
+        except (TypeError, ValueError):
+            value = 0
+        update_data['allow_thread_self_mod'] = value
+
+    if show_thread_poster_id is not None:
+        try:
+            value = int(show_thread_poster_id)
+        except (TypeError, ValueError):
+            value = 0
+        update_data['show_thread_poster_id'] = value
+
+    if board_islocked is not None:
+        try:
+            value = int(board_islocked)
+        except (TypeError, ValueError):
+            value = 0
+        update_data['board_islocked'] = value
+
+    if custom_css is not None:
+        update_data['custom_css'] = custom_css
 
     DB.update('boards', board_info['id'], update_data)
     return True
@@ -1137,11 +1169,16 @@ def verify_locked_thread(thread_id):
 def lock_thread(thread_id):
     """Lock or unlock a thread."""
     post = DB.query('posts', {'post_id': {'==': thread_id}})
-    if not post:
+    pinned = DB.query('pinned', {'post_id': {'==': thread_id}})
+    if not post and not pinned:
         return False
 
     post_record = post[0]
     post_record['locked'] = 1 if post_record.get('locked', 0) == 0 else 0
+    if pinned:
+        pinned_record = pinned[0]
+        pinned_record['locked'] = 1 if post_record.get('locked', 0) == 0 else 0
+        DB.update('pinned', pinned_record['id'], pinned_record)
     DB.update('posts', post_record['id'], post_record)
     return True
 
@@ -1202,12 +1239,13 @@ def pin_post(post_id):
         'user_ip': post['user_ip'],
         'post_id': post['post_id'],
         'post_user': post['post_user'],
+        'post_subject': post['post_subject'],
         'post_date': post['post_date'],
         'board': post['board'],
         'post_content': post['post_content'],
         'media_approved': post.get('media_approved', 1),
-        # Usa post_images se existir, senão usa post_image (para compatibilidade)
-        'post_images': post.get('post_images', [post.get('post_image', '')])
+        'post_images': post.get('post_images', [post.get('post_image', '')]),
+        'locked': post['locked'],
     }
     
     # Remove a chave post_image se existir para manter consistência

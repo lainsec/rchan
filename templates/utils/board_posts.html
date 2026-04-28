@@ -6,12 +6,17 @@
     <div class="post" post-role="operator" id="{{ post.post_id }}">
         <div class="postInfo">
             <a href="javascript:void(0);" title="{{ lang['thread-hide-title'] }}" class="hide-thread" thread_to_hide="{{ post.post_id }}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
+            
             <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="mod-{{ post.post_id }}" form="banDeleteForm">
             <span class="nameBlock"><span class="name">{% if post.post_user == ''%}ドワーフ{% else %}{{ post.post_user | safe }} {% endif %}</span></span>
+            {% if board_info.show_thread_poster_id == 1 %}
+            <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> {{ ((post.user_ip ~ post.post_id) | string).__hash__() | abs | string | truncate(5, True, '') }}</span>
+            {% endif %}
             {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
-                <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a> <button type="submit" class="report mod-action-btn" title="Report this post"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
+            <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
+            {% include 'popups/users/report_post.html' %} {% include 'utils/thread-moderation-options.html' %}
         </div>
         <div class="post_content_container">
                 {% set is_approved = post.get('media_approved', 1)|int == 1 %}
@@ -25,6 +30,9 @@
                     </div>
                 {% endif %}
             <div class="post_files {% if post.post_images|length > 1 %}multiple_files{% endif %}">
+                {% if post.post_images|length < 1 %}
+                    <img src="/static/post_images/decorations/deleted.png" style="margin: 10px; border: 1px dashed var(--cor-borda); color: #888; text-align: center; border-radius: 4px; margin-bottom: 10px;">
+                {% endif %}
                 {% if is_approved or is_staff %}
                 {% for image in post.post_images %}
                     <div class="post_image">
@@ -82,14 +90,24 @@
                 {% set post_replies = replies|selectattr('post_id', 'equalto', post.post_id)|list %}
                 {% set last_4_replies = post_replies[-4:] %}
                 {% set hidden_replies_count = post_replies|length - 4 if post_replies|length > 4 else 0 %}
-
+                {% if hidden_replies_count > 0 %}
+                <div class="hidden-replies">
+                    <span>{{ hidden_replies_count }} {{ lang['hidden-replies'] }} <a href="/{{ board_id }}/thread/{{ post.post_id }}">{{ lang['thread-reply-button'] }}</a></span>
+                </div>
+                {% endif %}
                 {% for reply in last_4_replies %}
                 <div class="reply {% if 'sage' in reply.post_subject.lower() %}sage{% endif %}" id="{{ reply.reply_id }}">
                     <div class="reply-postInfo">
                         <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="{{ post.post_id }}" form="banDeleteForm">
                         <span class="nameBlock"><span class="name">{% if not reply.post_user or reply.post_user == '' %}ドワーフ{% else %}{{ reply.post_user | safe }}{% endif %}</span></span>
+                        {% if board_info.show_thread_poster_id == 1 %}
+                        <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> {{ ((reply.user_ip ~ post.post_id) | string).__hash__() | abs | string | truncate(5, True, '') }}</span>
+                        {% endif %}
                         {% if reply.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
-                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a> <button type="submit" class="report mod-action-btn" title="Report this reply"><i class="fas fa-flag" style="color: var(--cor-secundaria);"></i></button> {% include 'popups/users/report_reply.html' %} {% include 'utils/reply-moderation-options.html' %} <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }}</a>{% endfor %}</span>
+                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a>
+                        {% include 'popups/users/report_reply.html' %} 
+                        {% include 'utils/reply-moderation-options.html' %} 
+                        <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }}</a>{% endfor %}</span>
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}
@@ -130,7 +148,7 @@
                                                     </div>
                                                     {% if image.split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
                                                     <noscript>
-                                                        <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
+                                                        <a href="{{ url_for('static', filename='reply_images/' ~ image) }}" target="_blank">
                                                     </noscript>
                                                     <img class="reply_img post_video_thumbnail {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" id="post_video_thumbnail" draggable="false"
                                                         src="{{ url_for('static', filename='reply_images/thumbs/thumbnail_' ~ image|replace('.' ~ image.split('.')[-1], '') ~ '.jpg') }}">
@@ -141,7 +159,7 @@
                                                             src="{{ url_for('static', filename='reply_images/' ~ image) }}"></video>
                                                     {% else %}
                                                         <noscript>
-                                                            <a href="{{ url_for('static', filename='post_images/' ~ image) }}" target="_blank">
+                                                            <a href="{{ url_for('static', filename='reply_images/' ~ image) }}" target="_blank">
                                                         </noscript>
                                                         <img draggable="false" class="reply_img {% if image.startswith('spoiler-') %}media-spoiler{% endif %}" 
                                                             src="{{ url_for('static', filename='reply_images/' ~ image) }}" 
@@ -166,11 +184,6 @@
                     </div>
                 </div>
                 {% endfor %}
-                {% if hidden_replies_count > 0 %}
-                <div class="hidden-replies">
-                    <span>{{ hidden_replies_count }} {{ lang['hidden-replies'] }}</span>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>

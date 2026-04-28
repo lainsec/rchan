@@ -26,7 +26,6 @@ def customthemes():
     custom_themes_list = database_module.get_custom_themes()
     return {"custom_themes": custom_themes_list}
 
-
 def mark_banned_flags(records, board_uri, ban_manager):
     if not records:
         return
@@ -42,9 +41,9 @@ def mark_banned_flags(records, board_uri, ban_manager):
         if boards is None or boards == [] or None in boards or board_uri in boards:
             record['is_banned'] = True
 #error handling.
-@boards_bp.errorhandler(404)
+@boards_bp.app_errorhandler(404)
 def page_not_found(e):
-    return redirect(url_for('boards.main_page'))
+    return render_template('errors/404.html'), 404
 #landing page route.
 @boards_bp.route('/')
 def main_page():
@@ -215,7 +214,7 @@ def users_dashboard():
     total_users = database_module.count_all_registered_users(search_query=search_query)
     total_pages = (total_users + users_per_page - 1) // users_per_page
     
-    return render_template('users_dashboard.html',
+    return render_template('admin_pages/users_dashboard.html',
                          username=username,
                          roles=roles,
                          users=users,
@@ -234,7 +233,7 @@ def word_filters_page():
         return redirect('/conta')
     manager = WordFilterManager()
     filters = manager.get_filters()
-    return render_template('word_filters.html',
+    return render_template('admin_pages/word_filters.html',
                            username=username,
                            roles=roles,
                            filters=filters)
@@ -264,6 +263,12 @@ def create():
 @boards_bp.route('/pages/globalrules.html')
 def global_rules():
     return render_template('pages/globalrules.html')
+    
+#faq route page
+@boards_bp.route('/pages/faq.html')
+def faq():
+    return render_template('pages/faq.html')
+    
 #board page endpoint
 @boards_bp.route('/<board_uri>/')
 def board_page(board_uri):

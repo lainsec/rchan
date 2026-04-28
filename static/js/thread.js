@@ -12,6 +12,13 @@ function manipularConteudo() {
         content = content.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+(?:\S)*)\)/g,
             '<a class="hyper-link" href="$2">$1</a>');
 
+        // YouTube Embed Detection
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[^\s]*)/g;
+        content = content.replace(youtubeRegex, (match, videoId) => {
+            const embedId = `yt-embed-${Math.random().toString(36).substr(2, 9)}`;
+            return `${match} <a href="#" class="yt-embed-toggle" data-video-id="${videoId}" data-target="${embedId}">[embed]</a><div id="${embedId}" class="yt-embed-container" style="display:none; margin-top: 10px;"></div>`;
+        });
+
         // >>123
         content = content.split('&gt;&gt;').map((part, index) => {
             if (index === 0) return part;
@@ -22,7 +29,7 @@ function manipularConteudo() {
                 const isOperator = quotedDiv && quotedDiv.getAttribute('post-role') === 'operator';
 
                 const quoteSpan = `<span class="quote-reply" data-id="${quotedId}">&gt;&gt;${quotedId}</span>`;
-                const operatorSpan = isOperator ? `<span class="operator-quote">(OP)</span>` : '';
+                const operatorSpan = isOperator ? `<small class="operator-quote">(OP)</small>` : '';
                 return `${quoteSpan}${operatorSpan}${part.slice(quotedId.length)}`;
             }
             return `&gt;&gt;${part}`;
@@ -32,6 +39,28 @@ function manipularConteudo() {
     });
 
     adicionarEventosQuoteReply();
+    adicionarEventosYTEmbed();
+}
+
+function adicionarEventosYTEmbed() {
+    document.querySelectorAll('.yt-embed-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const videoId = this.getAttribute('data-video-id');
+            const targetId = this.getAttribute('data-target');
+            const container = document.getElementById(targetId);
+
+            if (container.style.display === 'none') {
+                container.innerHTML = `<iframe width="480" height="270" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                container.style.display = 'block';
+                this.textContent = '[close]';
+            } else {
+                container.innerHTML = '';
+                container.style.display = 'none';
+                this.textContent = '[embed]';
+            }
+        });
+    });
 }
 
 function adicionarEventosRepliedQuotes() {
@@ -51,6 +80,8 @@ function adicionarEventosRepliedQuotes() {
                 const preview = targetElement.cloneNode(true);
                 const replies = preview.querySelectorAll('div.replies');
                 replies.forEach(r => r.remove());
+                const thread_options = preview.querySelectorAll('div.thread_tools_menu');
+                thread_options.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
@@ -208,6 +239,8 @@ function adicionarEventosQuoteReply() {
                 const preview = targetElement.cloneNode(true);
                 const replies = preview.querySelectorAll('div.replies');
                 replies.forEach(reply => reply.remove());
+                const thread_options = preview.querySelectorAll('div.thread_tools_menu');
+                thread_options.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
@@ -336,6 +369,8 @@ function adicionarEventosQuoteReply() {
                 const preview = targetElement.cloneNode(true);
                 const replies = preview.querySelectorAll('div.replies');
                 replies.forEach(reply => reply.remove());
+                const thread_options = preview.querySelectorAll('div.thread_tools_menu');
+                thread_options.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';

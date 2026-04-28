@@ -74,6 +74,63 @@ def has_board_owner_or_admin_perms(get_board_uri_from_request):
         return decorated_function
     return decorator
 
+def has_post_permission_or_same_ip(get_post_id_from_request):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Get post ID from the request
+            post_id = get_post_id_from_request(*args, **kwargs)
+            
+            # Get post info
+            post_info = database_module.get_post_info(int(post_id))
+            if not post_info:
+                lang = get_lang()
+                flash(lang.get("flash-post-not-found", "Post not found"), 'danger')
+                return redirect(request.referrer or '/')
+            
+            # Get poster IP
+            poster_ip = database_module.get_post_ip(int(post_id))
+            
+            # Get current user's IP from request
+            current_user_ip = request.remote_addr
+            
+            # Check if same IP - this works even for non-logged users
+            if current_user_ip == poster_ip:
+                return f(*args, **kwargs)
+            
+            # If IP doesn't match, then user MUST be logged in for further checks
+            username = session.get('username')
+            if not username:
+                lang = get_lang()
+                flash(lang["flash-login-required"], 'danger')
+                return redirect(request.referrer or '/')
+            
+            # Check global admin permissions
+            roles = database_module.get_user_role(username)
+            is_global_mod = roles and ('owner' in roles.lower() or 'mod' in roles.lower())
+            
+            if is_global_mod:
+                return f(*args, **kwargs)
+            
+            # Check board ownership/staff
+            board_uri = post_info.get('board_uri') or database_module.get_post_board(post_id)
+            if board_uri:
+                board_info = database_module.get_board_info(board_uri)
+                if board_info:
+                    board_owner = board_info.get('board_owner')
+                    board_staffs = board_info.get('board_staffs', [])
+                    
+                    if username == board_owner or username in board_staffs:
+                        return f(*args, **kwargs)
+            
+            # No permissions
+            lang = get_lang()
+            flash(lang.get("flash-no-permission", "You don't have permission to perform this action"), 'danger')
+            return redirect(request.referrer or '/')
+        
+        return decorated_function
+    return decorator
+
 def allowed_file(file_storage):
     ALLOWED_EXTENSIONS = {'jpg', 'gif', 'jpeg', 'png', 'webp'}
     filename = file_storage.filename
@@ -371,6 +428,16 @@ def approve_media(post_id):
         flash(lang["flash-media-approve-failed"], 'danger')
     return redirect(request.referrer or '/')
 
+@auth_bp.route('/api/remove_media/<post_id>', methods=['POST'])
+@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+def remove_post_media(post_id):
+    lang = get_lang()
+    if database_module.delete_media_from_post(int(post_id)):
+        flash(lang["flash-thread-media-deleted"])
+    else:
+        flash(lang["flash-media-approve-failed"], 'danger')
+    return redirect(request.referrer or '/')
+
 @auth_bp.route('/api/pin_post/<post_id>', methods=['POST'])
 @has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
 def pin_post(post_id):
@@ -382,7 +449,7 @@ def pin_post(post_id):
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/delete_post/<post_id>', methods=['POST'])
-@has_board_owner_or_admin_perms(lambda post_id: database_module.get_post_board(post_id))
+@has_post_permission_or_same_ip(lambda post_id: post_id)
 def delete_post(post_id):
     ban_all = request.form.get('remove_all', None)
     if ban_all == 'on':
@@ -409,12 +476,12 @@ def delete_post(post_id):
     return redirect(request.referrer or '/')
 
 @auth_bp.route('/api/delete_reply/<reply_id>', methods=['POST'])
-@has_board_owner_or_admin_perms(lambda reply_id: database_module.get_post_board(reply_id))
+@has_post_permission_or_same_ip(lambda reply_id: reply_id)
 def delete_reply(reply_id):
     ban_all = request.form.get('remove_all', None)
     if ban_all == 'on':
         post_info = database_module.get_post_info(int(reply_id))
-        poster_ip = post_info['user_ip']
+        poster_ip = database_module.get_post_ip(int(reply_id))
         post_board = database_module.get_post_board(reply_id)
         lang = get_lang()
         if database_module.delete_all_posts_from_user(poster_ip, post_board):
@@ -649,10 +716,14 @@ def edit_board_info_route():
     new_tag = request.form.get('tags', 'Outros').split('\n')[0].strip()
     require_media_approval = 1 if request.form.get('require_media_approval') == 'on' else 0
     allow_name = 1 if request.form.get('allow_name') == 'on' else 0
+    allow_thread_self_mod = 1 if request.form.get('allow_thread_self_mod') == 'on' else 0
+    show_thread_poster_id = 1 if request.form.get('show_thread_poster_id') == 'on' else 0
+    board_islocked = 1 if request.form.get('lock_board') == 'on' else 0
 
     default_poster_name = request.form.get('default_poster_name', '').strip()
     max_pages_raw = request.form.get('max_pages', '').strip()
     default_css = request.form.get('default_css') or ''
+    custom_css = request.form.get('custom_css') or ''
 
     max_pages_value = None
     if max_pages_raw != '':
@@ -683,7 +754,11 @@ def edit_board_info_route():
         default_poster_name=default_poster_name,
         max_pages=max_pages_value,
         default_css=default_css,
-        allow_name=allow_name
+        allow_name=allow_name,
+        allow_thread_self_mod=allow_thread_self_mod,
+        show_thread_poster_id=show_thread_poster_id,
+        custom_css=custom_css,
+        board_islocked=board_islocked
     ):
         lang = get_lang()
         flash(lang["flash-global-defaults-updated"])

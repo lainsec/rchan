@@ -39,6 +39,9 @@
 	        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="board_uri" value="{{ board_info.board_uri }}">
             <input type="file" id="imageUpload" name="imageUpload" accept=".jpg, .jpeg, .png, .webp" required>
+            <noscript>
+                <button type="submit">Upload</button>
+            </noscript>
         </form>
     {% endif %}
 </div>

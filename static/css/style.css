@@ -107,6 +107,80 @@ pre {
   color: #429406;
 }
 
+.yt-embed-toggle{
+  text-decoration: none;
+  color: var(--cor-primaria);
+}
+
+.poster-id{
+  padding: 1px 5px;
+  border-radius: 20px;
+  font-size: 9pt;
+}
+
+.thread_tools{
+  position: relative;
+  margin-bottom: 3px; 
+}
+
+.thread_tools_arrow::before {
+  content: "▶";
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.toggle-menu:checked + label .thread_tools_arrow::before {
+    transform: rotate(90deg);
+}
+
+.post .toggle-menu:checked ~ .thread_tools_menu {
+  display: block;
+}
+
+.thread_tools span{
+  user-select: none;
+    text-decoration: none;
+    margin-left: 5px;
+    cursor: pointer;
+    color: var(--cor-primaria);
+}
+
+.post .thread_tools_menu{
+  display: none;
+   position: absolute;
+   font-size: 12px;
+   line-height: 1.3em;
+   left: 20px;
+   top: 0;
+   z-index: 100;
+}
+
+.thread_tools_menu ul{
+   background-color: rgb(0, 0, 0);
+   border: 1px solid var(--cor-borda);
+   list-style: none;
+   padding: 0;
+   margin: 0;
+   white-space: nowrap;
+}
+
+.thread_tools_menu ul li{
+    cursor: pointer;
+    position: relative;
+    padding: 4px 4px;
+    vertical-align: middle;
+}
+
+.thread_tools_menu ul li button{
+    color: #fff;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    vertical-align: middle;
+}
+
 .hyper-link{
   color: var(--cor-secundaria);
 }
@@ -131,6 +205,11 @@ pre {
 .quote-reply span {
   color: var(--cor-quote);
   cursor: pointer;
+}
+
+.replied_quote{
+  text-decoration: none;
+  color: var(--cor-borda);
 }
 
 .media-spoiler{
@@ -193,23 +272,14 @@ pre {
 }
 
 .user_name_role {
-  font-style: italic;
-  font-weight: bolder;
   color: #dc2358;
-  text-shadow: 0 0 3px #dc2358;
-}
-
-.user_name_role::before{
-  font-family: Icons;
-  content: '\e051';
-  color: #dc2358;
-  padding-right: 2px;
 }
 
 .pinIndicator:after {
   font-family: Icons;
   content: "\e0a8";
   color: #c13e5f;
+  font-size: 9pt;
 }
 
 .wikinet-hyper-link {
@@ -248,9 +318,19 @@ pre {
   font-size: 9pt;
 }
 
+.hidden-replies a{
+  text-decoration: none;
+  color: var(--cor-primaria);
+  font-size: 9pt;
+}
+
 .board_banner {
   border: 1px solid var(--cor-primaria);
   max-height: 10em;
+}
+
+.toggle-flash:checked ~ .waring-container {
+  display: none;
 }
 
 .waring-container {
@@ -289,7 +369,8 @@ pre {
   text-align: center;
 }
 
-.waring-button button {
+.waring-button label {
+  display: inline-block;
   width: 5em;
   background-color: transparent;
   border: 1px solid var(--cor-primaria);
@@ -811,6 +892,7 @@ fieldset legend {
 .new-thread-container {
   background-color: var(--cor-fundo-claro);
   padding: 5px;
+  z-index: 9999;
 }
 
 .new-thread-header {

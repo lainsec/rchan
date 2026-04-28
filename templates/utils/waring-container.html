@@ -1,4 +1,5 @@
 {% if get_flashed_messages() %}
+        <input type="checkbox" hidden id="warn-close-button" class="toggle-flash">
         <div class="waring-container" id="waring-container">
             <div class="waring-header">
                 <h1>{{ lang["warning-title"] }}</h1>
@@ -9,7 +10,7 @@
                 {% endfor %}
             </div>
             <div class="waring-button">
-                <button class="accept-flash" id="waring-button">ok</button>
+                <label for="warn-close-button" class="accept-flash">OK</label>
             </div>
         </div>
 {% endif %}
