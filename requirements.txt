@@ -25,3 +25,4 @@ urllib3==2.4.0
 Werkzeug==3.0.3
 wsproto==1.2.0
 WTForms==3.2.1
+bcrypt==5.0.0
