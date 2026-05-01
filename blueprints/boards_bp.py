@@ -15,6 +15,16 @@ def inject_csrf_token():
 def inject_lang():
     lang = language_module.get_user_lang('default')
     return dict(lang=lang)
+
+
+def get_lang_for_board(board_uri=None):
+    if not board_uri:
+        return language_module.get_user_lang('default')
+    board_info = database_module.get_board_info(board_uri)
+    if not board_info:
+        return language_module.get_user_lang('default')
+    board_lang = (board_info.get('board_lang') or 'default').strip()
+    return language_module.get_user_lang(board_lang)
 #load nav boards
 @boards_bp.context_processor
 def globalboards():
@@ -63,7 +73,8 @@ def main_page():
         'index.html',
         all_posts=posts,
         posts=reversed(posts[-6:]),
-        news=chan_config.get('index_news', 'No news to display')
+        news=chan_config.get('index_news', 'No news to display'),
+        lang=language_module.get_user_lang('default')
     )
 
 #home content route.
@@ -72,7 +83,7 @@ def home_page():
     config_manager = ChanConfigManager()
     chan_config = config_manager.get_config()
     posts = database_module.get_all_posts()
-    return render_template('index.html',all_posts=posts,posts=reversed(posts[-6:]), news=chan_config['index_news'])
+    return render_template('index.html',all_posts=posts,posts=reversed(posts[-6:]), news=chan_config['index_news'], lang=language_module.get_user_lang('default'))
 
 #sidebar route.
 @boards_bp.route('/pages/sidebar.html')
@@ -184,7 +195,8 @@ def login():
                              active_bans=active_bans,
                              reports=reports,
                              chan_config=chan_config,
-                             can_view_board_bans=can_view_board_bans)
+                             can_view_board_bans=can_view_board_bans,
+                             available_langs=language_module.load_langs())
     return render_template('login.html')
 
 @boards_bp.route('/conta/users')
@@ -344,6 +356,7 @@ def board_page(board_uri):
 
     return render_template(
         'board.html',
+        lang=get_lang_for_board(board_uri),
         board_info=board_info,
         captcha_image=captcha_image,
         roles=roles,
@@ -390,6 +403,7 @@ def board_catalog(board_uri):
 
     return render_template(
         'catalog.html',
+        lang=get_lang_for_board(board_uri),
         board_info=board_info,
         captcha_image=captcha_image,
         roles=roles,
@@ -411,7 +425,7 @@ def board_banners(board_uri):
     board_info = database_module.get_board_info(board_uri)
     board_banner = database_module.get_board_banner(board_uri)
     banners = database_module.get_all_banners(board_uri)
-    return render_template('board_banners.html',username=username,board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info, roles=roles)
+    return render_template('board_banners.html',username=username,board_banner=board_banner,banners=banners,board_id=board_uri,board_info=board_info, roles=roles, lang=get_lang_for_board(board_uri))
 
 #thread page route.
 @boards_bp.route('/<board_name>/thread/<thread_id>')
@@ -458,6 +472,7 @@ def replies(board_name, thread_id):
 
     return render_template(
         'thread_reply.html',
+        lang=get_lang_for_board(board_name),
         captcha_image=captcha_image,
         board_info=board_info,
         posts=thread,  # The original post

@@ -40,9 +40,11 @@ DB.create_table('boards', {
     'allow_thread_self_mod': 'int',
     'show_thread_poster_id': 'int',
     'max_pages': 'int',
+    'max_upload_size_mb': 'int',
     'default_css': 'str',
     'custom_css': 'str',
-    'default_poster_name': 'str'
+    'default_poster_name': 'str',
+    'board_lang': 'str'
 })
 
 DB.create_table('accounts', {
@@ -616,7 +618,9 @@ def add_new_board(board_uri, board_name, board_description, username, captcha_in
         'tag': tag,
         'require_media_approval': 0,
         'default_poster_name': '',
-        'allow_name': 1
+        'allow_name': 1,
+        'max_upload_size_mb': 0,
+        'board_lang': 'default'
     }
     
     DB.insert('boards', new_board)
@@ -643,7 +647,8 @@ def unhide_board(board_uri):
 
 def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, new_board_tag, require_media_approval=None,
                     default_poster_name=None, max_pages=None, default_css=None, allow_name=None,
-                    allow_thread_self_mod=None, show_thread_poster_id=None, custom_css=None, board_islocked=None):
+                    allow_thread_self_mod=None, show_thread_poster_id=None, custom_css=None, board_islocked=None,
+                    max_upload_size_mb=None, board_lang=None):
     """Edit board information."""
     board_info = get_board_info(board_uri)
     if not board_info:
@@ -706,6 +711,19 @@ def edit_board_info(board_uri, new_board_owner, new_board_name, new_board_desc, 
 
     if custom_css is not None:
         update_data['custom_css'] = custom_css
+
+    if max_upload_size_mb is not None:
+        try:
+            value = int(max_upload_size_mb)
+        except (TypeError, ValueError):
+            value = 0
+        if value < 0:
+            value = 0
+        update_data['max_upload_size_mb'] = value
+
+    if board_lang is not None:
+        board_lang_value = str(board_lang).strip() or 'default'
+        update_data['board_lang'] = board_lang_value
 
     DB.update('boards', board_info['id'], update_data)
     return True

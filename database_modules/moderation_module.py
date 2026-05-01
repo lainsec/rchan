@@ -533,24 +533,9 @@ class ChanConfigManager:
             'sidebar_enabled': 'int',
             'max_pages_per_board': 'int',
             'default_poster_name': 'str',
-            'posts_per_page': 'int'
+            'posts_per_page': 'int',
+            'max_upload_size_mb': 'int'
         })
-        try:
-            self.db.add_column('chan_config', 'sidebar_enabled', 'int')
-        except Exception:
-            pass
-        try:
-            self.db.add_column('chan_config', 'max_pages_per_board', 'int')
-        except Exception:
-            pass
-        try:
-            self.db.add_column('chan_config', 'default_poster_name', 'str')
-        except Exception:
-            pass
-        try:
-            self.db.add_column('chan_config', 'posts_per_page', 'int')
-        except Exception:
-            pass
         self._ensure_record()
 
     def _ensure_record(self):
@@ -564,7 +549,8 @@ class ChanConfigManager:
                 'sidebar_enabled': 0,
                 'max_pages_per_board': 0,
                 'default_poster_name': "Anonymous",
-                'posts_per_page': 6
+                'posts_per_page': 6,
+                'max_upload_size_mb': 24
             })
         else:
             config = configs[0]
@@ -576,6 +562,8 @@ class ChanConfigManager:
                 self.db.update('chan_config', config['id'], {'default_poster_name': "Anonymous"})
             if 'posts_per_page' not in config:
                 self.db.update('chan_config', config['id'], {'posts_per_page': 6})
+            if 'max_upload_size_mb' not in config:
+                self.db.update('chan_config', config['id'], {'max_upload_size_mb': 24})
 
     def get_config(self):
         """
@@ -588,7 +576,8 @@ class ChanConfigManager:
         return self.db.find_all('chan_config')[0]
 
     def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None,
-                      max_pages_per_board=None, default_poster_name=None, posts_per_page=None):
+                      max_pages_per_board=None, default_poster_name=None, posts_per_page=None,
+                      max_upload_size_mb=None):
         """
         Update the chan configuration.
         
@@ -630,6 +619,15 @@ class ChanConfigManager:
             if value < 1:
                 value = 1
             updates['posts_per_page'] = value
+
+        if max_upload_size_mb is not None:
+            try:
+                value = int(max_upload_size_mb)
+            except (TypeError, ValueError):
+                value = 24
+            if value < 1:
+                value = 1
+            updates['max_upload_size_mb'] = value
             
         if updates:
             self.db.update('chan_config', config['id'], updates)

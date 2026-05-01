@@ -207,7 +207,18 @@ pre {
   cursor: pointer;
 }
 
-.replied_quote{
+.replied_at_container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 10px;
+  padding-bottom: 3px;
+  gap: 3px;
+}
+
+.replied_quote {
+  font-style: italic;
+  letter-spacing: 1px;
   text-decoration: none;
   color: var(--cor-borda);
 }
@@ -310,7 +321,15 @@ pre {
   font-family: 'PixelOperator';
   font-size: 30pt;
   font-weight: 1;
+  margin-bottom: 5px;
+  margin-top: 0.5em;
   color: #dbcfb0;
+}
+
+.board-description {
+  color: var(--cor-texto);
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .hidden-replies{
@@ -1080,11 +1099,9 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 }
 
 .board-options {
-  display: flex
-;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0em 1em;
   max-height: 2.3em;
 }
 
@@ -1116,20 +1133,25 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
   flex-direction: column;
   gap: 0.5em;
   width: 82%;
-  margin-top: 2em;
 }
 
 .paginate-posts {
+  background: var(--cor-borda-claro);
+  border: 1px var(--cor-borda);
+  color: var(--cor-texto);
+  font-size: 10pt;
   display: flex;
+  align-items: center;
   justify-content: center;
+  height: 2.5em;
   border-width: 1px;
-  border-style: solid;
-  gap: 1em;
+  border-style: none none none solid;
   align-items: center;
 }
 
 .pagination {
   display: inline-flex;
+  gap: 2px;
   flex-wrap: wrap;
   padding-left: 0;
   list-style: none;
@@ -1139,19 +1161,16 @@ input[type=button], input[type=file], input[type=number], input[type=password], 
 .page-link {
   position: relative;
   display: block;
-  padding: 0.2rem 0.2rem;
   margin-left: -1px;
   line-height: 1;
   color: #4b4b4b;
-  border: 1px solid;
   text-decoration: none;
-  font-size: 0.9em;
-  min-width: 38px;
+  font-size: 13pt;
   text-align: center;
 }
 
 .page-item.active{
-  background-color: var(--cor-borda);
+  background-color: transparent;
 }
 
 .page-item.active a{

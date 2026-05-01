@@ -13,6 +13,14 @@ import json
 # Blueprint register
 posts_bp = Blueprint('posts', __name__)
 socketio = SocketIO()
+
+
+def get_lang_for_board(board_uri):
+    board_info = database_module.get_board_info(board_uri) if board_uri else None
+    board_lang = 'default'
+    if board_info:
+        board_lang = (board_info.get('board_lang') or 'default').strip()
+    return language_module.get_user_lang(board_lang)
 # Post handling class
 class PostHandler:
     def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None, thread_id=None):
@@ -82,6 +90,7 @@ class PostHandler:
         )
         self.embed = embed
         self.captcha_input = captcha_input
+        self.lang = get_lang_for_board(board_id)
         # Apply word filters
         try:
             filter_manager = moderation_module.WordFilterManager()
@@ -105,7 +114,7 @@ class PostHandler:
     ban_manager = moderation_module.BanManager()
     # Check if the user is banned
     def check_banned(self):
-        lang = language_module.get_user_lang('default')
+        lang = self.lang
         banned_current = self.ban_manager.is_banned(self.user_ip)
         banned_cookie = {'is_banned': False}
 
@@ -152,21 +161,44 @@ class PostHandler:
     def check_timeout(self):
         timeout_status = self.timeout_manager.check_timeout(self.user_ip)
         if timeout_status.get('is_timeout', False):
-            lang = language_module.get_user_lang('default')
+            lang = self.lang
             flash(lang["flash-timeout-wait"])
             return False
         return True
     # Validate the comment length and content
     def validate_comment(self):
         if len(self.comment) >= 20000:
-            lang = language_module.get_user_lang('default')
+            lang = self.lang
             flash(lang["flash-comment-length-limit"])
             return False
         if self.comment == '':
-            lang = language_module.get_user_lang('default')
+            lang = self.lang
             flash(lang["flash-comment-required"])
             return False
         return True
+
+    def get_upload_limit_mb(self):
+        default_limit = 24
+        try:
+            config_manager = moderation_module.ChanConfigManager()
+            chan_config = config_manager.get_config()
+            global_limit = int(chan_config.get('max_upload_size_mb', default_limit) or default_limit)
+        except Exception:
+            global_limit = default_limit
+
+        if global_limit < 1:
+            global_limit = 1
+
+        board_info = database_module.get_board_info(self.board_id) or {}
+        board_limit_raw = board_info.get('max_upload_size_mb', 0)
+        try:
+            board_limit = int(board_limit_raw or 0)
+        except (TypeError, ValueError):
+            board_limit = 0
+
+        if board_limit > 0:
+            return min(board_limit, global_limit)
+        return global_limit
     # Process uploaded files
     def process_uploaded_files(self, upload_folder, is_thread=False):
         files = request.files.getlist('fileInput')
@@ -206,9 +238,29 @@ class PostHandler:
         thumb_folder = './static/post_images/thumbs/' if is_thread else './static/reply_images/thumbs/'
         os.makedirs(thumb_folder, exist_ok=True)
 
-        lang = language_module.get_user_lang('default')
+        lang = self.lang
+        max_upload_mb = self.get_upload_limit_mb()
+        max_upload_bytes = max_upload_mb * 1024 * 1024
+
         for index, file in enumerate(files):
             if file.filename != '' and file.filename.lower().endswith(('.jpeg', '.jpg', '.mov', '.gif', '.png', '.webp', '.webm', '.mp4')):
+                try:
+                    file.stream.seek(0, os.SEEK_END)
+                    file_size = file.stream.tell()
+                    file.stream.seek(0)
+                except Exception:
+                    file_size = 0
+
+                if file_size > max_upload_bytes:
+                    flash(
+                        lang.get(
+                            "flash-file-too-large",
+                            f"Upload exceeds the allowed limit ({max_upload_mb} MB)."
+                        ),
+                        'danger'
+                    )
+                    return [], []
+
                 # Verify the real type of the content
                 file_head = file.stream.read(2048)  # Read the first bytes
                 mime_type = magic.from_buffer(file_head, mime=True)
@@ -320,7 +372,7 @@ class PostHandler:
 
     # Handle reply posts
     def handle_reply(self, reply_to):
-        lang = language_module.get_user_lang('default')
+        lang = self.lang
         if not database_module.check_replyto_exist(int(reply_to)):
             flash(lang["flash-thread-not-exist"])
             return False
@@ -453,7 +505,7 @@ class PostHandler:
 
     # Handle new thread posts
     def handle_post(self):
-        lang = language_module.get_user_lang('default')
+        lang = self.lang
         if database_module.verify_board_captcha(self.board_id):
             if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
                 flash(lang["flash-invalid-captcha"])
@@ -511,12 +563,12 @@ def new_post():
     comment = request.form['text']
     embed = request.form['embed']
     captcha_input = 'none'
+    lang = get_lang_for_board(board_id)
     
     if database_module.verify_board_captcha(board_id):
         captcha_input = request.form['captcha']
     
     if formatting.filter_xss(comment) or formatting.filter_xss(post_name):
-        lang = language_module.get_user_lang('default')
         flash(lang["flash-html-tags-not-allowed"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
@@ -528,18 +580,15 @@ def new_post():
     handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip, thread_id)
 
     if handler.check_board_locked():
-        lang = language_module.get_user_lang('default')
         flash(lang["flash-board-locked"], 'danger')
         return redirect(request.referrer)
 
     if len(post_name) > 40:
-        lang = language_module.get_user_lang('default')
         flash(lang["flash-name-length-limit"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
     
     if len(post_subject) > 50:
-        lang = language_module.get_user_lang('default')
         flash(lang["flash-subject-length-limit"])
         session['form_data'] = request.form.to_dict()
         return redirect(request.referrer)
@@ -566,7 +615,6 @@ def new_post():
         except Exception as e:
             print(f"Allowlist error on reply: {e}")
     else:
-        lang = language_module.get_user_lang('default')
         match = re.match(r'^>>(\d+)', comment)
         if match:
             reply_to = match.group(1)

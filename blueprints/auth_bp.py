@@ -254,6 +254,7 @@ def update_chan_defaults():
     default_name = request.form.get('default_poster_name', '')
     max_pages_raw = request.form.get('max_pages_per_board', '').strip()
     posts_per_page_raw = request.form.get('posts_per_page', '').strip()
+    max_upload_size_raw = request.form.get('max_upload_size_mb', '').strip()
 
     max_pages_value = None
     if max_pages_raw != '':
@@ -269,10 +270,18 @@ def update_chan_defaults():
         except (TypeError, ValueError):
             posts_per_page_value = 6
 
+    max_upload_size_value = None
+    if max_upload_size_raw != '':
+        try:
+            max_upload_size_value = int(max_upload_size_raw)
+        except (TypeError, ValueError):
+            max_upload_size_value = 24
+
     config_manager.update_config(
         default_poster_name=default_name,
         max_pages_per_board=max_pages_value,
-        posts_per_page=posts_per_page_value
+        posts_per_page=posts_per_page_value,
+        max_upload_size_mb=max_upload_size_value
     )
 
     lang = get_lang()
@@ -724,6 +733,8 @@ def edit_board_info_route():
     max_pages_raw = request.form.get('max_pages', '').strip()
     default_css = request.form.get('default_css') or ''
     custom_css = request.form.get('custom_css') or ''
+    board_lang = (request.form.get('board_lang') or 'default').strip()
+    max_upload_size_raw = request.form.get('max_upload_size_mb', '').strip()
 
     max_pages_value = None
     if max_pages_raw != '':
@@ -732,12 +743,29 @@ def edit_board_info_route():
         except (TypeError, ValueError):
             max_pages_value = 0
 
+    max_upload_size_value = None
+    if max_upload_size_raw != '':
+        try:
+            max_upload_size_value = int(max_upload_size_raw)
+        except (TypeError, ValueError):
+            max_upload_size_value = 0
+    if max_upload_size_value is not None and max_upload_size_value < 0:
+        max_upload_size_value = 0
+
     config_manager = moderation_module.ChanConfigManager()
     chan_config = config_manager.get_config()
     global_max_pages = int(chan_config.get('max_pages_per_board', 0) or 0)
+    global_max_upload = int(chan_config.get('max_upload_size_mb', 24) or 24)
 
     if global_max_pages > 0 and max_pages_value is not None and max_pages_value > global_max_pages:
         max_pages_value = global_max_pages
+
+    if max_upload_size_value is not None and max_upload_size_value > global_max_upload:
+        max_upload_size_value = global_max_upload
+
+    available_langs = language_module.load_langs() or {}
+    if board_lang not in available_langs:
+        board_lang = 'default'
     
     if not database_module.check_user_exists(new_owner):
         lang = get_lang()
@@ -758,7 +786,9 @@ def edit_board_info_route():
         allow_thread_self_mod=allow_thread_self_mod,
         show_thread_poster_id=show_thread_poster_id,
         custom_css=custom_css,
-        board_islocked=board_islocked
+        board_islocked=board_islocked,
+        max_upload_size_mb=max_upload_size_value,
+        board_lang=board_lang
     ):
         lang = get_lang()
         flash(lang["flash-global-defaults-updated"])

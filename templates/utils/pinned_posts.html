@@ -114,9 +114,9 @@
                         <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> {{ ((pinned.user_ip ~ pinned.post_id) | string).__hash__() | abs | string | truncate(5, True, '') }}</span>
                         {% endif %}
                         {% if reply.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
-                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ pinned.post_id }}#{{ reply.reply_id }}" class="postLink">No. </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a>
+                        <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ pinned.post_id }}#{{ reply.reply_id }}" class="postLink">/#/ </a> <a class="postLink" href="/{{ board_id }}/thread/{{ pinned.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a>
                         {% include 'utils/reply-moderation-options.html' %} 
-                        {% include 'popups/users/report_reply.html' %} <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }}</a>{% endfor %}</span>
+                        {% include 'popups/users/report_reply.html' %}
                     </div>
                     <div class="post_content_container">
                         {% if reply.get('images') or reply.get('image') %}
@@ -198,6 +198,12 @@
                             <pre>{% if reply.content | length >= 900 %}{{ reply.content[:900] | safe }}...{% else %}{{ reply.content | safe }}{% endif %}</pre>{% if reply.content | length >= 900 %}<a class="toolong" href="/{{ board_id }}/thread/{{ pinned.post_id }}">{{ lang['post-too-long'] }}</a>{% endif %}
                         </div>
                     </div>
+                    {% if reply.replied_at %}
+                    <div class="replied_at_container">
+                        <span>Respostas:</span>
+                        <span class="replied_at">{% for reply_quote in reply.replied_at or [] %}<a href="#{{ reply_quote }}" class="replied_quote">>>{{ reply_quote }} </a>{% endfor %} </span>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

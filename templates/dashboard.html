@@ -235,6 +235,12 @@
                                         <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-posts-per-page-desc"] }}</small>
                                     </div>
 
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Max upload global (MB)</label>
+                                        <input type="number" min="1" name="max_upload_size_mb" class="config-select" style="width: 100%;" value="{{ chan_config.get('max_upload_size_mb', 24) }}">
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">Limite maximo de upload por arquivo para toda a engine.</small>
+                                    </div>
+
                                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{{ lang["dashboard-save-config"] }}</button>
                                 </form>
                             </div>
@@ -415,6 +421,21 @@
                                         </div>
                                     </div>
 
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label">Idioma da board</label>
+                                            <select name="board_lang" class="form-input" style="width: 100%;">
+                                                <option value="default" {% if (board.board_lang or 'default') == 'default' %}selected{% endif %}>Default da engine</option>
+                                                {% for lang_code in available_langs.keys()|list|sort %}
+                                                    {% if lang_code != 'default' %}
+                                                        <option value="{{ lang_code }}" {% if (board.board_lang or 'default') == lang_code %}selected{% endif %}>{{ lang_code }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                            <small style="display: block; margin-top: 0.3rem; color: #666;">Quando definido, sobrescreve o i18n default so nessa board.</small>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             <input type="checkbox" name="require_media_approval" id="mediaApproval-{{ board.board_uri }}" {% if board.require_media_approval != 0 %}checked{% endif %} style="width: auto;">
@@ -450,6 +471,14 @@
                                             <input type="number" min="0" name="max_pages" class="form-input" style="width: 100%;" value="{{ board.max_pages or 0 }}">
                                         </div>
 
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label">Max upload da board (MB)</label>
+                                            <input type="number" min="0" name="max_upload_size_mb" class="form-input" style="width: 100%;" value="{{ board.max_upload_size_mb or 0 }}">
+                                            <small style="display: block; margin-top: 0.3rem; color: #666;">0 = usa limite global. Nunca ultrapassa o limite global.</small>
+                                        </div>
+                                    </div>
+
+                                    <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px;">
                                         <div class="form-group" style="margin-bottom: 0;">
                                             <label class="form-label">{{ lang["dashboard-default-css-board"] }}</label>
                                             <select name="default_css" class="form-input" style="width: 100%;">
@@ -1026,6 +1055,11 @@
                                         <label class="form-label">{{ lang["dashboard-posts-per-page"] }}</label>
                                         <input type="number" min="1" name="posts_per_page" class="form-input" value="{{ chan_config.get('posts_per_page', 6) }}">
                                         <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-posts-per-page-desc"] }}</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Max upload global (MB)</label>
+                                        <input type="number" min="1" name="max_upload_size_mb" class="form-input" value="{{ chan_config.get('max_upload_size_mb', 24) }}">
+                                        <small style="display: block; margin-top: 0.3rem; color: #666;">Limite maximo de upload por arquivo para toda a engine.</small>
                                     </div>
                                     <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-save-config"] }}</button>
                                 </form>
