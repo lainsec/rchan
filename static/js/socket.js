@@ -578,33 +578,6 @@ function addNewReply(reply) {
                             newHiddenReplies.appendChild(oldestReply);
                             repliesContainer.appendChild(newHiddenReplies);
                             oldestReply.classList.add('hidden-reply');
-                            
-                            // Add a "show more" button if it doesn't exist
-                            if (!repliesContainer.querySelector('.show-more-replies')) {
-                                const showMoreBtn = document.createElement('button');
-                                const hiddenCount = newHiddenReplies.children.length;
-                                showMoreBtn.textContent = `Show older replies (${hiddenCount})`;
-                                showMoreBtn.className = 'show-more-replies';
-                                showMoreBtn.style.cssText = 'margin: 10px 0; padding: 5px 10px; cursor: pointer; background: var(--cor-fundo); border: 1px solid var(--cor-borda); color: var(--cor-texto);';
-                                showMoreBtn.onclick = function() {
-                                    const hiddenDiv = repliesContainer.querySelector('.hidden-replies');
-                                    if (hiddenDiv) {
-                                        const allHidden = hiddenDiv.querySelectorAll('.reply');
-                                        const count = allHidden.length;
-                                        if (confirm(`Show all ${count} hidden replies?`)) {
-                                            hiddenDiv.style.display = 'block';
-                                            this.style.display = 'none';
-                                        }
-                                    }
-                                };
-                                repliesContainer.insertBefore(showMoreBtn, repliesContainer.firstChild);
-                            } else {
-                                // Update the button text
-                                const showMoreBtn = repliesContainer.querySelector('.show-more-replies');
-                                const hiddenDiv = repliesContainer.querySelector('.hidden-replies');
-                                const hiddenCount = hiddenDiv ? hiddenDiv.children.length : 0;
-                                showMoreBtn.textContent = `Show older replies (${hiddenCount})`;
-                            }
                         }
                     }
                 }
