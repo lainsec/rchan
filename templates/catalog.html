@@ -50,7 +50,7 @@
                         {% if is_approved or is_staff %}
                             {% if post.post_images[0].startswith('youtube:') %}
                                 {% set video_id = post.post_images[0].split(':')[1] %}
-                                <img src="https://img.youtube.com/vi/{{ video_id }}/0.jpg">
+                                <img src="https://i.ytimg.com/vi/{{ video_id }}/hqdefault.jpg" referrerpolicy="no-referrer" alt="">
                             {% elif post.post_images[0].split('.')[-1].lower() in ['mp4', 'mov', 'webm'] %}
                             <img src="{{ url_for('static', filename='post_images/thumbs/thumbnail_' ~ post.post_images[0]|replace('.' ~ post.post_images[0].split('.')[-1], '') ~ '.jpg') }}">
                             {% else %}

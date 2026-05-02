@@ -1,6 +1,20 @@
 var jQuery = jQuery.noConflict();
 var socket = io();
 
+function syncPostFormIoSid() {
+    var el = document.getElementById('io_sid');
+    if (el && socket && socket.id) {
+        el.value = socket.id;
+    }
+}
+socket.on('connect', syncPostFormIoSid);
+socket.on('reconnect', syncPostFormIoSid);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncPostFormIoSid);
+} else {
+    syncPostFormIoSid();
+}
+
 const notification_path = '/static/audios/notification.mp3';
 const notification = new Audio(notification_path);
 let notificationReady = false;
@@ -16,6 +30,40 @@ function playNotification() {
             notification.play().catch(function () {});
         }
     } catch (e) {}
+}
+
+const post_submit_path = '/static/audios/post_submit.mp3';
+const postSubmitSound = new Audio(post_submit_path);
+let postSubmitReady = false;
+try {
+    postSubmitSound.addEventListener('canplaythrough', function () {
+        postSubmitReady = true;
+    });
+} catch (e) {}
+function playPostSubmit() {
+    try {
+        if (postSubmitReady) {
+            postSubmitSound.currentTime = 0;
+            postSubmitSound.play().catch(function () {});
+        }
+    } catch (e) {}
+}
+
+function isOwnSocketPost(data) {
+    var sid = data.post && data.post.poster_sid;
+    if (!sid || !socket || !socket.id) {
+        return false;
+    }
+    return String(sid) === String(socket.id);
+}
+
+function playNovaPostagemSound(data, isSameBoard) {
+    if (!isSameBoard) return;
+    if (isOwnSocketPost(data)) {
+        playPostSubmit();
+    } else {
+        playNotification();
+    }
 }
 let originalTitle = document.title;
 let unseenCount = 0;
@@ -199,7 +247,7 @@ function generateCatalogThumbHTML(files, mediaApproved) {
         if (!videoId) {
             return '';
         }
-        return '<img src="https://img.youtube.com/vi/' + videoId + '/0.jpg">';
+        return '<img src="https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg" referrerpolicy="no-referrer" alt="">';
     }
     const segments = file.split('.');
     const extension = segments.length > 1 ? segments[segments.length - 1].toLowerCase() : '';
@@ -210,7 +258,16 @@ function generateCatalogThumbHTML(files, mediaApproved) {
     return '<img src="/static/post_images/' + file + '">';
 }
 
-function addNewCatalogThread(post) {
+function posterIdMarkup(showPosterId, posterId) {
+    if (Number(showPosterId) !== 1) return '';
+    if (posterId == null || posterId === '') return '';
+    const safe = String(posterId).replace(/[<>&"]/g, '');
+    return ' <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> ' + safe + '</span>';
+}
+
+function addNewCatalogThread(post, i18n) {
+    i18n = i18n || {};
+    const replyBtn = i18n.thread_reply_button || 'Replies';
     const container = document.querySelector('.catalog-container');
     if (!container) return;
     const displayName = post.name === '' ? 'ドワーフ' : post.name;
@@ -222,10 +279,10 @@ function addNewCatalogThread(post) {
         + '    <div class="catalog-post-info">'
         + '        <input type="checkbox" name="" id="">'
         + '        <span class="name">' + displayName + '</span>'
-        + '        <span class="postDate" data-original-date="' + post.date + '" title="' + post.date + '">agora mesmo</span>'
-        + '        <a href="/' + post.board + '/thread/' + post.id + '" class="postLink">No. </a> '
+        + '        <span class="postDate" data-original-date="' + post.date + '" title="' + post.date + '">' + post.date + '</span>'
+        + '        <a href="/' + post.board + '/thread/' + post.id + '" class="postLink">' + (i18n.post_no_prefix != null ? i18n.post_no_prefix : 'No. ') + '</a> '
         + '        <a class="postLink' + rainbowClass + '" href="/' + post.board + '/thread/' + post.id + '" class="postNumber">' + post.id + '</a>'
-        + '        <a class="postLink" href="/' + post.board + '/thread/' + post.id + '"> [Replies]</a>'
+        + '        <a class="postLink" href="/' + post.board + '/thread/' + post.id + '"> [' + replyBtn + ']</a>'
         + '        <div class="catalog-post-counter">'
         + '            R: 0 / F: ' + filesCount + ' / P: 1'
         + '        </div>'
@@ -270,10 +327,10 @@ function updateCatalogPostDate(threadId, dateStr) {
     if (!el) return;
     const dateSpan = el.querySelector('.catalog-post-info .postDate');
     if (!dateSpan) return;
-    dateSpan.textContent = 'agora mesmo';
     if (dateStr) {
         dateSpan.setAttribute('data-original-date', dateStr);
         dateSpan.setAttribute('title', dateStr);
+        dateSpan.textContent = dateStr;
     }
 }
 
@@ -398,36 +455,48 @@ socket.on('ban_post', function(data) {
 });
 
 socket.on('nova_postagem', function(data) {
+    if (!data || !data.post) return;
+    if (data.i18n && data.i18n.date_locale) {
+        window.RCHAN_DATE_LOCALE = data.i18n.date_locale;
+    }
+    if (document.getElementById(String(data.post.id))) {
+        return;
+    }
+
     const currentBoard = getCurrentBoard();
     const isSameBoard = currentBoard === data.post.board;
     const currentPath = window.location.pathname;
     
-    if (isSameBoard) {
-        playNotification();
-    }
+    playNovaPostagemSound(data, isSameBoard);
     
     if (isSameBoard) {
         if (data.type === 'New Thread') {
             if (currentPath === `/${currentBoard}` || currentPath === `/${currentBoard}/`) {
-                addNewThread(data.post);
+                addNewThread(data.post, data.i18n);
                 markUnseenById(data.post.id);
-                
-                // Re-apply formatting and events for the new content
-                if (typeof manipularConteudo === 'function') manipularConteudo();
-                if (typeof adicionarEventosRepliedQuotes === 'function') adicionarEventosRepliedQuotes();
+                const inserted = document.getElementById(String(data.post.id));
+                if (inserted && typeof manipularConteudo === 'function') {
+                    manipularConteudo(inserted);
+                }
+                if (inserted && typeof adicionarEventosRepliedQuotes === 'function') {
+                    adicionarEventosRepliedQuotes(inserted);
+                }
             } else if (currentPath === `/${currentBoard}/catalog` || currentPath === `/${currentBoard}/catalog/`) {
-                addNewCatalogThread(data.post);
+                addNewCatalogThread(data.post, data.i18n);
                 markUnseenById(data.post.id);
             }
         } else if (data.type === 'New Reply') {
             const parentThread = document.getElementById(data.post.thread_id);
             if (parentThread) {
-                addNewReply(data.post);
+                addNewReply(data.post, data.i18n);
                 markUnseenById(data.post.id);
-                
-                // Re-apply formatting and events for the new content
-                if (typeof manipularConteudo === 'function') manipularConteudo();
-                if (typeof adicionarEventosRepliedQuotes === 'function') adicionarEventosRepliedQuotes();
+                const insertedReply = document.getElementById(String(data.post.id));
+                if (insertedReply && typeof manipularConteudo === 'function') {
+                    manipularConteudo(insertedReply);
+                }
+                if (insertedReply && typeof adicionarEventosRepliedQuotes === 'function') {
+                    adicionarEventosRepliedQuotes(insertedReply);
+                }
             }
             if (currentPath === `/${currentBoard}/catalog` || currentPath === `/${currentBoard}/catalog/`) {
                 updateCatalogPostDate(data.post.thread_id, data.post.date);
@@ -459,7 +528,12 @@ if (document.readyState === 'loading') {
     initCatalogFeatures();
 }
 
-function addNewThread(post) {
+function addNewThread(post, i18n) {
+    i18n = i18n || {};
+    const replyBtn = i18n.thread_reply_button || 'Replies';
+    const hideTitle = i18n.thread_hide_title || 'Hide thread';
+    const postNo = i18n.post_no_prefix != null ? i18n.post_no_prefix : 'No. ';
+    const posterHtml = posterIdMarkup(post.show_poster_id, post.poster_id);
     const displayName = post.name === '' ? 'ドワーフ' : post.name;
     const rainbowClass = shouldHaveRainbowText(post.id) ? ' rainbowtext' : '';
     
@@ -467,13 +541,13 @@ function addNewThread(post) {
         <div class="divisoria"></div>
         <div class="post" post-role="${post.role}" id="${post.id}" bis_skin_checked="1">
             <div class="postInfo" bis_skin_checked="1">
-                <a href="javascript:void(0);" title="hide thread" class="hide-thread" thread_to_hide="${post.id}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
+                <a href="javascript:void(0);" title="${hideTitle}" class="hide-thread" thread_to_hide="${post.id}" style="color: var(--cor-borda); text-decoration: none; letter-spacing: 1.5px;">[-]</a>
                 <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="${post.id}" form="banDeleteForm">
-                <span class="nameBlock"><span class="name">${displayName}</span></span>
-                <span class="postDate" data-original-date="${post.date}" title="${post.date}">agora mesmo</span>
-                <a href="/${post.board}/thread/${post.id}" class="postLink" bis_skin_checked="1">No. </a> 
+                <span class="nameBlock"><span class="name">${displayName}</span></span>${posterHtml}
+                <span class="postDate" data-original-date="${post.date}" title="${post.date}">${post.date}</span>
+                <a href="/${post.board}/thread/${post.id}" class="postLink" bis_skin_checked="1">${postNo}</a> 
                 <a class="postLink${rainbowClass}" href="/${post.board}/thread/${post.id}" bis_skin_checked="1">${post.id}</a>
-                <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1"> [Replies]</a>
+                <a class="postLink" href="/${post.board}/thread/${post.id}" bis_skin_checked="1"> [${replyBtn}]</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em; padding-left: 1em;" bis_skin_checked="1">
                     <!-- ... rest of the thread HTML ... -->
                 </div>
@@ -491,7 +565,9 @@ function addNewThread(post) {
     document.getElementById('posts_board').insertAdjacentHTML('afterbegin', threadHTML);
 }
 
-function addNewReply(reply) {
+function addNewReply(reply, i18n) {
+    i18n = i18n || {};
+    const posterHtml = posterIdMarkup(reply.show_poster_id, reply.poster_id);
     const displayName = reply.name === '' ? 'ドワーフ' : reply.name;
     const rainbowClass = shouldHaveRainbowText(reply.id) ? ' rainbowtext' : '';
     
@@ -499,9 +575,9 @@ function addNewReply(reply) {
         <div class="reply" id="${reply.id}" bis_skin_checked="1">
             <div class="reply-postInfo" bis_skin_checked="1">
                 <input id="togglemodoptions" type="checkbox" class="deletionCheckBox" name="${reply.id}" form="banDeleteForm">
-                <span class="nameBlock"><span class="name">${displayName}</span></span>
-                <span class="postDate" data-original-date="${reply.date}" title="${reply.date}">agora mesmo</span>
-                <a href="/${reply.board}/thread/${reply.thread_id}" class="postLink" bis_skin_checked="1">No. </a> 
+                <span class="nameBlock"><span class="name">${displayName}</span></span>${posterHtml}
+                <span class="postDate" data-original-date="${reply.date}" title="${reply.date}">${reply.date}</span>
+                <a href="/${reply.board}/thread/${reply.thread_id}#${reply.id}" class="postLink" bis_skin_checked="1">/#/ </a> 
                 <a class="postLink${rainbowClass}" href="/${reply.board}/thread/${reply.thread_id}#${reply.id}" onclick="quotePostId(event, ${reply.id}); return false;" bis_skin_checked="1">${reply.id}</a>
                 <div id="threadmodoptions" class="mod-options" style="display: none; gap: 1em;" bis_skin_checked="1">
                     <form action="/delete_reply/${reply.id}" method="post">
@@ -668,17 +744,18 @@ function generateFilesHTML(files, type, media_approved, postId) {
 
         if (isYoutube) {
             const videoId = file.split(':')[1];
+            const ytOnClick = "var i=document.createElement('iframe');i.src='https://www.youtube-nocookie.com/embed/" + videoId + "?autoplay=1&rel=0&modestbranding=1';i.width='100%';i.height='240';i.frameBorder='0';i.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';i.allowFullscreen=true;i.referrerPolicy='strict-origin-when-cross-origin';if('credentialless'in i)i.credentialless=true;this.parentNode.replaceChild(i,this);return false;";
             if (type === 'post') {
                 html += `
                     <div class="post_image" bis_skin_checked="1">
                         <div class="post_image_info" bis_skin_checked="1">
-                            <a class="image_url" href="https://youtu.be/${videoId}" target="_blank">
+                            <a class="image_url" href="https://youtu.be/${videoId}" target="_blank" rel="noopener noreferrer">
                                 YouTube Embed
                             </a>
                         </div>
-                        <img class="post_img post_video_thumbnail" 
-                             src="https://img.youtube.com/vi/${videoId}/0.jpg"
-                             onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/${videoId}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                        <img class="post_img post_video_thumbnail" referrerpolicy="no-referrer"
+                             src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg"
+                             onclick="${ytOnClick}"
                              style="cursor: pointer;">
                     </div>
                 `;
@@ -686,13 +763,13 @@ function generateFilesHTML(files, type, media_approved, postId) {
                 html += `
                     <div class="reply_image" bis_skin_checked="1">
                         <div class="reply_image_info" bis_skin_checked="1">
-                             <a class="image_url" href="https://youtu.be/${videoId}" target="_blank">
+                             <a class="image_url" href="https://youtu.be/${videoId}" target="_blank" rel="noopener noreferrer">
                                 YouTube Embed
                             </a>
                         </div>
-                        <img class="reply_img post_video_thumbnail" 
-                             src="https://img.youtube.com/vi/${videoId}/0.jpg"
-                             onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/${videoId}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                        <img class="reply_img post_video_thumbnail" referrerpolicy="no-referrer"
+                             src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg"
+                             onclick="${ytOnClick}"
                              style="cursor: pointer;">
                     </div>
                 `;

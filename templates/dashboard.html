@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Dashboard - {{ username }}</title>
+    <title>{{ lang["dashboard-title"] }} - {{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,7 +28,7 @@
                 <div class="user-info">
                     <h3>{{ username }}</h3>
                     <span class="role-tag {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
-                        {{ roles if roles else 'User' }}
+                        {{ roles if roles else lang["dashboard-role-fallback-user"] }}
                     </span>
                 </div>
             </div>
@@ -155,10 +155,10 @@
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <select name="lang" onchange="this.form.submit()" class="config-select">
                                         <option value="" disabled="" selected="">{{ lang["dashboard-select-language"] }}</option>
-                                        <option value="en-us">English</option>
-                                        <option value="es">Español</option>
-                                        <option value="pt-br">Português</option>
-                                        <option value="jp">日本語</option>
+                                        <option value="en-us">{{ lang["dashboard-lang-en-us"] }}</option>
+                                        <option value="es">{{ lang["dashboard-lang-es"] }}</option>
+                                        <option value="pt-br">{{ lang["dashboard-lang-pt-br"] }}</option>
+                                        <option value="jp">{{ lang["dashboard-lang-jp"] }}</option>
                                     </select>
                                     <noscript>
                                         <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
@@ -236,9 +236,9 @@
                                     </div>
 
                                     <div style="margin-top: 1rem;">
-                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">Max upload global (MB)</label>
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-max-upload-global-mb"] }}</label>
                                         <input type="number" min="1" name="max_upload_size_mb" class="config-select" style="width: 100%;" value="{{ chan_config.get('max_upload_size_mb', 24) }}">
-                                        <small style="display: block; margin-top: 0.5rem; color: #666;">Limite maximo de upload por arquivo para toda a engine.</small>
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-max-upload-global-desc"] }}</small>
                                     </div>
 
                                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{{ lang["dashboard-save-config"] }}</button>
@@ -413,7 +413,7 @@
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                         <div class="form-group" style="margin-bottom: 0;">
                                             <label class="form-label">{{ lang["dashboard-edit-board-tag"] }}</label>
-                                            <input type="text" name="tags" class="form-input" style="width: 100%;" value="{{ board.tag or '' }}" placeholder="Ex: Anime, Tech, Random">
+                                            <input type="text" name="tags" class="form-input" style="width: 100%;" value="{{ board.tag or '' }}" placeholder="{{ lang['dashboard-edit-board-tags-placeholder'] }}">
                                         </div>
                                         <div class="form-group" style="margin-bottom: 0;">
                                             <label class="form-label">{{ lang["dashboard-default-poster-name-board"] }}</label>
@@ -423,16 +423,16 @@
 
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                                         <div class="form-group" style="margin-bottom: 0;">
-                                            <label class="form-label">Idioma da board</label>
+                                            <label class="form-label">{{ lang["dashboard-board-language"] }}</label>
                                             <select name="board_lang" class="form-input" style="width: 100%;">
-                                                <option value="default" {% if (board.board_lang or 'default') == 'default' %}selected{% endif %}>Default da engine</option>
+                                                <option value="default" {% if (board.board_lang or 'default') == 'default' %}selected{% endif %}>{{ lang["dashboard-board-lang-engine-default"] }}</option>
                                                 {% for lang_code in available_langs.keys()|list|sort %}
                                                     {% if lang_code != 'default' %}
                                                         <option value="{{ lang_code }}" {% if (board.board_lang or 'default') == lang_code %}selected{% endif %}>{{ lang_code }}</option>
                                                     {% endif %}
                                                 {% endfor %}
                                             </select>
-                                            <small style="display: block; margin-top: 0.3rem; color: #666;">Quando definido, sobrescreve o i18n default so nessa board.</small>
+                                            <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-board-lang-override-help"] }}</small>
                                         </div>
                                     </div>
 
@@ -472,9 +472,9 @@
                                         </div>
 
                                         <div class="form-group" style="margin-bottom: 0;">
-                                            <label class="form-label">Max upload da board (MB)</label>
+                                            <label class="form-label">{{ lang["dashboard-max-upload-board-mb"] }}</label>
                                             <input type="number" min="0" name="max_upload_size_mb" class="form-input" style="width: 100%;" value="{{ board.max_upload_size_mb or 0 }}">
-                                            <small style="display: block; margin-top: 0.3rem; color: #666;">0 = usa limite global. Nunca ultrapassa o limite global.</small>
+                                            <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-max-upload-board-desc"] }}</small>
                                         </div>
                                     </div>
 
@@ -492,7 +492,7 @@
 
                                     <div class="form-group">
                                         <label class="form-label">{{ lang["dashboard-custom-css-board"] }}</label>
-                                        <textarea name="custom_css" class="form-input" rows="3" style="width: 100%; font-family: monospace;" placeholder="/* Place here a custom css */">{{ board.custom_css or '' }}</textarea>
+                                        <textarea name="custom_css" class="form-input" rows="3" style="width: 100%; font-family: monospace;" placeholder="{{ lang['dashboard-custom-css-placeholder'] }}">{{ board.custom_css or '' }}</textarea>
                                     </div>
 
                                     <div class="modal-footer" style="padding-top: 15px; border-top: 1px solid #444; margin-top: 10px;">
@@ -757,7 +757,7 @@
                                         {% if not search_term or search_term in ip.lower() or (info.reason and search_term in info.reason.lower()) %}
                                     <tr>
                                         <td>{% if 'owner' in roles.lower() %}{{ ip }}{% else %}{{ database_module.hash_ip(ip) }}{% endif %}</td>
-                                        <td>{{ info.reason if info.reason else 'N/A' }}</td>
+                                        <td>{{ info.reason if info.reason else lang["dashboard-ban-reason-na"] }}</td>
                                         <td>{% if not info.boards %}<span style="color: #ff4444; font-weight: bold;">{{ lang["dashboard-scope-global"] }}</span>{% else %}{{ info.boards|join(', ') }}{% endif %}</td>
                                         <td>{% if info.is_permanent %}<span style="color: #ff4444;">{{ lang["dashboard-permanent"] }}</span>{% else %}{{ info.end_time }}{% endif %}</td>
                                         <td>
@@ -818,302 +818,11 @@
 
                     <div class="modal-footer">
                         <label for="globalBanModal" class="btn btn-secondary">{{ lang["dashboard-btn-cancel"] }}</label>
-                        <button type="submit" class="<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Dashboard - {{ username }}</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    {% include 'utils/navbar.html' %}
-
-    <!-- Mobile Menu Toggle (NO JS) -->
-    <a href="#sidebar" class="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </a>
-    <a href="#" id="close-sidebar" style="display: none;"></a>
-
-    <div class="dashboard-wrapper">
-        <!-- Sidebar -->
-        <aside class="dash-sidebar" id="sidebar">
-            <div class="user-card">
-                <div class="user-avatar">
-                    {{ username[0]|upper if username else 'U' }}
-                </div>
-                <div class="user-info">
-                    <h3>{{ username }}</h3>
-                    <span class="role-tag {% if 'owner' in roles.lower() %}role-owner{% elif 'mod' in roles.lower() %}role-mod{% else %}role-user{% endif %}">
-                        {{ roles if roles else 'User' }}
-                    </span>
-                </div>
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-gavel"></i> {{ lang["dashboard-ban-user"] }}</button>
+                    </div>
+                </form>
             </div>
-
-            <nav class="dash-nav">
-                <ul>
-                    <li><a href="#overview"><i class="fas fa-home"></i> {{ lang["dashboard-general-view"] }}</a></li>
-                    <li><a href="#my-boards"><i class="fas fa-layer-group"></i> {{ lang["dashboard-my-boards"] }}</a></li>
-                    
-                    {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                        <li><div style="height: 1px; background: rgba(0,180,216,0.2); margin: 0.5rem 0;"></div></li>
-                        <li><span style="padding-left: 1rem; color: #666; font-size: 0.7rem; text-transform: uppercase;">{{ lang["dashboard-moderation-label"] }}</span></li>
-                        <li><a href="#moderation"><i class="fas fa-gavel"></i> {{ lang["dashboard-moderation-tools"] }}</a></li>
-                        <li><a href="/conta/users"><i class="fas fa-users-cog"></i> {{ lang["dashboard-users-management"] }}</a></li>
-                        <li><a href="/conta/word_filters"><i class="fas fa-filter"></i> {{ lang['dashboard-word-filters'] }}</a></li>
-                        <li><a href="#general-config"><i class="fas fa-cogs"></i> {{ lang["dashboard-general-config"] }}</a></li>
-                    {% endif %}
-
-                    <li><div style="height: 1px; background: rgba(0,180,216,0.2); margin: 0.5rem 0;"></div></li>
-                    {% if chan_config['free_board_creation'] == 1 or 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                        <li><a href="/create" style="color: #00b4d8;"><i class="fas fa-plus-circle"></i> {{ lang["dashboard-create-board"] }}</a></li>
-                    {% else %}
-                        <li><a href="#" style="color: #666; cursor: not-allowed; opacity: 0.5;"><i class="fas fa-plus-circle"></i> {{ lang["dashboard-create-board"] }}</a></li>
-                    {% endif %}
-                    <li><a href="/api/logout" style="color: #ff6b6b;"><i class="fas fa-sign-out-alt"></i> {{ lang["dashboard-logout"] }}</a></li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="dash-content">
-            <!-- Stats Row -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-globe"></i></div>
-                    <div class="stat-info">
-                        <h4>{{ lang["dashboard-total-boards"] }}</h4>
-                        <div class="value">{{ all_boards|length }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="color: #51cf66; background: rgba(81, 207, 102, 0.1);"><i class="fas fa-comments"></i></div>
-                    <div class="stat-info">
-                        <h4>{{ lang["dashboard-total-posts"] }}</h4>
-                        <div class="value">{{ database_module.get_all_posts()|length }}</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="color: #ffd43b; background: rgba(255, 212, 59, 0.1);"><i class="fas fa-user-shield"></i></div>
-                    <div class="stat-info">
-                        <h4>{{ lang["dashboard-my-boards"] }}</h4>
-                        <div class="value">
-                            {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-                                {{ boards|length }}
-                            {% else %}
-                                {{ user_boards|length }}
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Overview Section -->
-            <section id="overview">
-                <h2 class="section-title"><i class="fas fa-chart-line"></i> {{ lang["dashboard-general-view"] }}</h2>
-                
-                <div class="overview-grid">
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3><i class="fas fa-fire" style="color: #ffd43b;"></i> {{ lang["dashboard-popular-boards"] }}</h3>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="dash-table">
-                                <thead>
-                                    <tr><th>{{ lang["dashboard-table-board"] }}</th><th>{{ lang["dashboard-table-last-activity"] }}</th></tr>
-                                </thead>
-                                <tbody>
-                                    {% for board in popular_boards %}
-                                    <tr><td><a href="/{{ board.board_uri }}" style="font-weight: bold; color: #00b4d8; text-decoration: none;">/{{ board.board_uri }}/ <span style="color: #888;">- {{ board.board_name }}</span></a></td><td>{{ board.last_activity }}</td></tr>
-                                    {% else %}
-                                    <tr><td colspan="2" style="text-align: center; color: #666;">{{ lang["dashboard-no-activity"] }}</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="panel">
-                        <div class="panel-header">
-                            <h3><i class="fas fa-history"></i> {{ lang["dashboard-recent-activity"] }}</h3>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="dash-table">
-                                <thead><tr><th>{{ lang["dashboard-table-board"] }}</th><th>{{ lang["dashboard-table-content"] }}</th><th>{{ lang["dashboard-table-time"] }}</th></tr></thead>
-                                <tbody>
-                                    {% for post in recent_posts %}
-                                    <tr>
-                                        <td><a href="/{{ post.board }}" style="color: #00b4d8; text-decoration: none;">/{{ post.board }}/</a></td>
-                                        <td><a href="/{{ post.board }}/thread/{{ post.post_id }}" style="color: #e0e0e0; text-decoration: none; display: block; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                            {% if post.post_subject %}{{ post.post_subject }}{% else %}{{ post.original_content }}{% endif %}
-                                        </a></td>
-                                        <td style="font-size: 0.8rem; color: #888;">{{ post.post_date }}</td>
-                                    </tr>
-                                    {% else %}
-                                    <tr><td colspan="3" style="text-align: center; color: #666;">{{ lang["dashboard-no-recent-posts"] }}</td></tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- General Config Section -->
-            {% if 'owner' in roles.lower() or 'mod' in roles.lower() %}
-            <section id="general-config" style="margin-bottom: 2rem;">
-                <h2 class="section-title"><i class="fas fa-cogs"></i> {{ lang["dashboard-general-config"] }}</h2>
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3>{{ lang["dashboard-website-configs"] }}</h3>
-                    </div>
-                    <div class="panel-body" style="padding: 1.5rem;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                            <!-- Language Selector -->
-                            <div class="config-item">
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00b4d8;">{{ lang["dashboard-select-language"] }}</label>
-                                <form action="/api/change_general_lang" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <select name="lang" onchange="this.form.submit()" class="config-select">
-                                        <option value="" disabled="" selected="">{{ lang["dashboard-select-language"] }}</option>
-                                        <option value="en-us">English</option>
-                                        <option value="es">Español</option>
-                                        <option value="pt-br">Português</option>
-                                        <option value="jp">日本語</option>
-                                    </select>
-                                    <noscript>
-                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
-                                    </noscript>
-                                </form>
-                            </div>
-
-                            <div class="config-item">
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00b4d8;">{{ lang["dashboard-captcha-config"] }}</label>
-                                <form action="/api/apply_general_captcha" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <select name="generalcaptcha_option" onchange="this.form.submit()" class="config-select">
-                                        <option value="enable">{{ lang["dashboard-captcha-config-enable"] }}</option>
-                                        <option value="disable">{{ lang["dashboard-captcha-config-disable"] }}</option>
-                                    </select>
-                                    <noscript>
-                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
-                                    </noscript>
-                                </form>
-                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-captcha-config-desc"] }}</small>
-                            </div>
-
-                            <div class="config-item">
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00b4d8;">{{ lang["dashboard-free-board-creation"] }}</label>
-                                <form action="/api/toggle_free_board_creation" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <select name="free_board_creation_option" onchange="this.form.submit()" class="config-select">
-                                        <option value="enable" {% if chan_config['free_board_creation'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
-                                        <option value="disable" {% if chan_config['free_board_creation'] == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
-                                    </select>
-                                    <noscript>
-                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
-                                    </noscript>
-                                </form>
-                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-free-board-creation-desc"] }}</small>
-                            </div>
-
-                            <div class="config-item">
-                                <label style="display: block; margin-bottom: 0.5rem; color: #00b4d8;">{{ lang["dashboard-sidebar-layout"] }}</label>
-                                <form action="/api/toggle_sidebar_layout" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <select name="sidebar_option" onchange="this.form.submit()" class="config-select">
-                                        <option value="enable" {% if chan_config['sidebar_enabled'] == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
-                                        <option value="disable" {% if chan_config['sidebar_enabled'] == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
-                                    </select>
-                                    <noscript>
-                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
-                                    </noscript>
-                                </form>
-                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-sidebar-layout-desc"] }}</small>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                            <div class="config-item">
-                                <form action="/api/update_chan_defaults" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <div class="form-group">
-                                        <label class="form-label">{{ lang["dashboard-default-poster-name"] }}</label>
-                                        <input type="text" name="default_poster_name" class="form-input" value="{{ chan_config.get('default_poster_name', 'Anonymous') }}">
-                                        <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-default-poster-name-desc"] }}</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">{{ lang["dashboard-max-pages-per-board"] }}</label>
-                                        <input type="number" min="0" name="max_pages_per_board" class="form-input" value="{{ chan_config.get('max_pages_per_board', 0) }}">
-                                        <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-max-pages-per-board-desc"] }}</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">{{ lang["dashboard-posts-per-page"] }}</label>
-                                        <input type="number" min="1" name="posts_per_page" class="form-input" value="{{ chan_config.get('posts_per_page', 6) }}">
-                                        <small style="display: block; margin-top: 0.3rem; color: #666;">{{ lang["dashboard-posts-per-page-desc"] }}</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Max upload global (MB)</label>
-                                        <input type="number" min="1" name="max_upload_size_mb" class="form-input" value="{{ chan_config.get('max_upload_size_mb', 24) }}">
-                                        <small style="display: block; margin-top: 0.3rem; color: #666;">Limite maximo de upload por arquivo para toda a engine.</small>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-save-config"] }}</button>
-                                </form>
-                            </div>
-
-                            <div class="config-item">
-                                <form action="/api/change_news" method="POST">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <div class="form-group">
-                                        <label class="form-label">{{ lang["dashboard-news-config"] }}</label>
-                                        <textarea name="news" class="form-input" rows="5" placeholder="{{ lang["dashboard-news-placeholder"] }}">{{ chan_config['index_news'] }}</textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" style="width: 100%;">{{ lang["dashboard-news-save"] }}</button>
-                                    <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-news-desc"] }}</small>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            {% endif %}
-
-        </main>
+        </div>
     </div>
-    <script>
-        const banSearch = document.getElementById('banSearch');
-        if (banSearch) {
-            banSearch.addEventListener('keyup', function() {
-                let filter = this.value.toLowerCase();
-                let rows = document.querySelectorAll('#bansTable tbody tr');
-                rows.forEach(row => {
-                    if (row.cells.length === 1 && row.innerText.includes("No active bans")) return;
-                    let text = row.innerText.toLowerCase();
-                    row.style.display = text.includes(filter) ? '' : 'none';
-                });
-            });
-        }
-    </script>
-</body>
-    <style>
-        html {
-            scroll-behavior: smooth;
-            scroll-padding-top: 20px;
-        }
-        
-        /* Modal triggers as buttons when not using labels */
-        .modal-trigger {
-            cursor: pointer;
-        }
-        
-        /* Ensure modals work properly */
-        .modal-checkbox:checked + .modal-overlay {
-            display: flex !important;
-        }
-    </style>
 </body>
 </html>

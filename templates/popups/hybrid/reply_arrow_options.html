@@ -18,7 +18,7 @@
                   <li><button type="submit">Delete Files</button></li>
                 </form>
                 {% endif %}
-                {% if reply.user_ip == request.remote_addr %}
+                {% if is_board_owner or is_moderator or is_board_staff or reply.user_ip == request.remote_addr %}
                 <form action="/api/delete_reply/{{ reply.reply_id }}" method="post">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <li><button type="submit">Delete reply</button></li>

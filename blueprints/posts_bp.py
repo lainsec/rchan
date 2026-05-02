@@ -21,16 +21,56 @@ def get_lang_for_board(board_uri):
     if board_info:
         board_lang = (board_info.get('board_lang') or 'default').strip()
     return language_module.get_user_lang(board_lang)
+
+
+def socket_post_i18n(lang, board_lang_key):
+    key = (board_lang_key or 'default').strip().lower()
+    date_locale = 'en'
+    if key.startswith('pt'):
+        date_locale = 'pt'
+    elif key.startswith('en'):
+        date_locale = 'en'
+    elif key == 'jp':
+        date_locale = 'jp'
+    elif key.startswith('es'):
+        date_locale = 'es'
+    return {
+        'date_locale': date_locale,
+        'thread_reply_button': lang.get('thread-reply-button', 'Replies'),
+        'thread_hide_title': lang.get('thread-hide-title', 'Hide thread'),
+        'hidden_replies': lang.get('hidden-replies', 'hidden post(s), to see them click on'),
+        'post_no_prefix': lang.get('thread-post-no-prefix', 'No. '),
+    }
+
+
+def poster_id_hash(user_ip, thread_post_id):
+    return str(abs(hash(str(user_ip) + str(thread_post_id))))[:5]
+
+
+def sanitize_poster_io_sid(raw):
+    """Socket.IO session id from the client form; no IP, safe to echo in broadcast."""
+    if not raw or not isinstance(raw, str):
+        return ''
+    s = raw.strip()
+    if len(s) > 80:
+        return ''
+    if not re.fullmatch(r'[-A-Za-z0-9_.+/=]{1,80}', s):
+        return ''
+    return s
+
+
 # Post handling class
 class PostHandler:
-    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None, thread_id=None):
+    def __init__(self, socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip=None, thread_id=None, io_sid=None):
         self.socketio = socketio
         self.user_ip = user_ip
+        self.poster_sid = sanitize_poster_io_sid(io_sid or '')
         self.cookie_ip = cookie_ip
         self.account_name = '' if not 'username' in session else session['username']
         self.post_mode = post_mode
 
         board_info = database_module.get_board_info(board_id)
+        self.board_lang_key = (board_info.get('board_lang') or 'default').strip() if board_info else 'default'
 
         try:
             allow_name_raw = board_info.get('allow_name', 1) if board_info else 1
@@ -404,15 +444,16 @@ class PostHandler:
         
         media_approved = self.get_media_approval_status(bool(saved_files))
         
-        # Calculate poster ID hash
-        poster_id = str(abs(hash(str(self.user_ip) + str(reply_to))))[:5]
-        
-        # Get board config for show_thread_poster_id
+        poster_id = poster_id_hash(self.user_ip, reply_to)
         board_info = database_module.get_board_info(self.board_id)
-        show_poster_id = board_info.get('show_thread_poster_id', 0) if board_info else 0
+        try:
+            show_poster_id = int(board_info.get('show_thread_poster_id', 0) or 0) if board_info else 0
+        except (TypeError, ValueError):
+            show_poster_id = 0
 
         self.socketio.emit('nova_postagem', {
             'type': 'New Reply',
+            'i18n': socket_post_i18n(self.lang, self.board_lang_key),
             'post': {
                 'id': database_module.get_max_post_id() + 1,
                 'thread_id': reply_to,
@@ -425,7 +466,7 @@ class PostHandler:
                 'board': self.board_id,
                 'poster_id': poster_id,
                 'show_poster_id': show_poster_id,
-                'user_ip': self.user_ip,
+                'poster_sid': self.poster_sid,
                 'role': 'user' # Default for replies
             }
         }, broadcast=True)
@@ -531,11 +572,19 @@ class PostHandler:
             tripcode_html = f' <span class="tripcode">[tripcode protected]</span>'
         
         media_approved = self.get_media_approval_status(bool(saved_files))
-        
+        next_post_id = database_module.get_max_post_id() + 1
+        board_info = database_module.get_board_info(self.board_id)
+        try:
+            show_poster_id = int(board_info.get('show_thread_poster_id', 0) or 0) if board_info else 0
+        except (TypeError, ValueError):
+            show_poster_id = 0
+        poster_id = poster_id_hash(self.user_ip, next_post_id)
+
         self.socketio.emit('nova_postagem', {
             'type': 'New Thread',
+            'i18n': socket_post_i18n(self.lang, self.board_lang_key),
             'post': {
-                'id': database_module.get_max_post_id() + 1,
+                'id': next_post_id,
                 'name': f'{display_name}{tripcode_html}',
                 'subject': self.post_subject,
                 'content': self.comment,
@@ -543,7 +592,10 @@ class PostHandler:
                 'media_approved': media_approved,
                 'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
                 'board': self.board_id,
-                'role': 'user'
+                'role': 'user',
+                'poster_id': poster_id,
+                'show_poster_id': show_poster_id,
+                'poster_sid': self.poster_sid,
             }
         }, broadcast=True)
         database_module.add_new_post(self.user_ip, self.account_name, self.board_id, self.post_subject, self.post_name, 
@@ -577,7 +629,8 @@ def new_post():
     if post_mode == "reply":
         thread_id = request.form.get('thread_id')
 
-    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip, thread_id)
+    io_sid = request.form.get('io_sid', '') or ''
+    handler = PostHandler(socketio, user_ip, post_mode, post_name, post_subject, board_id, comment, embed, captcha_input, cookie_ip, thread_id, io_sid=io_sid)
 
     if handler.check_board_locked():
         flash(lang["flash-board-locked"], 'danger')

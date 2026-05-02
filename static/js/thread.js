@@ -1,5 +1,6 @@
-function manipularConteudo() {
-    var postContents = document.querySelectorAll('pre');
+function manipularConteudo(root) {
+    var scope = root || document;
+    var postContents = scope.querySelectorAll('pre');
 
     postContents.forEach(function(postContent) {
         var content = postContent.innerHTML;
@@ -13,7 +14,7 @@ function manipularConteudo() {
             '<a class="hyper-link" href="$2">$1</a>');
 
         // YouTube Embed Detection
-        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[^\s]*)/g;
+        const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[^\s]*)/g;
         content = content.replace(youtubeRegex, (match, videoId) => {
             const embedId = `yt-embed-${Math.random().toString(36).substr(2, 9)}`;
             return `${match} <a href="#" class="yt-embed-toggle" data-video-id="${videoId}" data-target="${embedId}">[embed]</a><div id="${embedId}" class="yt-embed-container" style="display:none; margin-top: 10px;"></div>`;
@@ -38,12 +39,13 @@ function manipularConteudo() {
         postContent.innerHTML = content;
     });
 
-    adicionarEventosQuoteReply();
-    adicionarEventosYTEmbed();
+    adicionarEventosQuoteReply(scope);
+    adicionarEventosYTEmbed(scope);
 }
 
-function adicionarEventosYTEmbed() {
-    document.querySelectorAll('.yt-embed-toggle').forEach(toggle => {
+function adicionarEventosYTEmbed(root) {
+    var scope = root || document;
+    scope.querySelectorAll('.yt-embed-toggle').forEach(toggle => {
         toggle.addEventListener('click', function(e) {
             e.preventDefault();
             const videoId = this.getAttribute('data-video-id');
@@ -51,7 +53,19 @@ function adicionarEventosYTEmbed() {
             const container = document.getElementById(targetId);
 
             if (container.style.display === 'none') {
-                container.innerHTML = `<iframe width="480" height="270" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                const iframe = document.createElement('iframe');
+                iframe.width = '480';
+                iframe.height = '270';
+                iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(videoId) + '?autoplay=1&rel=0&modestbranding=1';
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+                iframe.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen');
+                iframe.setAttribute('allowfullscreen', '');
+                if ('credentialless' in iframe) {
+                    iframe.credentialless = true;
+                }
+                container.innerHTML = '';
+                container.appendChild(iframe);
                 container.style.display = 'block';
                 this.textContent = '[close]';
             } else {
@@ -63,8 +77,9 @@ function adicionarEventosYTEmbed() {
     });
 }
 
-function adicionarEventosRepliedQuotes() {
-    const links = document.querySelectorAll('a.replied_quote');
+function adicionarEventosRepliedQuotes(root) {
+    const scope = root || document;
+    const links = scope.querySelectorAll('a.replied_quote');
     links.forEach(link => {
         const raw = (link.textContent || '').trim();
         const idText = raw.replace(/^>>\s*/, '').trim();
@@ -82,6 +97,8 @@ function adicionarEventosRepliedQuotes() {
                 replies.forEach(r => r.remove());
                 const thread_options = preview.querySelectorAll('div.thread_tools_menu');
                 thread_options.forEach(r => r.remove());
+                const replied_at = preview.querySelectorAll('div.replied_at_container');
+                replied_at.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
@@ -197,8 +214,9 @@ function adicionarEventosRepliedQuotes() {
 }
 
 
-function adicionarEventosQuoteReply() {
-    const quoteReplies = document.querySelectorAll('span.quote-reply');
+function adicionarEventosQuoteReply(root) {
+    const scope = root || document;
+    const quoteReplies = scope.querySelectorAll('span.quote-reply');
 
     quoteReplies.forEach(span => {
         span.addEventListener('click', () => {
@@ -241,6 +259,8 @@ function adicionarEventosQuoteReply() {
                 replies.forEach(reply => reply.remove());
                 const thread_options = preview.querySelectorAll('div.thread_tools_menu');
                 thread_options.forEach(r => r.remove());
+                const replied_at = preview.querySelectorAll('div.replied_at_container');
+                replied_at.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
@@ -359,7 +379,7 @@ function adicionarEventosQuoteReply() {
         });
     });
 
-    const crossBoardLinks = document.querySelectorAll('a.quote-reply');
+    const crossBoardLinks = scope.querySelectorAll('a.quote-reply');
     crossBoardLinks.forEach(link => {
         link.addEventListener('mouseenter', (event) => {
             const targetId = link.getAttribute('data-id');
@@ -371,6 +391,8 @@ function adicionarEventosQuoteReply() {
                 replies.forEach(reply => reply.remove());
                 const thread_options = preview.querySelectorAll('div.thread_tools_menu');
                 thread_options.forEach(r => r.remove());
+                const replied_at = preview.querySelectorAll('div.replied_at_container');
+                replied_at.forEach(r => r.remove());
                 preview.classList.add('preview-reply');
                 preview.style.position = 'absolute';
                 preview.style.zIndex = '1000';
@@ -586,10 +608,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const diffInSeconds = Math.floor((nowMs - serverMs) / 1000);
 
             const tz = (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || '';
-            let lang = 'en';
-            if (tz.includes('Tokyo')) lang = 'jp';
-            else if (tz.includes('Sao_Paulo') || tz.includes('Bahia') || tz.includes('Fortaleza') || tz.includes('Recife') || tz.includes('Belem') || tz.includes('Manaus') || tz.includes('Porto_Velho') || tz.includes('Lisbon') || tz.includes('Madeira')) lang = 'pt';
-            else if (tz.includes('Madrid') || tz.includes('Mexico') || tz.includes('Argentina') || tz.includes('Bogota') || tz.includes('Lima') || tz.includes('Santiago')) lang = 'es';
+            let lang = window.RCHAN_DATE_LOCALE;
+            if (!lang || !['pt', 'es', 'en', 'jp'].includes(lang)) {
+                lang = 'en';
+                if (tz.includes('Tokyo')) lang = 'jp';
+                else if (tz.includes('Sao_Paulo') || tz.includes('Bahia') || tz.includes('Fortaleza') || tz.includes('Recife') || tz.includes('Belem') || tz.includes('Manaus') || tz.includes('Porto_Velho') || tz.includes('Lisbon') || tz.includes('Madeira')) lang = 'pt';
+                else if (tz.includes('Madrid') || tz.includes('Mexico') || tz.includes('Argentina') || tz.includes('Bogota') || tz.includes('Lima') || tz.includes('Santiago')) lang = 'es';
+            }
 
             const units = [
                 { key: 'year', secs: 31536000 },

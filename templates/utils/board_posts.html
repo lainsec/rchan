@@ -39,13 +39,13 @@
                         {% if image.startswith('youtube:') %}
                             {% set video_id = image.split(':')[1] %}
                             <div class="post_image_info">
-                                <a class="image_url" href="https://youtu.be/{{ video_id }}" target="_blank">
+                                <a class="image_url" href="https://youtu.be/{{ video_id }}" target="_blank" rel="noopener noreferrer">
                                     YouTube Embed
                                 </a>
                             </div>
-                            <img class="post_img post_video_thumbnail" 
-                                 src="https://img.youtube.com/vi/{{ video_id }}/0.jpg"
-                                 onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/{{ video_id }}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                            <img class="post_img post_video_thumbnail" referrerpolicy="no-referrer"
+                                 src="https://i.ytimg.com/vi/{{ video_id }}/hqdefault.jpg"
+                                 onclick="var i=document.createElement('iframe');i.src='https://www.youtube-nocookie.com/embed/{{ video_id }}?autoplay=1&rel=0&modestbranding=1';i.width='100%';i.height='240';i.frameBorder='0';i.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';i.allowFullscreen=true;i.referrerPolicy='strict-origin-when-cross-origin';if('credentialless'in i)i.credentialless=true;this.parentNode.replaceChild(i,this);return false;"
                                  style="cursor: pointer;">
                         {% else %}
                             <div class="post_image_info">
@@ -131,13 +131,13 @@
                                                 {% if image.startswith('youtube:') %}
                                                     {% set video_id = image.split(':')[1] %}
                                                     <div class="reply_image_info">
-                                                        <a class="image_url" href="https://youtu.be/{{ video_id }}" target="_blank">
+                                                        <a class="image_url" href="https://youtu.be/{{ video_id }}" target="_blank" rel="noopener noreferrer">
                                                             YouTube Embed
                                                         </a>
                                                     </div>
-                                                    <img class="reply_img post_video_thumbnail" 
-                                                         src="https://img.youtube.com/vi/{{ video_id }}/0.jpg"
-                                                         onclick="var iframe = document.createElement('iframe'); iframe.src = 'https://www.youtube.com/embed/{{ video_id }}?autoplay=1'; iframe.width = '100%'; iframe.height = '240'; iframe.frameBorder = '0'; iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'; iframe.allowFullscreen = true; this.parentNode.replaceChild(iframe, this); return false;"
+                                                    <img class="reply_img post_video_thumbnail" referrerpolicy="no-referrer"
+                                                         src="https://i.ytimg.com/vi/{{ video_id }}/hqdefault.jpg"
+                                                         onclick="var i=document.createElement('iframe');i.src='https://www.youtube-nocookie.com/embed/{{ video_id }}?autoplay=1&rel=0&modestbranding=1';i.width='100%';i.height='240';i.frameBorder='0';i.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';i.allowFullscreen=true;i.referrerPolicy='strict-origin-when-cross-origin';if('credentialless'in i)i.credentialless=true;this.parentNode.replaceChild(i,this);return false;"
                                                          style="cursor: pointer;">
                                                 {% else %}
                                                     <div class="reply_image_info">
