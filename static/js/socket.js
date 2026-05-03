@@ -17,36 +17,79 @@ if (document.readyState === 'loading') {
 
 const notification_path = '/static/audios/notification.mp3';
 const notification = new Audio(notification_path);
-let notificationReady = false;
 try {
-    notification.addEventListener('canplaythrough', function () {
-        notificationReady = true;
-    });
+    notification.preload = 'auto';
 } catch (e) {}
-function playNotification() {
+
+const post_submit_path = '/static/audios/post_submit.mp3';
+const postSubmitSound = new Audio(post_submit_path);
+try {
+    postSubmitSound.preload = 'auto';
+} catch (e) {}
+
+function playAudioWithFallback(audioEl) {
     try {
-        if (notificationReady) {
-            notification.currentTime = 0;
-            notification.play().catch(function () {});
+        audioEl.currentTime = 0;
+        var p = audioEl.play();
+        if (p !== undefined) {
+            p.catch(function () {
+                var once = function () {
+                    audioEl.removeEventListener('canplay', once);
+                    audioEl.currentTime = 0;
+                    audioEl.play().catch(function () {});
+                };
+                audioEl.addEventListener('canplay', once);
+                try {
+                    audioEl.load();
+                } catch (err) {}
+            });
         }
     } catch (e) {}
 }
 
-const post_submit_path = '/static/audios/post_submit.mp3';
-const postSubmitSound = new Audio(post_submit_path);
-let postSubmitReady = false;
-try {
-    postSubmitSound.addEventListener('canplaythrough', function () {
-        postSubmitReady = true;
-    });
-} catch (e) {}
+function playNotification() {
+    playAudioWithFallback(notification);
+}
+
 function playPostSubmit() {
+    playAudioWithFallback(postSubmitSound);
+}
+
+function primePostSubmitSoundFromUserGesture() {
     try {
-        if (postSubmitReady) {
-            postSubmitSound.currentTime = 0;
-            postSubmitSound.play().catch(function () {});
+        postSubmitSound.muted = true;
+        var p = postSubmitSound.play();
+        if (p !== undefined) {
+            p.then(function () {
+                postSubmitSound.pause();
+                postSubmitSound.currentTime = 0;
+                postSubmitSound.muted = false;
+            }).catch(function () {
+                postSubmitSound.muted = false;
+            });
+        } else {
+            postSubmitSound.muted = false;
         }
-    } catch (e) {}
+    } catch (e) {
+        try {
+            postSubmitSound.muted = false;
+        } catch (e2) {}
+    }
+}
+
+function attachPostFormSubmitAudioHooks() {
+    var form = document.getElementById('postform');
+    if (!form) {
+        return;
+    }
+    form.addEventListener('submit', function () {
+        primePostSubmitSoundFromUserGesture();
+    });
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachPostFormSubmitAudioHooks);
+} else {
+    attachPostFormSubmitAudioHooks();
 }
 
 function isOwnSocketPost(data) {

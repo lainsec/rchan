@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ lang['dashboard-page-title-users'] }}{{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    {% include 'utils/site_head_inject.html' %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Reusing Dashboard Styles for consistency */

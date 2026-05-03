@@ -4,6 +4,7 @@ from flask_wtf.csrf import generate_csrf
 from database_modules import database_module, language_module
 from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager, ChanConfigManager, WordFilterManager
 import os
+import pytz
 #blueprint register.
 boards_bp = Blueprint('boards', __name__)
 #add csrf_token in all routes.
@@ -15,8 +16,7 @@ def inject_csrf_token():
 def inject_lang():
     lang = language_module.get_user_lang('default')
     return dict(lang=lang)
-
-
+#load language for board.
 def get_lang_for_board(board_uri=None):
     if not board_uri:
         return language_module.get_user_lang('default')
@@ -25,6 +25,13 @@ def get_lang_for_board(board_uri=None):
         return language_module.get_user_lang('default')
     board_lang = (board_info.get('board_lang') or 'default').strip()
     return language_module.get_user_lang(board_lang)
+#load chan config.
+@boards_bp.context_processor
+def get_chan_config():
+    config_manager = ChanConfigManager()
+    chan_config = config_manager.get_config()
+    site_tz_offset_iso = ChanConfigManager.get_tz_offset_iso_for_config(chan_config)
+    return dict(chan_config=chan_config, site_tz_offset_iso=site_tz_offset_iso)
 #load nav boards
 @boards_bp.context_processor
 def globalboards():
@@ -196,7 +203,8 @@ def login():
                              reports=reports,
                              chan_config=chan_config,
                              can_view_board_bans=can_view_board_bans,
-                             available_langs=language_module.load_langs())
+                             available_langs=language_module.load_langs(),
+                             sorted_timezones=sorted(pytz.all_timezones))
     return render_template('login.html')
 
 @boards_bp.route('/conta/users')
@@ -257,7 +265,6 @@ def register():
         return redirect('/conta')
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = database_module.hash_captcha(captcha_text)
-    print(session['captcha_text'])
     form_data = session.pop('form_data', {})
     return render_template('register.html',captcha_image=captcha_image, form_data=form_data)
 
@@ -266,7 +273,6 @@ def create():
     if 'username' in session:
         captcha_text, captcha_image = database_module.generate_captcha()
         session['captcha_text'] = database_module.hash_captcha(captcha_text)
-        print(session["captcha_text"])
         form_data = session.pop('form_data', {})
         return render_template('board-create.html',captcha_image=captcha_image, form_data=form_data)
     else:
@@ -337,7 +343,6 @@ def board_page(board_uri):
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = database_module.hash_captcha(captcha_text)
-    print(session["captcha_text"])
     
     ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
@@ -384,7 +389,6 @@ def board_catalog(board_uri):
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = database_module.hash_captcha(captcha_text)
-    print(session["captcha_text"])
     
     ban_manager = BanManager()
     visible_post_ids = [post['post_id'] for post in posts]
@@ -461,7 +465,6 @@ def replies(board_name, thread_id):
     # Generate CAPTCHA
     captcha_text, captcha_image = database_module.generate_captcha()
     session['captcha_text'] = database_module.hash_captcha(captcha_text)
-    print(session["captcha_text"])
 
     # Get user role if logged in
     roles = 'none'

@@ -24,7 +24,7 @@
                 <input type="hidden" name="name" value="{{ form_data.name if form_data else '' }}">
                 {% else %}
                 <div class="label" bis_skin_checked="1">{{ lang['threadform-label-name'] }}</div><input class="mr-1" type="text" name="name"
-                    placeholder="{{ lang['threadform-placeholder-name'] }}" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
+                    placeholder="{% if board_info.default_poster_name != '' %}{{ board_info.default_poster_name }}{% else %}{{ lang['threadform-placeholder-name'] }}{% endif %}" maxlength="40" value="{{ form_data.name if form_data else '' }}"><a class="close postform-style" href="#!"
                     bis_skin_checked="1">×</a>
                 {% endif %}
             </section>
@@ -39,7 +39,7 @@
             </section>
             <section class="row">
                 <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-files'] }}<span class="required">*</span></span>
-                    <small>{{ lang['threadform-files-max'] }}</small><small>{{ lang['threadform-total-max'] }}</small>
+                    <small>{{ lang['threadform-files-max'] }}</small><small>{{ lang['threadform-total-max'] }} {% if board_info.max_upload_size_mb != 0 %}{{ board_info.max_upload_size_mb }}{% else %}{{ chan_config.max_upload_size_mb }}{% endif %}MB</small>
                 </div><span class="col"><label class="jsonly postform-style filelabel" for="post-file-uploader">
                         {{ lang['threadform-files-select'] }}</label><input id="post-file-uploader" type="file" name="fileInput" multiple=""
                         style="position: absolute; border: none; height: 1px; width: 1px;">

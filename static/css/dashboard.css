@@ -1,5 +1,3 @@
-
-/* Dashboard Specific Styles - NO JS Version */
 :root {
     --dash-sidebar-width: 280px;
     --dash-header-height: 60px;
@@ -20,7 +18,15 @@ body {
     padding: 0;
 }
 
-/* NO-JS Modal System using checkbox + label */
+select option {
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    border: 1px solid var(--cor-borda);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+}
+
 .modal-checkbox {
     display: none;
 }

@@ -6,7 +6,11 @@ Handles user timeouts, bans, reports, chan config and word filters.
 import threading
 import re
 from datetime import datetime, timedelta
+import pytz
 from database_modules.sqlite_handler import SQLiteConfig
+
+# Default IANA timezone for new installs and fallbacks (US Eastern).
+DEFAULT_SITE_TIMEZONE = 'America/New_York'
 
 
 class TimeoutManager:
@@ -534,7 +538,10 @@ class ChanConfigManager:
             'max_pages_per_board': 'int',
             'default_poster_name': 'str',
             'posts_per_page': 'int',
-            'max_upload_size_mb': 'int'
+            'max_upload_size_mb': 'int',
+            'site_custom_css': 'str',
+            'site_timezone': 'str',
+            'enforce_reply_before_thread': 'int'
         })
         self._ensure_record()
 
@@ -550,7 +557,10 @@ class ChanConfigManager:
                 'max_pages_per_board': 0,
                 'default_poster_name': "Anonymous",
                 'posts_per_page': 6,
-                'max_upload_size_mb': 24
+                'max_upload_size_mb': 24,
+                'site_custom_css': '',
+                'site_timezone': DEFAULT_SITE_TIMEZONE,
+                'enforce_reply_before_thread': 1
             })
         else:
             config = configs[0]
@@ -564,6 +574,12 @@ class ChanConfigManager:
                 self.db.update('chan_config', config['id'], {'posts_per_page': 6})
             if 'max_upload_size_mb' not in config:
                 self.db.update('chan_config', config['id'], {'max_upload_size_mb': 24})
+            if 'site_custom_css' not in config:
+                self.db.update('chan_config', config['id'], {'site_custom_css': ''})
+            if 'site_timezone' not in config:
+                self.db.update('chan_config', config['id'], {'site_timezone': DEFAULT_SITE_TIMEZONE})
+            if 'enforce_reply_before_thread' not in config:
+                self.db.update('chan_config', config['id'], {'enforce_reply_before_thread': 1})
 
     def get_config(self):
         """
@@ -575,9 +591,42 @@ class ChanConfigManager:
         self._ensure_record()
         return self.db.find_all('chan_config')[0]
 
+    @staticmethod
+    def get_tz_offset_iso_for_config(chan_config):
+        """ISO-8601 offset like -03:00 or +09:00 for the configured site timezone (current DST rules)."""
+        try:
+            tzname = (chan_config.get('site_timezone') or '').strip() or DEFAULT_SITE_TIMEZONE
+            if tzname not in pytz.all_timezones_set:
+                tzname = DEFAULT_SITE_TIMEZONE
+            tz = pytz.timezone(tzname)
+            now = datetime.now(tz)
+            off = now.utcoffset()
+            if off is not None:
+                sec = int(off.total_seconds())
+                sign = '+' if sec >= 0 else '-'
+                sec = abs(sec)
+                h, m = sec // 3600, (sec % 3600) // 60
+                return f'{sign}{h:02d}:{m:02d}'
+        except Exception:
+            pass
+        try:
+            tz = pytz.timezone(DEFAULT_SITE_TIMEZONE)
+            now = datetime.now(tz)
+            off = now.utcoffset()
+            if off is not None:
+                sec = int(off.total_seconds())
+                sign = '+' if sec >= 0 else '-'
+                sec = abs(sec)
+                h, m = sec // 3600, (sec % 3600) // 60
+                return f'{sign}{h:02d}:{m:02d}'
+        except Exception:
+            pass
+        return '-05:00'
+
     def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None,
                       max_pages_per_board=None, default_poster_name=None, posts_per_page=None,
-                      max_upload_size_mb=None):
+                      max_upload_size_mb=None, site_custom_css=None, site_timezone=None,
+                      enforce_reply_before_thread=None):
         """
         Update the chan configuration.
         
@@ -628,6 +677,19 @@ class ChanConfigManager:
             if value < 1:
                 value = 1
             updates['max_upload_size_mb'] = value
+
+        if site_custom_css is not None:
+            updates['site_custom_css'] = site_custom_css if isinstance(site_custom_css, str) else ''
+
+        if site_timezone is not None:
+            tz = site_timezone.strip() if isinstance(site_timezone, str) else ''
+            if not tz:
+                updates['site_timezone'] = DEFAULT_SITE_TIMEZONE
+            elif tz in pytz.all_timezones_set:
+                updates['site_timezone'] = tz
+
+        if enforce_reply_before_thread is not None:
+            updates['enforce_reply_before_thread'] = 1 if enforce_reply_before_thread else 0
             
         if updates:
             self.db.update('chan_config', config['id'], updates)

@@ -1,0 +1,6 @@
+{% if chan_config and chan_config.get('site_custom_css') %}
+<style id="rchan-site-global-custom-css">
+{{ chan_config.site_custom_css | safe }}
+</style>
+{% endif %}
+<script>window.RCHAN_SITE_TZ_OFFSET={{ site_tz_offset_iso | tojson }};</script>

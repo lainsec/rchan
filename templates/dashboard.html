@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ lang["dashboard-title"] }} - {{ username }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    {% include 'utils/site_head_inject.html' %}
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -57,9 +58,7 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="dash-content">
-            <!-- Stats Row -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-globe"></i></div>
@@ -90,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- Overview Section -->
             <section id="overview">
                 <h2 class="section-title"><i class="fas fa-chart-line"></i> {{ lang["dashboard-general-view"] }}</h2>
                 
@@ -211,6 +209,21 @@
                                 </form>
                                 <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-sidebar-layout-desc"] }}</small>
                             </div>
+
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-reply-before-thread"] }}</label>
+                                <form action="/api/toggle_reply_before_thread" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <select name="reply_before_thread_option" onchange="this.form.submit()" class="config-select">
+                                        <option value="enable" {% if chan_config.get('enforce_reply_before_thread', 1) == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
+                                        <option value="disable" {% if chan_config.get('enforce_reply_before_thread', 1) == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
+                                    </select>
+                                    <noscript>
+                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
+                                    </noscript>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-reply-before-thread-desc"] }}</small>
+                            </div>
                         </div>
 
                         <hr>
@@ -239,6 +252,23 @@
                                         <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-max-upload-global-mb"] }}</label>
                                         <input type="number" min="1" name="max_upload_size_mb" class="config-select" style="width: 100%;" value="{{ chan_config.get('max_upload_size_mb', 24) }}">
                                         <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-max-upload-global-desc"] }}</small>
+                                    </div>
+
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-site-timezone"] }}</label>
+                                        <select name="site_timezone" class="config-select" style="width: 100%;">
+                                            {% set cur_tz = chan_config.get('site_timezone', 'America/New_York') or 'America/New_York' %}
+                                            {% for tz in sorted_timezones %}
+                                            <option value="{{ tz }}" {% if tz == cur_tz %}selected{% endif %}>{{ tz }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-site-timezone-desc"] }}</small>
+                                    </div>
+
+                                    <div style="margin-top: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-site-custom-css"] }}</label>
+                                        <textarea name="site_custom_css" class="config-select" style="width: 100%; min-height: 120px; resize: vertical; font-family: monospace; font-size: 0.85rem;" placeholder="{{ lang['dashboard-site-custom-css-placeholder'] }}">{{ chan_config.get('site_custom_css', '') }}</textarea>
+                                        <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-site-custom-css-desc"] }}</small>
                                     </div>
 
                                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">{{ lang["dashboard-save-config"] }}</button>

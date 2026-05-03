@@ -11,6 +11,7 @@
     <title>/{{post.board}}/ - {{ post.post_content }}</title>
     {% endfor %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% include 'utils/site_head_inject.html' %}
     {% if board_info.default_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/' ~ board_info.default_css) }}">
     {% endif %}

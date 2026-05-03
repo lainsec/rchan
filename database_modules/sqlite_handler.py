@@ -138,39 +138,6 @@ class SQLiteHandler:
             cursor = conn.execute(query, values)
             rows = cursor.fetchall()
             return [self._deserialize(table_name, row) for row in rows]
-            
-    def add_column(self, table_name, column_name, col_type='str'):
-        if table_name not in self.column_types:
-            self.column_types[table_name] = {}
-
-        self.column_types[table_name][column_name] = col_type
-
-        sql_type = "TEXT"
-        if col_type == 'int':
-            sql_type = "INTEGER"
-        elif col_type == 'float':
-            sql_type = "REAL"
-
-        try:
-            with self._get_connection() as conn:
-                conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {sql_type}")
-        except sqlite3.OperationalError:
-            # Column might already exist
-            pass
-
-    def remove_column(self, table_name, column_name):
-        # SQLite doesn't support DROP COLUMN in older versions easily, 
-        # but modern sqlite (3.35+) does: ALTER TABLE DROP COLUMN
-        # We'll try it.
-        if column_name in self.column_types.get(table_name, {}):
-            del self.column_types[table_name][column_name]
-            
-        try:
-            with self._get_connection() as conn:
-                conn.execute(f"ALTER TABLE {table_name} DROP COLUMN {column_name}")
-        except sqlite3.OperationalError:
-            # Fallback or ignore if not supported/column missing
-            pass
 
 
 class SQLiteConfig:

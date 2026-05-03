@@ -593,19 +593,62 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 document.addEventListener('DOMContentLoaded', function() {
+    var BR_ABS_DATE_RE = /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/;
+
+    function isBrAbsoluteDateString(s) {
+        return typeof s === 'string' && BR_ABS_DATE_RE.test(s.trim());
+    }
+
+    function resolveAbsolutePostDateString(element) {
+        var fromAttr = element.getAttribute('data-original-date');
+        if (isBrAbsoluteDateString(fromAttr)) {
+            return fromAttr.trim();
+        }
+        var fromDataset = element.dataset.originalDate;
+        if (isBrAbsoluteDateString(fromDataset)) {
+            return fromDataset.trim();
+        }
+        var fromText = (element.textContent || '').trim();
+        if (isBrAbsoluteDateString(fromText)) {
+            return fromText;
+        }
+        return null;
+    }
+
     function formatDate(element) {
-        const dateString = element.textContent.trim();
+        const dateString = resolveAbsolutePostDateString(element);
+        if (!dateString) {
+            return false;
+        }
 
         try {
-            const [datePart, timePart] = dateString.split(' ');
-            const [day, month, year] = datePart.split('/').map(Number);
-            const [hours, minutes, secondsRaw] = timePart.split(':').map(Number);
-            const seconds = Number.isFinite(secondsRaw) ? secondsRaw : 0;
+            const m = dateString.match(BR_ABS_DATE_RE);
+            if (!m) {
+                return false;
+            }
+            const day = parseInt(m[1], 10);
+            const month = parseInt(m[2], 10);
+            const year = parseInt(m[3], 10);
+            const hours = parseInt(m[4], 10);
+            const minutes = parseInt(m[5], 10);
+            const seconds = m[6] != null ? parseInt(m[6], 10) : 0;
+            if (![day, month, year, hours, minutes, seconds].every(function (n) { return Number.isFinite(n); })) {
+                return false;
+            }
             const z2 = (n) => String(n).padStart(2, '0');
-            const iso = `${year}-${z2(month)}-${z2(day)}T${z2(hours)}:${z2(minutes)}:${z2(seconds)}-03:00`;
+            const tzOff = (typeof window !== 'undefined' && window.RCHAN_SITE_TZ_OFFSET)
+                ? String(window.RCHAN_SITE_TZ_OFFSET)
+                : '-05:00';
+            const iso = `${year}-${z2(month)}-${z2(day)}T${z2(hours)}:${z2(minutes)}:${z2(seconds)}${tzOff}`;
             const serverMs = Date.parse(iso);
+            if (!Number.isFinite(serverMs)) {
+                return false;
+            }
             const nowMs = Date.now();
-            const diffInSeconds = Math.floor((nowMs - serverMs) / 1000);
+            let diffInSeconds = Math.floor((nowMs - serverMs) / 1000);
+            if (diffInSeconds < 0) {
+                diffInSeconds = 0;
+            }
 
             const tz = (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || '';
             let lang = window.RCHAN_DATE_LOCALE;
@@ -660,6 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             element.dataset.originalDate = dateString;
+            element.setAttribute('data-original-date', dateString);
             element.textContent = relativeTime;
             element.setAttribute('title', dateString);
 
@@ -672,8 +716,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateAllDates() {
         document.querySelectorAll('span.postDate').forEach(element => {
-            if (element.dataset.originalDate) {
-                element.textContent = element.dataset.originalDate;
+            var abs = resolveAbsolutePostDateString(element);
+            if (abs) {
+                element.textContent = abs;
             }
             formatDate(element);
         });
@@ -770,6 +815,9 @@ document.addEventListener('click', function(event) {
 });
 
 document.getElementById('postform').addEventListener('submit', function() {
+    if (typeof syncPostFormIoSid === 'function') {
+        syncPostFormIoSid();
+    }
     var btn = document.getElementById('submitpost');
     if (btn) {
         btn.disabled = true;

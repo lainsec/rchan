@@ -230,6 +230,31 @@ def toggle_sidebar_layout():
         
     return redirect(request.referrer or '/')
 
+
+@auth_bp.route('/api/toggle_reply_before_thread', methods=['POST'])
+@has_admin_perms
+def toggle_reply_before_thread():
+    config_manager = moderation_module.ChanConfigManager()
+    option = request.form.get('reply_before_thread_option')
+    lang = get_lang()
+    if option:
+        new_value = True if option == 'enable' else False
+        config_manager.update_config(enforce_reply_before_thread=new_value)
+        if new_value:
+            flash(lang["flash-reply-before-thread-enabled"], 'success')
+        else:
+            flash(lang["flash-reply-before-thread-disabled"], 'success')
+    else:
+        chan_config = config_manager.get_config()
+        try:
+            current = int(chan_config.get('enforce_reply_before_thread', 1))
+        except (TypeError, ValueError):
+            current = 1
+        config_manager.update_config(enforce_reply_before_thread=not bool(current))
+        flash(lang["flash-reply-before-thread-toggled"], 'success')
+    return redirect(request.referrer or '/')
+
+
 @auth_bp.route('/api/change_general_lang', methods=['POST'])
 @has_admin_perms
 def change_general_lang():
@@ -255,6 +280,12 @@ def update_chan_defaults():
     max_pages_raw = request.form.get('max_pages_per_board', '').strip()
     posts_per_page_raw = request.form.get('posts_per_page', '').strip()
     max_upload_size_raw = request.form.get('max_upload_size_mb', '').strip()
+    site_custom_css = request.form.get('site_custom_css')
+    if site_custom_css is None:
+        site_custom_css = ''
+    if len(site_custom_css) > 500000:
+        site_custom_css = site_custom_css[:500000]
+    site_timezone = request.form.get('site_timezone', '')
 
     max_pages_value = None
     if max_pages_raw != '':
@@ -281,7 +312,9 @@ def update_chan_defaults():
         default_poster_name=default_name,
         max_pages_per_board=max_pages_value,
         posts_per_page=posts_per_page_value,
-        max_upload_size_mb=max_upload_size_value
+        max_upload_size_mb=max_upload_size_value,
+        site_custom_css=site_custom_css,
+        site_timezone=site_timezone
     )
 
     lang = get_lang()

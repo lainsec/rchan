@@ -16,11 +16,11 @@ import io
 import re
 from threading import Lock
 from PIL import Image, ImageDraw, ImageFont
+from database_modules.sqlite_handler import SQLiteConfig
+from database_modules.moderation_module import DEFAULT_SITE_TIMEZONE
 
 # Initialize Lock for post ID generation
 POST_LOCK = Lock()
-
-from database_modules.sqlite_handler import SQLiteConfig
 
 # Initialize SQLite databases
 DB = SQLiteConfig.load_db('imageboard')
@@ -257,10 +257,22 @@ def hash_ip(ip):
     digest = hashlib.sha256(ip_str.encode('utf-8')).hexdigest()
     return digest[:12]
 
+def get_site_timezone():
+    """Timezone name from chan config (pytz), default US Eastern (America/New_York)."""
+    try:
+        from database_modules.moderation_module import ChanConfigManager
+        cfg = ChanConfigManager().get_config()
+        tz = (cfg.get('site_timezone') or '').strip()
+        if tz and tz in pytz.all_timezones_set:
+            return pytz.timezone(tz)
+    except Exception:
+        pass
+    return pytz.timezone(DEFAULT_SITE_TIMEZONE)
+
+
 def get_current_datetime():
-    """Get current datetime in Brazil timezone."""
-    current_date_time = pytz.timezone('America/Sao_Paulo') # Change this if your country isn't Brasil.
-    return datetime.datetime.now(current_date_time).strftime("%d/%m/%Y %H:%M:%S")
+    """Get current datetime in the site-configured timezone."""
+    return datetime.datetime.now(get_site_timezone()).strftime("%d/%m/%Y %H:%M:%S")
 
 # Board Operations
 def verify_board_captcha(board_uri):

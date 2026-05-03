@@ -462,7 +462,7 @@ class PostHandler:
                 'content': self.comment,
                 'files': saved_files,
                 'media_approved': media_approved,
-                'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+                'date': database_module.get_current_datetime(),
                 'board': self.board_id,
                 'poster_id': poster_id,
                 'show_poster_id': show_poster_id,
@@ -590,7 +590,7 @@ class PostHandler:
                 'content': self.comment,
                 'files': saved_files,
                 'media_approved': media_approved,
-                'date': datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+                'date': database_module.get_current_datetime(),
                 'board': self.board_id,
                 'role': 'user',
                 'poster_id': poster_id,
@@ -688,8 +688,16 @@ def new_post():
                 print(f"Allowlist error on reply: {e}")
         else:
             try:
+                chan_cfg = moderation_module.ChanConfigManager().get_config()
+                try:
+                    _raw = chan_cfg.get('enforce_reply_before_thread', 1)
+                    enforce_allowlist = int(_raw)
+                except (TypeError, ValueError):
+                    enforce_allowlist = 1
+                if enforce_allowlist not in (0, 1):
+                    enforce_allowlist = 1
                 allowlist_manager = moderation_module.ThreadCreationAllowlistManager()
-                if database_module.count_posts_in_board(board_id) > 0 and not allowlist_manager.is_ip_allowed(user_ip):
+                if enforce_allowlist and database_module.count_posts_in_board(board_id) > 0 and not allowlist_manager.is_ip_allowed(user_ip):
                     flash(lang["flash-thread-reply-before-post"])
                     session['form_data'] = request.form.to_dict()
                     return redirect(request.referrer)
