@@ -15,7 +15,8 @@
 2. cd rchan
 3. python3 -m venv rchanenv
 4. rchanenv\Scripts\activate.bat
-5. pip install -r requirements.txt python-magic-bin
+5. pip install -r requirements.txt
+6. python-magic-bin --force-reinstall
 ```
 ## How to use
 ```bash
