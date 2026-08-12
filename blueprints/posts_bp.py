@@ -413,10 +413,14 @@ class PostHandler:
     # Handle reply posts
     def handle_reply(self, reply_to):
         lang = self.lang
-        if not database_module.check_replyto_exist(int(reply_to)):
+        if not database_module.check_post_exist(int(reply_to)):
             flash(lang["flash-thread-not-exist"])
             return False
+        # Get post informations
+        reply_to_info = database_module.get_post_info(int(reply_to))
         # Check if the thread is locked
+        if not 'locked' in reply_to_info:
+            reply_to = int(reply_to_info.get('post_id'))
         if database_module.verify_locked_thread(int(reply_to)):
             flash(lang["flash-thread-locked"])
             return False
@@ -680,6 +684,9 @@ def new_post():
             
             if not handler.handle_reply(reply_to):
                 session['form_data'] = request.form.to_dict()
+                reply_to_info = database_module.get_post_info(int(reply_to))
+                if not 'locked' in reply_to_info:
+                    return redirect(f"/{board_id}/thread/{reply_to_info.get('post_id')}#{reply_to}")
                 return redirect(request.referrer)
             try:
                 allowlist_manager = moderation_module.ThreadCreationAllowlistManager()
@@ -713,6 +720,12 @@ def new_post():
     if post_mode == "reply":
         response = redirect(request.referrer)
     else:
+        try:
+            reply_to_info = database_module.get_post_info(int(reply_to))
+            if not 'locked' in reply_to_info:
+                return redirect(f"/{board_id}/thread/{reply_to_info.get('post_id')}#{reply_to}")
+        except:
+            pass
         response = redirect(f'/{board_id}/thread/{database_module.get_max_post_id()}')
     if user_ip:
         response.set_cookie('user_ip', user_ip, max_age=60 * 60 * 24 * 365, httponly=True, samesite='Lax')
