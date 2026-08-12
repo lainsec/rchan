@@ -1,5 +1,12 @@
 from flask import current_app, Blueprint, render_template, session, request, redirect, send_from_directory, flash
 from database_modules import database_module, language_module, moderation_module
+from database_modules.moderation_module import (
+    resolve_user_identifier,
+    get_current_anonymous_mode,
+    is_force_captcha_anonymous_enabled,
+    ANONYMOUS_MODE_OPTIONS,
+    ANONYMOUS_MODE_SURFACE
+)
 from flask_socketio import SocketIO, emit
 from PIL import Image
 from io import BytesIO
@@ -88,14 +95,14 @@ def has_post_permission_or_same_ip(get_post_id_from_request):
                 flash(lang.get("flash-post-not-found", "Post not found"), 'danger')
                 return redirect(request.referrer or '/')
             
-            # Get poster IP
+            # Get poster IP (or anon identifier) stored in the post
             poster_ip = database_module.get_post_ip(int(post_id))
             
-            # Get current user's IP from request
-            current_user_ip = request.remote_addr
-            
-            # Check if same IP - this works even for non-logged users
-            if current_user_ip == poster_ip:
+            # Get current user's effective identifier
+            current_user_ip, _ = resolve_user_identifier(request, session)
+
+            # Check if same identifier - this works even for non-logged users
+            if current_user_ip and poster_ip and current_user_ip == poster_ip:
                 return f(*args, **kwargs)
             
             # If IP doesn't match, then user MUST be logged in for further checks
@@ -252,6 +259,58 @@ def toggle_reply_before_thread():
             current = 1
         config_manager.update_config(enforce_reply_before_thread=not bool(current))
         flash(lang["flash-reply-before-thread-toggled"], 'success')
+    return redirect(request.referrer or '/')
+
+
+@auth_bp.route('/api/change_anonymous_mode', methods=['POST'])
+@has_admin_perms
+def change_anonymous_mode():
+    config_manager = moderation_module.ChanConfigManager()
+    mode = request.form.get('anonymous_mode', '').strip()
+    lang = get_lang()
+    if mode and mode in ANONYMOUS_MODE_OPTIONS:
+        config_manager.update_config(anonymous_mode=mode)
+        label_key = f"dashboard-anonymous-mode-option-{mode}"
+        label = lang.get(label_key, {
+            'surface': 'Surface',
+            'anonymous': 'Anônimo',
+            'hybrid': 'Híbrido'
+        }.get(mode, mode))
+        msg_template = lang.get("flash-anonymous-mode-changed", "Modo de identificação alterado para: {label}")
+        try:
+            flash(msg_template.format(label=label), 'success')
+        except (KeyError, IndexError, ValueError):
+            flash(lang.get("flash-global-defaults-updated", "Configuração atualizada."), 'success')
+    else:
+        flash(lang.get("flash-anonymous-mode-invalid", "Modo de identificação inválido."), 'danger')
+    return redirect(request.referrer or '/')
+
+
+@auth_bp.route('/api/toggle_force_captcha_anonymous', methods=['POST'])
+@has_admin_perms
+def toggle_force_captcha_anonymous():
+    config_manager = moderation_module.ChanConfigManager()
+    option = request.form.get('force_captcha_anonymous_option')
+    lang = get_lang()
+    if option:
+        new_value = True if option == 'enable' else False
+        config_manager.update_config(force_captcha_anonymous=new_value)
+        try:
+            if new_value:
+                flash(lang.get("flash-force-captcha-anonymous-enabled", "Forçar CAPTCHA para usuários anônimos (anon::) ATIVADO."), 'success')
+            else:
+                flash(lang.get("flash-force-captcha-anonymous-disabled", "Forçar CAPTCHA para usuários anônimos (anon::) DESATIVADO."), 'success')
+        except Exception:
+            flash(lang.get("flash-global-defaults-updated", "Configuração atualizada."), 'success')
+    else:
+        chan_config = config_manager.get_config()
+        try:
+            current = int(chan_config.get('force_captcha_anonymous', 0))
+        except (TypeError, ValueError):
+            current = 0
+        new_value = not bool(current)
+        config_manager.update_config(force_captcha_anonymous=new_value)
+        flash(lang.get("flash-global-defaults-updated", "Configuração atualizada."), 'success')
     return redirect(request.referrer or '/')
 
 

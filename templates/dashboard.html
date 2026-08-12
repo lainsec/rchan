@@ -224,8 +224,44 @@
                                 </form>
                                 <small style="display: block; margin-top: 0.5rem; color: #666;">{{ lang["dashboard-reply-before-thread-desc"] }}</small>
                             </div>
-                        </div>
 
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-anonymous-mode"] }}</label>
+                                <form action="/api/change_anonymous_mode" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <select name="anonymous_mode" onchange="this.form.submit()" class="config-select">
+                                        <option value="surface" {% if chan_config.get('anonymous_mode', 'surface') == 'surface' %}selected{% endif %}>{{ lang["dashboard-anonymous-mode-option-surface"] }}</option>
+                                        <option value="anonymous" {% if chan_config.get('anonymous_mode', 'surface') == 'anonymous' %}selected{% endif %}>{{ lang["dashboard-anonymous-mode-option-anonymous"] }}</option>
+                                        <option value="hybrid" {% if chan_config.get('anonymous_mode', 'surface') == 'hybrid' %}selected{% endif %}>{{ lang["dashboard-anonymous-mode-option-hybrid"] }}</option>
+                                    </select>
+                                    <noscript>
+                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
+                                    </noscript>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">
+                                    <strong>Surface:</strong> {{ lang["dashboard-anonymous-mode-desc-surface"] }}<br>
+                                    <strong>Anônimo:</strong> {{ lang["dashboard-anonymous-mode-desc-anonymous"] }}<br>
+                                    <strong>Híbrido:</strong> {{ lang["dashboard-anonymous-mode-desc-hybrid"] }}
+                                </small>
+                            </div>
+
+                            <div class="config-item">
+                                <label style="display: block; margin-bottom: 0.5rem; color: #aaa;">{{ lang["dashboard-force-captcha-anonymous"] }}</label>
+                                <form action="/api/toggle_force_captcha_anonymous" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <select name="force_captcha_anonymous_option" onchange="this.form.submit()" class="config-select">
+                                        <option value="enable" {% if chan_config.get('force_captcha_anonymous', 0) == 1 %}selected{% endif %}>{{ lang["dashboard-enable"] }}</option>
+                                        <option value="disable" {% if chan_config.get('force_captcha_anonymous', 0) == 0 %}selected{% endif %}>{{ lang["dashboard-disable"] }}</option>
+                                    </select>
+                                    <noscript>
+                                        <button type="submit" class="btn btn-sm btn-primary" style="margin-top: 5px;">{{ lang["dashboard-save-config"] }}</button>
+                                    </noscript>
+                                </form>
+                                <small style="display: block; margin-top: 0.5rem; color: #666;">
+                                    {{ lang["dashboard-force-captcha-anonymous-desc"] }}
+                                </small>
+                            </div>
+                        </div>
                         <hr>
 
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">

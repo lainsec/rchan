@@ -1,5 +1,14 @@
 from flask import current_app, Blueprint, render_template, redirect, request, flash, session, make_response
 from database_modules import database_module, moderation_module, formatting, language_module
+from database_modules.moderation_module import (
+    resolve_user_identifier,
+    get_current_anonymous_mode,
+    should_force_captcha_for_identifier,
+    AnonymousIdentityManager,
+    ANONYMOUS_MODE_SURFACE,
+    ANONYMOUS_MODE_ANONYMOUS,
+    ANONYMOUS_MODE_HYBRID
+)
 from flask_socketio import SocketIO, emit
 from datetime import datetime, timedelta
 from PIL import Image, ImageOps
@@ -425,8 +434,11 @@ class PostHandler:
             flash(lang["flash-thread-locked"])
             return False
         # check if the captcha is correct
-        if database_module.verify_board_captcha(self.board_id):
-            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+        _needs_captcha = bool(database_module.verify_board_captcha(self.board_id)) or bool(
+            should_force_captcha_for_identifier(self.user_ip)
+        )
+        if _needs_captcha:
+            if not database_module.validate_captcha(self.captcha_input, session.get("captcha_text", "")):
                 flash(lang["flash-invalid-captcha"])
                 return False
         
@@ -551,8 +563,11 @@ class PostHandler:
     # Handle new thread posts
     def handle_post(self):
         lang = self.lang
-        if database_module.verify_board_captcha(self.board_id):
-            if not database_module.validate_captcha(self.captcha_input, session["captcha_text"]):
+        _needs_captcha = bool(database_module.verify_board_captcha(self.board_id)) or bool(
+            should_force_captcha_for_identifier(self.user_ip)
+        )
+        if _needs_captcha:
+            if not database_module.validate_captcha(self.captcha_input, session.get("captcha_text", "")):
                 flash(lang["flash-invalid-captcha"])
                 return False
         
@@ -610,8 +625,15 @@ class PostHandler:
 @posts_bp.route('/api/new_post', methods=['POST'])
 def new_post():
     socketio = current_app.extensions['socketio']
-    user_ip = request.remote_addr
+    raw_ip = request.remote_addr or ''
+
+    # Resolve effective identifier based on anonymous_mode
+    response_anchor = {}
+    user_ip, _used_mode = resolve_user_identifier(
+        request, session, anonymous_mode=None, response_anchor=response_anchor
+    )
     cookie_ip = request.cookies.get('user_ip')
+
     post_mode = request.form["post_mode"]
     post_name = request.form["name"]
     post_subject = request.form["subject"]
@@ -621,8 +643,11 @@ def new_post():
     captcha_input = 'none'
     lang = get_lang_for_board(board_id)
     
-    if database_module.verify_board_captcha(board_id):
-        captcha_input = request.form['captcha']
+    board_requires_captcha = bool(database_module.verify_board_captcha(board_id))
+    force_anon_captcha = should_force_captcha_for_identifier(user_ip)
+    
+    if board_requires_captcha or force_anon_captcha:
+        captcha_input = request.form.get('captcha', 'none')
     
     if formatting.filter_xss(comment) or formatting.filter_xss(post_name):
         flash(lang["flash-html-tags-not-allowed"])
@@ -727,8 +752,18 @@ def new_post():
         except:
             pass
         response = redirect(f'/{board_id}/thread/{database_module.get_max_post_id()}')
-    if user_ip:
-        response.set_cookie('user_ip', user_ip, max_age=60 * 60 * 24 * 365, httponly=True, samesite='Lax')
+
+    response_anchor['response'] = response
+    # Re-resolve to persist any newly created anonymous identifier cookie on this response
+    try:
+        resolve_user_identifier(
+            request, session, anonymous_mode=None, response_anchor=response_anchor
+        )
+    except Exception:
+        pass
+
+    if raw_ip:
+        response.set_cookie('user_ip', raw_ip, max_age=60 * 60 * 24 * 365, httponly=True, samesite='Lax')
     return response
 
 @posts_bp.route('/socket.io/')

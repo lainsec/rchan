@@ -5,6 +5,9 @@ Handles user timeouts, bans, reports, chan config and word filters.
 
 import threading
 import re
+import os
+import hashlib
+import uuid
 from datetime import datetime, timedelta
 import pytz
 from database_modules.sqlite_handler import SQLiteConfig
@@ -12,6 +15,11 @@ from database_modules.sqlite_handler import SQLiteConfig
 # Default IANA timezone for new installs and fallbacks (US Eastern).
 DEFAULT_SITE_TIMEZONE = 'America/New_York'
 
+ANONYMOUS_MODE_SURFACE = 'surface'
+ANONYMOUS_MODE_ANONYMOUS = 'anonymous'
+ANONYMOUS_MODE_HYBRID = 'hybrid'
+ANONYMOUS_MODE_OPTIONS = (ANONYMOUS_MODE_SURFACE, ANONYMOUS_MODE_ANONYMOUS, ANONYMOUS_MODE_HYBRID)
+ANONYMOUS_HASH_PREFIX = 'anon::'
 
 class TimeoutManager:
     def __init__(self):
@@ -526,6 +534,163 @@ class ReportManager:
             self.db.update('reports', report['id'], {'solved': 1})
 
 
+class AnonymousIdentityManager:
+    """Manages anonymous unique identifiers for users when anonymous_mode is enabled."""
+
+    SESSION_KEY = 'anon_identity_hash'
+    COOKIE_KEY = 'anon_identity'
+
+    @staticmethod
+    def _generate_raw_hash():
+        raw = uuid.uuid4().hex + os.urandom(16).hex()
+        digest = hashlib.sha256(raw.encode('utf-8')).hexdigest()
+        return digest[:32]
+
+    @classmethod
+    def build_identifier(cls, raw_hash):
+        if not raw_hash:
+            return raw_hash
+        if raw_hash.startswith(ANONYMOUS_HASH_PREFIX):
+            return raw_hash
+        return ANONYMOUS_HASH_PREFIX + raw_hash
+
+    @classmethod
+    def get_or_create(cls, session_obj, request_cookies, response_set_cookie_fn=None):
+        """
+        Gets or creates the anonymous identifier, persisting it on session and cookie.
+
+        Returns the final prefixed identifier.
+        """
+        raw_hash = None
+
+        session_raw = session_obj.get(cls.SESSION_KEY) if session_obj else None
+        if session_raw and isinstance(session_raw, str) and len(session_raw) >= 16:
+            raw_hash = session_raw
+
+        if (not raw_hash) and request_cookies:
+            cookie_raw = request_cookies.get(cls.COOKIE_KEY)
+            if cookie_raw and isinstance(cookie_raw, str) and len(cookie_raw) >= 16:
+                if cookie_raw.startswith(ANONYMOUS_HASH_PREFIX):
+                    raw_hash = cookie_raw[len(ANONYMOUS_HASH_PREFIX):]
+                else:
+                    raw_hash = cookie_raw
+
+        if not raw_hash:
+            raw_hash = cls._generate_raw_hash()
+
+        if session_obj is not None:
+            session_obj[cls.SESSION_KEY] = raw_hash
+
+        if response_set_cookie_fn is not None:
+            try:
+                cookie_value = cls.build_identifier(raw_hash)
+                response_set_cookie_fn(cls.COOKIE_KEY, cookie_value,
+                                       max_age=60 * 60 * 24 * 365 * 2,
+                                       httponly=True, samesite='Lax')
+            except Exception:
+                pass
+
+        return cls.build_identifier(raw_hash)
+
+    @classmethod
+    def extract_from_request(cls, session_obj, request_cookies):
+        """Extracts existing anonymous id without creating one. Returns None if missing."""
+        session_raw = session_obj.get(cls.SESSION_KEY) if session_obj else None
+        if session_raw and isinstance(session_raw, str) and len(session_raw) >= 16:
+            return cls.build_identifier(session_raw)
+
+        if request_cookies:
+            cookie_raw = request_cookies.get(cls.COOKIE_KEY)
+            if cookie_raw and isinstance(cookie_raw, str) and len(cookie_raw) >= 16:
+                if cookie_raw.startswith(ANONYMOUS_HASH_PREFIX):
+                    return cookie_raw
+                return cls.build_identifier(cookie_raw)
+
+        return None
+
+
+def resolve_user_identifier(request, session_obj, anonymous_mode=None, response_anchor=None):
+    """
+    Resolves the effective user identifier based on the configured anonymous_mode.
+
+    anonymous_mode options:
+      - surface (default): uses request.remote_addr
+      - anonymous: uses/generates a unique anonymous hash
+      - hybrid: if remote_addr is 127.0.0.1 uses anonymous, otherwise surface
+
+    If response_anchor is a dict with {'response': FlaskResponse}, the cookie will be set
+    when generating a new anonymous identifier.
+
+    Returns (effective_identifier, used_mode_str).
+    """
+    if anonymous_mode is None:
+        try:
+            cfg = ChanConfigManager().get_config()
+            anonymous_mode = (cfg.get('anonymous_mode') or ANONYMOUS_MODE_SURFACE).strip() or ANONYMOUS_MODE_SURFACE
+        except Exception:
+            anonymous_mode = ANONYMOUS_MODE_SURFACE
+
+    if anonymous_mode not in ANONYMOUS_MODE_OPTIONS:
+        anonymous_mode = ANONYMOUS_MODE_SURFACE
+
+    remote_addr = getattr(request, 'remote_addr', None) or ''
+    request_cookies = getattr(request, 'cookies', {}) or {}
+
+    use_anonymous = False
+    if anonymous_mode == ANONYMOUS_MODE_ANONYMOUS:
+        use_anonymous = True
+    elif anonymous_mode == ANONYMOUS_MODE_HYBRID:
+        use_anonymous = (remote_addr == '127.0.0.1' or remote_addr == '::1')
+
+    if use_anonymous:
+        set_cookie_fn = None
+        if response_anchor is not None and isinstance(response_anchor, dict):
+            def _set(k, v, **kw):
+                resp = response_anchor.get('response')
+                if resp is not None and hasattr(resp, 'set_cookie'):
+                    resp.set_cookie(k, v, **kw)
+            set_cookie_fn = _set
+        identifier = AnonymousIdentityManager.get_or_create(
+            session_obj, request_cookies, response_set_cookie_fn=set_cookie_fn
+        )
+        return identifier, ANONYMOUS_MODE_ANONYMOUS
+
+    return remote_addr, ANONYMOUS_MODE_SURFACE
+
+
+def get_current_anonymous_mode():
+    try:
+        cfg = ChanConfigManager().get_config()
+        mode = (cfg.get('anonymous_mode') or ANONYMOUS_MODE_SURFACE).strip() or ANONYMOUS_MODE_SURFACE
+    except Exception:
+        mode = ANONYMOUS_MODE_SURFACE
+    if mode not in ANONYMOUS_MODE_OPTIONS:
+        mode = ANONYMOUS_MODE_SURFACE
+    return mode
+
+
+def is_force_captcha_anonymous_enabled():
+    """Retorna True se a opção de forçar captcha para usuários anônimos estiver habilitada."""
+    try:
+        cfg = ChanConfigManager().get_config()
+        try:
+            val = int(cfg.get('force_captcha_anonymous', 0))
+        except (TypeError, ValueError):
+            val = 0
+        return bool(val)
+    except Exception:
+        return False
+
+
+def should_force_captcha_for_identifier(user_identifier):
+    """Retorna True se o identificador de usuário começar com 'anon::' E o force_captcha_anonymous estiver ativado."""
+    if not isinstance(user_identifier, str):
+        return False
+    if not user_identifier.startswith(ANONYMOUS_HASH_PREFIX):
+        return False
+    return is_force_captcha_anonymous_enabled()
+
+
 class ChanConfigManager:
     def __init__(self):
         # Initialize SQLite for chan config
@@ -541,7 +706,9 @@ class ChanConfigManager:
             'max_upload_size_mb': 'int',
             'site_custom_css': 'str',
             'site_timezone': 'str',
-            'enforce_reply_before_thread': 'int'
+            'enforce_reply_before_thread': 'int',
+            'anonymous_mode': 'str',
+            'force_captcha_anonymous': 'int'
         })
         self._ensure_record()
 
@@ -560,7 +727,9 @@ class ChanConfigManager:
                 'max_upload_size_mb': 24,
                 'site_custom_css': '',
                 'site_timezone': DEFAULT_SITE_TIMEZONE,
-                'enforce_reply_before_thread': 1
+                'enforce_reply_before_thread': 1,
+                'anonymous_mode': ANONYMOUS_MODE_SURFACE,
+                'force_captcha_anonymous': 0
             })
         else:
             config = configs[0]
@@ -580,6 +749,10 @@ class ChanConfigManager:
                 self.db.update('chan_config', config['id'], {'site_timezone': DEFAULT_SITE_TIMEZONE})
             if 'enforce_reply_before_thread' not in config:
                 self.db.update('chan_config', config['id'], {'enforce_reply_before_thread': 1})
+            if 'anonymous_mode' not in config:
+                self.db.update('chan_config', config['id'], {'anonymous_mode': ANONYMOUS_MODE_SURFACE})
+            if 'force_captcha_anonymous' not in config:
+                self.db.update('chan_config', config['id'], {'force_captcha_anonymous': 0})
 
     def get_config(self):
         """
@@ -626,7 +799,8 @@ class ChanConfigManager:
     def update_config(self, free_board_creation=None, index_news=None, sidebar_enabled=None,
                       max_pages_per_board=None, default_poster_name=None, posts_per_page=None,
                       max_upload_size_mb=None, site_custom_css=None, site_timezone=None,
-                      enforce_reply_before_thread=None):
+                      enforce_reply_before_thread=None, anonymous_mode=None,
+                      force_captcha_anonymous=None):
         """
         Update the chan configuration.
         
@@ -690,6 +864,14 @@ class ChanConfigManager:
 
         if enforce_reply_before_thread is not None:
             updates['enforce_reply_before_thread'] = 1 if enforce_reply_before_thread else 0
+
+        if anonymous_mode is not None:
+            mode = anonymous_mode.strip() if isinstance(anonymous_mode, str) else ''
+            if mode in ANONYMOUS_MODE_OPTIONS:
+                updates['anonymous_mode'] = mode
+
+        if force_captcha_anonymous is not None:
+            updates['force_captcha_anonymous'] = 1 if force_captcha_anonymous else 0
             
         if updates:
             self.db.update('chan_config', config['id'], updates)

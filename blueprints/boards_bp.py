@@ -2,7 +2,10 @@
 from flask import current_app, Blueprint, render_template, session, redirect, request, url_for, flash, send_from_directory
 from flask_wtf.csrf import generate_csrf
 from database_modules import database_module, language_module
-from database_modules.moderation_module import TimeoutManager, BanManager, ReportManager, ChanConfigManager, WordFilterManager
+from database_modules.moderation_module import (
+    TimeoutManager, BanManager, ReportManager, ChanConfigManager, WordFilterManager,
+    resolve_user_identifier, should_force_captcha_for_identifier
+)
 import os
 import pytz
 #blueprint register.
@@ -42,6 +45,14 @@ def globalboards():
 def customthemes():
     custom_themes_list = database_module.get_custom_themes()
     return {"custom_themes": custom_themes_list}
+#resolve current user identifier (ip or anon hash) for template checks (you-post)
+@boards_bp.context_processor
+def inject_current_user_identifier():
+    try:
+        identifier, _ = resolve_user_identifier(request, session)
+    except Exception:
+        identifier = getattr(request, 'remote_addr', None) or ''
+    return dict(current_user_identifier=identifier)
 
 def mark_banned_flags(records, board_uri, ban_manager):
     if not records:
@@ -359,6 +370,11 @@ def board_page(board_uri):
     
     form_data = session.pop('form_data', {})
 
+    current_user_id, _ = resolve_user_identifier(request, session, anonymous_mode=chan_config.get('anonymous_mode'))
+    board_captcha_on = bool(board_info and board_info.get('enable_captcha', 0) == 1)
+    anon_captcha_force = bool(should_force_captcha_for_identifier(current_user_id))
+    show_captcha_for_user = board_captcha_on or anon_captcha_force
+
     return render_template(
         'board.html',
         lang=get_lang_for_board(board_uri),
@@ -373,7 +389,8 @@ def board_page(board_uri):
         replies=replies,
         board_banner=board_banner,
         board_id=board_uri,
-        form_data=form_data)
+        form_data=form_data,
+        show_captcha_for_user=show_captcha_for_user)
 #board catalog page endpoint
 @boards_bp.route('/<board_uri>/catalog')
 def board_catalog(board_uri):
@@ -405,6 +422,13 @@ def board_catalog(board_uri):
     
     form_data = session.pop('form_data', {})
 
+    config_manager = ChanConfigManager()
+    chan_config_catalog = config_manager.get_config()
+    current_user_id_catalog, _ = resolve_user_identifier(request, session, anonymous_mode=chan_config_catalog.get('anonymous_mode'))
+    board_captcha_on_catalog = bool(board_info and board_info.get('enable_captcha', 0) == 1)
+    anon_captcha_force_catalog = bool(should_force_captcha_for_identifier(current_user_id_catalog))
+    show_captcha_for_user_catalog = board_captcha_on_catalog or anon_captcha_force_catalog
+
     return render_template(
         'catalog.html',
         lang=get_lang_for_board(board_uri),
@@ -416,7 +440,8 @@ def board_catalog(board_uri):
         replies=replies,
         board_banner=board_banner,
         board_id=board_uri,
-        form_data=form_data)
+        form_data=form_data,
+        show_captcha_for_user=show_captcha_for_user_catalog)
 #board banners page route.
 @boards_bp.route('/<board_uri>/banners')
 def board_banners(board_uri):
@@ -473,6 +498,13 @@ def replies(board_name, thread_id):
 
     form_data = session.pop('form_data', {})
 
+    config_manager_thread = ChanConfigManager()
+    chan_config_thread = config_manager_thread.get_config()
+    current_user_id_thread, _ = resolve_user_identifier(request, session, anonymous_mode=chan_config_thread.get('anonymous_mode'))
+    board_captcha_on_thread = bool(board_info and board_info.get('enable_captcha', 0) == 1)
+    anon_captcha_force_thread = bool(should_force_captcha_for_identifier(current_user_id_thread))
+    show_captcha_for_user_thread = board_captcha_on_thread or anon_captcha_force_thread
+
     return render_template(
         'thread_reply.html',
         lang=get_lang_for_board(board_name),
@@ -484,7 +516,8 @@ def replies(board_name, thread_id):
         thread_id=thread_id,
         post_mode="reply",
         roles=roles,
-        form_data=form_data
+        form_data=form_data,
+        show_captcha_for_user=show_captcha_for_user_thread
     )
 
 @boards_bp.route('/favicon.ico')

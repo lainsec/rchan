@@ -1270,6 +1270,7 @@ img#post_video_thumbnail {
   max-width: fit-content;
   max-height: fit-content;
   margin: 10px;
+  margin-bottom: 0px;
   cursor: pointer;
   float: left;
   overflow: hidden;

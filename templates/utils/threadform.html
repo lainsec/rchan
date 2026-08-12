@@ -51,8 +51,8 @@
                 <div class="label" bis_skin_checked="1"><span>{{ lang['threadform-label-embed'] }}</span></div><input type="text" name="embed"
                     autocomplete="off" maxlength="100" placeholder="{{ lang['threadform-placeholder-embed'] }}" value="{{ form_data.embed if form_data else '' }}">
             </section>
-            {% if board_info.enable_captcha %}
-            {% if board_info.enable_captcha == 1%}
+            {% set _need_captcha = show_captcha_for_user if show_captcha_for_user is defined else (board_info.enable_captcha == 1 if board_info else false) %}
+            {% if _need_captcha %}
             <div class="row" bis_skin_checked="1">
                 <div class="label" bis_skin_checked="1">{{ lang['threadform-label-captcha'] }}</div>
                 <div class="captcha-container">
@@ -66,7 +66,6 @@
                 <div class="label" bis_skin_checked="1">{{ lang['threadform-label-captcha'] }}</div>
                 <input type="text" name="captcha" maxlength="100">
             </div>
-            {% endif %}
             {% endif %}
             <input id="submitpost" type="submit" value="{{ lang['thread-form-button'] }}">
         </div>

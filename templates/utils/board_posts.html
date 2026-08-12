@@ -12,7 +12,7 @@
             {% if board_info.show_thread_poster_id == 1 %}
             <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> {{ ((post.user_ip ~ post.post_id) | string).__hash__() | abs | string | truncate(5, True, '') }}</span>
             {% endif %}
-            {% if post.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
+            {% if post.user_ip == current_user_identifier %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
             <span class="post_subject">{% if post.post_subject %}{{ post.post_subject }}{% endif %}</span>
             <span class="postDate">{{ post.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}" class="postLink">No. </a> <a class="postLink {% if post.post_id == 1 or post.post_id|string|length >= 2 and (post.post_id|string)[-1] == (post.post_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}" class="postNumber">{{ post.post_id }}</a>
             <a class="postLink" href="/{{ board_id }}/thread/{{ post.post_id }}"> [{{ lang['thread-reply-button'] }}]</a>
@@ -103,7 +103,7 @@
                         {% if board_info.show_thread_poster_id == 1 %}
                         <span class="poster-id" style="background-color: transparent; border: 1px solid var(--cor-borda); border-style: dashed;"> {{ ((reply.user_ip ~ post.post_id) | string).__hash__() | abs | string | truncate(5, True, '') }}</span>
                         {% endif %}
-                        {% if reply.user_ip == request.remote_addr %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
+                        {% if reply.user_ip == current_user_identifier %}<span class="you-post">{{ lang['dashboard-user-you'] }}</span>{% endif %}
                         <span class="postDate">{{ reply.post_date }}</span><a href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" class="postLink">/#/ </a> <a class="postLink {% if reply.reply_id == 1 or reply.reply_id|string|length >= 2 and (reply.reply_id|string)[-1] == (reply.reply_id|string)[-2] %}rainbowtext{% endif %}" href="/{{ board_id }}/thread/{{ post.post_id }}#{{ reply.reply_id }}" >{{ reply.reply_id }}</a>
                         {% include 'popups/users/report_reply.html' %} 
                         {% include 'utils/reply-moderation-options.html' %}
