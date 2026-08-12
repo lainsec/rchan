@@ -3,4 +3,4 @@
 {{ chan_config.site_custom_css | safe }}
 </style>
 {% endif %}
-<script>window.RCHAN_SITE_TZ_OFFSET={{ site_tz_offset_iso | tojson }};</script>
+<script>window.RCHAN_SITE_TZ_OFFSET={{ site_tz_offset_iso | default(None) | tojson }};</script>
